@@ -32,7 +32,10 @@ export class RankingWidgetComponent implements OnInit {
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set('Failed to load rankings');
+        const errorMsg = err.status === 404 
+          ? 'Nessuna classifica disponibile' 
+          : 'Errore nel caricamento della classifica';
+        this.error.set(errorMsg);
         this.loading.set(false);
       }
     });

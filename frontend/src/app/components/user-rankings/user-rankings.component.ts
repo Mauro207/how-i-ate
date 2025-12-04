@@ -17,6 +17,7 @@ export class UserRankingsComponent implements OnInit {
   error = signal('');
   userId = signal('');
   username = signal('');
+  private readonly DEFAULT_USERNAME = 'Utente';
 
   constructor(
     private restaurantService: RestaurantService,
@@ -30,7 +31,7 @@ export class UserRankingsComponent implements OnInit {
       const username = params.get('username');
       if (userId) {
         this.userId.set(userId);
-        this.username.set(username || 'Utente');
+        this.username.set(username || this.DEFAULT_USERNAME);
         this.loadUserRankings(userId);
       }
     });
@@ -44,7 +45,10 @@ export class UserRankingsComponent implements OnInit {
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set('Failed to load user rankings');
+        const errorMsg = err.status === 404 
+          ? 'Utente non trovato' 
+          : 'Errore nel caricamento delle recensioni dell\'utente';
+        this.error.set(errorMsg);
         this.loading.set(false);
       }
     });
