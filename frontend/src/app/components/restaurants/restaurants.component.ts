@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { RestaurantService, Restaurant } from '../../services/restaurant.service';
 import { AuthService } from '../../services/auth.service';
+import { NavigationComponent } from '../navigation/navigation.component'; 
 
 @Component({
   selector: 'app-restaurants',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, NavigationComponent],
   templateUrl: './restaurants.component.html',
   styleUrl: './restaurants.component.css'
 })

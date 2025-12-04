@@ -3,6 +3,7 @@ import { LoginComponent } from './components/login/login.component';
 import { RestaurantsComponent } from './components/restaurants/restaurants.component';
 import { RestaurantCreateComponent } from './components/restaurant-create/restaurant-create.component';
 import { RestaurantDetailComponent } from './components/restaurant-detail/restaurant-detail.component';
+import { NavigationComponent } from './components/navigation/navigation.component';
 import { SettingsComponent } from './components/settings/settings.component';
 
 export const routes: Routes = [

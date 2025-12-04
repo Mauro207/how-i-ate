@@ -1,0 +1,57 @@
+<nav class="bg-white border-b border-gray-200 shadow-sm">
+  <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      <!-- Logo -->
+      <h1 class="text-2xl font-bold text-indigo-600">How I Ate</h1>
+
+      <!-- Dropdown Menu Button -->
+      <div class="relative">
+        <button
+          (click)="toggleMenu()"
+          class="inline-flex items-center justify-center p-2 text-gray-700 rounded-md hover:text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        >
+          <svg
+            class="w-6 h-6"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16"
+            />
+          </svg>
+        </button>
+
+        <!-- Dropdown Menu -->
+        <div
+          *ngIf="menuOpen"
+          class="absolute right-0 z-10 w-48 py-2 mt-2 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5"
+        >
+          <a
+            routerLink="/restaurants"
+            class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-100 hover:text-indigo-600"
+          >
+            Luoghi
+          </a>
+          <a
+            routerLink="/settings"
+            class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-100 hover:text-indigo-600"
+          >
+            Impostazioni
+          </a>
+          <button
+            (click)="logout()"
+            class="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-indigo-100 hover:text-indigo-600"
+          >
+            Esci
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
