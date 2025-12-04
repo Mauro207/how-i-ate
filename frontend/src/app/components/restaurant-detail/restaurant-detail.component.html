@@ -18,7 +18,7 @@
           routerLink="/restaurants"
           class="mt-4 text-indigo-600 hover:text-indigo-800 font-medium"
         >
-          Back to Restaurants
+          Torna indietro
         </button>
       </div>
     </div>
@@ -36,7 +36,7 @@
           <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
           </svg>
-          Back to Restaurants
+          Torna indietro
         </a>
       </div>
 
@@ -72,14 +72,14 @@
 
       <!-- Reviews Section -->
       <div class="bg-white rounded-xl shadow-lg p-8">
-        <div class="flex justify-between items-center mb-6">
-          <h2 class="text-2xl font-bold text-gray-900">Reviews ({{ reviews().length }})</h2>
+        <div class="flex flex-col lg:flex-row gap-3 justify-between lg:items-center mb-6">
+          <h2 class="text-2xl font-bold text-gray-900">Recensioni ({{ reviews().length }})</h2>
           @if (!showReviewForm()) {
             <button
               (click)="toggleReviewForm()"
-              class="px-6 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition duration-150 shadow-md hover:shadow-lg"
+              class="block px-6 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition duration-150 shadow-md hover:shadow-lg"
             >
-              Write a Review
+                Lascia una recensione
             </button>
           }
         </div>
@@ -87,7 +87,7 @@
         <!-- Review Form -->
         @if (showReviewForm()) {
           <div class="mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
-            <h3 class="text-xl font-semibold text-gray-900 mb-4">Leave Your Review</h3>
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">Lascia una recensione</h3>
 
             @if (reviewError()) {
               <div class="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
@@ -99,7 +99,7 @@
               <!-- Service Rating -->
               <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Service Rating: {{ formatRating(serviceRating()) }} / {{ MAX_RATING }}.0
+                  Servizio: {{ formatRating(serviceRating()) }} / {{ MAX_RATING }}.0
                 </label>
                 <input
                   type="range"
@@ -115,7 +115,7 @@
               <!-- Price Rating -->
               <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Price Rating: {{ formatRating(priceRating()) }} / {{ MAX_RATING }}.0
+                  Prezzo: {{ formatRating(priceRating()) }} / {{ MAX_RATING }}.0
                 </label>
                 <input
                   type="range"
@@ -131,7 +131,7 @@
               <!-- Menu Rating -->
               <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Menu Rating: {{ formatRating(menuRating()) }} / {{ MAX_RATING }}.0
+                  Menu: {{ formatRating(menuRating()) }} / {{ MAX_RATING }}.0
                 </label>
                 <input
                   type="range"
@@ -147,7 +147,7 @@
               <!-- Comment -->
               <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Comment <span class="text-red-500">*</span>
+                  Commento <span class="text-red-500">*</span>
                 </label>
                 <textarea
                   [(ngModel)]="comment"
@@ -156,12 +156,12 @@
                   required
                   [disabled]="submittingReview()"
                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed transition duration-150"
-                  placeholder="Share your experience..."
+                  placeholder="Condividi la tua esperienza..."
                 ></textarea>
               </div>
 
               <!-- Action Buttons -->
-              <div class="flex space-x-3">
+              <div class="flex flex-col lg:flex-row gap-4">
                 <button
                   type="submit"
                   [disabled]="submittingReview()"
@@ -173,10 +173,10 @@
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      Submitting...
+                      Invio in corso...
                     </span>
                   } @else {
-                    Submit Review
+                    Invia recensione
                   }
                 </button>
                 <button
@@ -185,7 +185,7 @@
                   [disabled]="submittingReview()"
                   class="px-6 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition duration-150"
                 >
-                  Cancel
+                  Annulla
                 </button>
               </div>
             </form>
@@ -195,7 +195,7 @@
         <!-- Reviews List -->
         @if (reviews().length === 0) {
           <div class="text-center py-12 text-gray-500">
-            <p class="text-lg">No reviews yet. Be the first to review!</p>
+            <p class="text-lg">Nessuna recensione presente. Lasciala per primo!</p>
           </div>
         } @else {
           <div class="space-y-6">
@@ -210,7 +210,7 @@
                     >
                       {{ review.user.username }}
                     </h4>
-                    <p class="text-sm text-gray-500">{{ review.createdAt | date: 'medium' }}</p>
+                    <p class="text-sm text-gray-500">{{ review.createdAt | date: 'dd MMMM yyyy, HH:mm' }}</p>
                   </div>
                   <div class="flex items-center bg-indigo-100 px-3 py-1 rounded-full">
                     <svg class="w-5 h-5 text-indigo-600 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -223,11 +223,11 @@
                 <!-- Rating Breakdown -->
                 <div class="grid grid-cols-3 gap-4 mb-3">
                   <div class="bg-blue-50 px-3 py-2 rounded-lg">
-                    <p class="text-xs text-gray-600 mb-1">Service</p>
+                    <p class="text-xs text-gray-600 mb-1">Servizio</p>
                     <p class="font-semibold text-blue-900">{{ formatRating(review.serviceRating) }}</p>
                   </div>
                   <div class="bg-green-50 px-3 py-2 rounded-lg">
-                    <p class="text-xs text-gray-600 mb-1">Price</p>
+                    <p class="text-xs text-gray-600 mb-1">Prezzo</p>
                     <p class="font-semibold text-green-900">{{ formatRating(review.priceRating) }}</p>
                   </div>
                   <div class="bg-purple-50 px-3 py-2 rounded-lg">
