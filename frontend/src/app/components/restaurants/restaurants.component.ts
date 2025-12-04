@@ -3,12 +3,13 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { RestaurantService, Restaurant } from '../../services/restaurant.service';
 import { AuthService } from '../../services/auth.service';
-import { NavigationComponent } from '../navigation/navigation.component'; 
+import { NavigationComponent } from '../navigation/navigation.component';
+import { RankingWidgetComponent } from '../ranking-widget/ranking-widget.component'; 
 
 @Component({
   selector: 'app-restaurants',
   standalone: true,
-  imports: [CommonModule, RouterLink, NavigationComponent],
+  imports: [CommonModule, RouterLink, NavigationComponent, RankingWidgetComponent],
   templateUrl: './restaurants.component.html',
   styleUrl: './restaurants.component.css'
 })

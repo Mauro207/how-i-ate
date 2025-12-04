@@ -31,6 +31,28 @@ export interface Review {
   updatedAt: string;
 }
 
+export interface RankingItem {
+  restaurantId: string;
+  restaurantName: string;
+  cuisine?: string;
+  address?: string;
+  averageRating: number;
+  reviewCount: number;
+}
+
+export interface UserRankingItem {
+  restaurantId: string;
+  restaurantName: string;
+  cuisine?: string;
+  address?: string;
+  averageRating: number;
+  serviceRating: number;
+  priceRating: number;
+  menuRating: number;
+  comment: string;
+  createdAt: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -103,5 +125,15 @@ export class RestaurantService {
 
   deleteReview(reviewId: string): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(`${this.apiUrl}/reviews/${reviewId}`);
+  }
+
+  // Get global restaurant rankings
+  getGlobalRankings(): Observable<{ rankings: RankingItem[] }> {
+    return this.http.get<{ rankings: RankingItem[] }>(`${this.apiUrl}/reviews/rankings/global`);
+  }
+
+  // Get user-specific restaurant rankings
+  getUserRankings(userId: string): Observable<{ rankings: UserRankingItem[] }> {
+    return this.http.get<{ rankings: UserRankingItem[] }>(`${this.apiUrl}/reviews/rankings/user/${userId}`);
   }
 }
