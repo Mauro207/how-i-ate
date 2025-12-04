@@ -74,7 +74,7 @@
       <div class="bg-white rounded-xl shadow-lg p-8">
         <div class="flex flex-col lg:flex-row gap-3 justify-between lg:items-center mb-6">
           <h2 class="text-2xl font-bold text-gray-900">Recensioni ({{ reviews().length }})</h2>
-          @if (!showReviewForm()) {
+          @if (!showReviewForm() && !hasUserReviewed()) {
             <button
               (click)="toggleReviewForm()"
               class="block px-6 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition duration-150 shadow-md hover:shadow-lg"
@@ -87,7 +87,9 @@
         <!-- Review Form -->
         @if (showReviewForm()) {
           <div class="mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
-            <h3 class="text-xl font-semibold text-gray-900 mb-4">Lascia una recensione</h3>
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">
+              {{ editingReviewId() ? 'Modifica recensione' : 'Lascia una recensione' }}
+            </h3>
 
             @if (reviewError()) {
               <div class="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
@@ -176,12 +178,12 @@
                       Invio in corso...
                     </span>
                   } @else {
-                    Invia recensione
+                    {{ editingReviewId() ? 'Aggiorna recensione' : 'Invia recensione' }}
                   }
                 </button>
                 <button
                   type="button"
-                  (click)="toggleReviewForm()"
+                  (click)="editingReviewId() ? cancelEdit() : toggleReviewForm()"
                   [disabled]="submittingReview()"
                   class="px-6 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition duration-150"
                 >
@@ -237,7 +239,41 @@
                 </div>
 
                 <!-- Review Comment -->
-                <p class="text-gray-700">{{ review.comment }}</p>
+                <p class="text-gray-700 mb-4">{{ review.comment }}</p>
+
+                <!-- Edit/Delete Buttons -->
+                @if (canEditReview(review) || canDeleteReview(review)) {
+                  <div class="flex gap-2 mt-4">
+                    @if (canEditReview(review)) {
+                      <button
+                        (click)="editReview(review)"
+                        [disabled]="deletingReviewId() === review._id || submittingReview()"
+                        class="px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Modifica
+                      </button>
+                    }
+                    @if (canDeleteReview(review)) {
+                      <button
+                        (click)="deleteReview(review._id)"
+                        [disabled]="deletingReviewId() === review._id || submittingReview()"
+                        class="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        @if (deletingReviewId() === review._id) {
+                          <span class="flex items-center">
+                            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Eliminazione...
+                          </span>
+                        } @else {
+                          Elimina
+                        }
+                      </button>
+                    }
+                  </div>
+                }
               </div>
             }
           </div>
