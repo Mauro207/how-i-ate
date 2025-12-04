@@ -320,3 +320,7 @@ Authorization: Bearer <token>
 3. Role-based authorization is enforced on protected routes
 4. The `.env` file containing sensitive data is excluded from version control
 5. Change the default superadmin password immediately after setup
+6. Rate limiting is implemented to prevent brute force attacks and abuse:
+   - General API: 100 requests per 15 minutes
+   - Authentication endpoints: 5 requests per 15 minutes
+   - Write operations: 30 requests per 15 minutes
