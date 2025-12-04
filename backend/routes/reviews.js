@@ -60,12 +60,12 @@ router.get('/:id', authenticate, async (req, res) => {
 // Create review (all authenticated users) - Apply write rate limiting
 router.post('/restaurant/:restaurantId', writeLimiter, authenticate, async (req, res) => {
   try {
-    const { rating, comment } = req.body;
+    const { serviceRating, priceRating, menuRating, comment } = req.body;
     
     // Validate input
-    if (!rating || !comment) {
+    if (!serviceRating || !priceRating || !menuRating || !comment) {
       return res.status(400).json({ 
-        message: 'Rating and comment are required' 
+        message: 'Service rating, price rating, menu rating, and comment are required' 
       });
     }
     
@@ -91,7 +91,9 @@ router.post('/restaurant/:restaurantId', writeLimiter, authenticate, async (req,
     const review = new Review({
       restaurant: req.params.restaurantId,
       user: req.user.userId,
-      rating,
+      serviceRating,
+      priceRating,
+      menuRating,
       comment
     });
     
@@ -123,7 +125,7 @@ router.post('/restaurant/:restaurantId', writeLimiter, authenticate, async (req,
 // Update review (review owner only) - Apply write rate limiting
 router.put('/:id', writeLimiter, authenticate, async (req, res) => {
   try {
-    const { rating, comment } = req.body;
+    const { serviceRating, priceRating, menuRating, comment } = req.body;
     
     const review = await Review.findById(req.params.id);
     
@@ -139,7 +141,9 @@ router.put('/:id', writeLimiter, authenticate, async (req, res) => {
     }
     
     // Update fields if provided
-    if (rating !== undefined) review.rating = rating;
+    if (serviceRating !== undefined) review.serviceRating = serviceRating;
+    if (priceRating !== undefined) review.priceRating = priceRating;
+    if (menuRating !== undefined) review.menuRating = menuRating;
     if (comment !== undefined) review.comment = comment;
     
     await review.save();

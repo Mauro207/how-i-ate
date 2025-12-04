@@ -11,11 +11,23 @@ const reviewSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
-  rating: {
+  serviceRating: {
     type: Number,
-    required: [true, 'Rating is required'],
-    min: [1, 'Rating must be at least 1'],
-    max: [5, 'Rating cannot exceed 5']
+    required: [true, 'Service rating is required'],
+    min: [1, 'Service rating must be at least 1'],
+    max: [5, 'Service rating cannot exceed 5']
+  },
+  priceRating: {
+    type: Number,
+    required: [true, 'Price rating is required'],
+    min: [1, 'Price rating must be at least 1'],
+    max: [5, 'Price rating cannot exceed 5']
+  },
+  menuRating: {
+    type: Number,
+    required: [true, 'Menu rating is required'],
+    min: [1, 'Menu rating must be at least 1'],
+    max: [5, 'Menu rating cannot exceed 5']
   },
   comment: {
     type: String,

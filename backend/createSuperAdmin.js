@@ -19,19 +19,13 @@ const createSuperAdmin = async () => {
       process.exit(0);
     }
     
-    // Get password from environment variable or use default for development
-    const superAdminPassword = process.env.SUPERADMIN_PASSWORD || 'SuperAdmin123!';
-    
-    if (!process.env.SUPERADMIN_PASSWORD) {
-      console.warn('\nWARNING: Using default superadmin password!');
-      console.warn('Set SUPERADMIN_PASSWORD environment variable for custom password.\n');
-    }
-    
-    // Create superadmin user
+    // Create superadmin user with specified credentials
+    // NOTE: These credentials are specified by project requirements
+    // In production, consider using environment variables or secure configuration
     const superAdmin = new User({
-      username: 'superadmin',
-      email: 'superadmin@howiate.com',
-      password: superAdminPassword,
+      username: 'maurofontanarosa',
+      email: 'maurofontanarosa@gmail.com',
+      password: 'HowIAte2025@!',
       role: 'superadmin'
     });
     
@@ -40,9 +34,6 @@ const createSuperAdmin = async () => {
     console.log('Superadmin created successfully!');
     console.log('Username:', superAdmin.username);
     console.log('Email:', superAdmin.email);
-    if (!process.env.SUPERADMIN_PASSWORD) {
-      console.log('Password: SuperAdmin123! (default)');
-    }
     console.log('\nIMPORTANT: Please change the password after first login!');
     
     process.exit(0);
