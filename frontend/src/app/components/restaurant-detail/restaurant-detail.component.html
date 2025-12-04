@@ -99,13 +99,13 @@
               <!-- Service Rating -->
               <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Service Rating: {{ formatRating(serviceRating()) }} / 5.0
+                  Service Rating: {{ formatRating(serviceRating()) }} / {{ MAX_RATING }}.0
                 </label>
                 <input
                   type="range"
-                  min="1"
-                  max="5"
-                  step="0.1"
+                  [min]="MIN_RATING"
+                  [max]="MAX_RATING"
+                  [step]="RATING_STEP"
                   [(ngModel)]="serviceRating"
                   name="serviceRating"
                   class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
@@ -115,13 +115,13 @@
               <!-- Price Rating -->
               <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Price Rating: {{ formatRating(priceRating()) }} / 5.0
+                  Price Rating: {{ formatRating(priceRating()) }} / {{ MAX_RATING }}.0
                 </label>
                 <input
                   type="range"
-                  min="1"
-                  max="5"
-                  step="0.1"
+                  [min]="MIN_RATING"
+                  [max]="MAX_RATING"
+                  [step]="RATING_STEP"
                   [(ngModel)]="priceRating"
                   name="priceRating"
                   class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
@@ -131,13 +131,13 @@
               <!-- Menu Rating -->
               <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Menu Rating: {{ formatRating(menuRating()) }} / 5.0
+                  Menu Rating: {{ formatRating(menuRating()) }} / {{ MAX_RATING }}.0
                 </label>
                 <input
                   type="range"
-                  min="1"
-                  max="5"
-                  step="0.1"
+                  [min]="MIN_RATING"
+                  [max]="MAX_RATING"
+                  [step]="RATING_STEP"
                   [(ngModel)]="menuRating"
                   name="menuRating"
                   class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"

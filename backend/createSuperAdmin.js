@@ -20,6 +20,8 @@ const createSuperAdmin = async () => {
     }
     
     // Create superadmin user with specified credentials
+    // NOTE: These credentials are specified by project requirements
+    // In production, consider using environment variables or secure configuration
     const superAdmin = new User({
       username: 'maurofontanarosa',
       email: 'maurofontanarosa@gmail.com',

@@ -18,11 +18,17 @@ export class RestaurantDetailComponent implements OnInit {
   loading = signal(true);
   error = signal('');
   
+  // Review form constants
+  private readonly DEFAULT_RATING = 3;
+  readonly MIN_RATING = 1;
+  readonly MAX_RATING = 5;
+  readonly RATING_STEP = 0.1;
+  
   // Review form
   showReviewForm = signal(false);
-  serviceRating = signal(3);
-  priceRating = signal(3);
-  menuRating = signal(3);
+  serviceRating = signal(this.DEFAULT_RATING);
+  priceRating = signal(this.DEFAULT_RATING);
+  menuRating = signal(this.DEFAULT_RATING);
   comment = signal('');
   submittingReview = signal(false);
   reviewError = signal('');
@@ -107,9 +113,9 @@ export class RestaurantDetailComponent implements OnInit {
   }
 
   resetReviewForm(): void {
-    this.serviceRating.set(3);
-    this.priceRating.set(3);
-    this.menuRating.set(3);
+    this.serviceRating.set(this.DEFAULT_RATING);
+    this.priceRating.set(this.DEFAULT_RATING);
+    this.menuRating.set(this.DEFAULT_RATING);
     this.comment.set('');
     this.reviewError.set('');
   }
