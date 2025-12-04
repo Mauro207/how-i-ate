@@ -5,6 +5,29 @@ const { writeLimiter } = require('../middleware/rateLimiter');
 
 const router = express.Router();
 
+/**
+ * @swagger
+ * /api/restaurants:
+ *   get:
+ *     summary: Get all restaurants
+ *     tags: [Restaurants]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of restaurants
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 count:
+ *                   type: integer
+ *                 restaurants:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Restaurant'
+ */
 // Get all restaurants (all authenticated users)
 router.get('/', authenticate, async (req, res) => {
   try {
@@ -24,6 +47,34 @@ router.get('/', authenticate, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/restaurants/{id}:
+ *   get:
+ *     summary: Get single restaurant
+ *     tags: [Restaurants]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Restaurant ID
+ *     responses:
+ *       200:
+ *         description: Restaurant details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 restaurant:
+ *                   $ref: '#/components/schemas/Restaurant'
+ *       404:
+ *         description: Restaurant not found
+ */
 // Get single restaurant (all authenticated users)
 router.get('/:id', authenticate, async (req, res) => {
   try {
@@ -46,6 +97,41 @@ router.get('/:id', authenticate, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/restaurants:
+ *   post:
+ *     summary: Create restaurant (admin/superadmin only)
+ *     tags: [Restaurants]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               address:
+ *                 type: string
+ *               cuisine:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Restaurant created successfully
+ *       400:
+ *         description: Invalid input
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - admin role required
+ */
 // Create restaurant (admin and superadmin only) - Apply write rate limiting
 router.post('/', writeLimiter, authenticate, authorize('admin', 'superadmin'), async (req, res) => {
   try {
@@ -80,6 +166,46 @@ router.post('/', writeLimiter, authenticate, authorize('admin', 'superadmin'), a
   }
 });
 
+/**
+ * @swagger
+ * /api/restaurants/{id}:
+ *   put:
+ *     summary: Update restaurant (admin/superadmin only)
+ *     tags: [Restaurants]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Restaurant ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               address:
+ *                 type: string
+ *               cuisine:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Restaurant updated successfully
+ *       404:
+ *         description: Restaurant not found
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - admin role required
+ */
 // Update restaurant (admin and superadmin only) - Apply write rate limiting
 router.put('/:id', writeLimiter, authenticate, authorize('admin', 'superadmin'), async (req, res) => {
   try {
@@ -116,6 +242,31 @@ router.put('/:id', writeLimiter, authenticate, authorize('admin', 'superadmin'),
   }
 });
 
+/**
+ * @swagger
+ * /api/restaurants/{id}:
+ *   delete:
+ *     summary: Delete restaurant (admin/superadmin only)
+ *     tags: [Restaurants]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Restaurant ID
+ *     responses:
+ *       200:
+ *         description: Restaurant deleted successfully
+ *       404:
+ *         description: Restaurant not found
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - admin role required
+ */
 // Delete restaurant (admin and superadmin only) - Apply write rate limiting
 router.delete('/:id', writeLimiter, authenticate, authorize('admin', 'superadmin'), async (req, res) => {
   try {
