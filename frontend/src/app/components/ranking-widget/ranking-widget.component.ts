@@ -1,15 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { RestaurantService } from '../../services/restaurant.service';
-
-interface RankingItem {
-  restaurantId: string;
-  restaurantName: string;
-  cuisine?: string;
-  averageRating: number;
-  reviewCount: number;
-}
+import { RestaurantService, RankingItem } from '../../services/restaurant.service';
 
 @Component({
   selector: 'app-ranking-widget',

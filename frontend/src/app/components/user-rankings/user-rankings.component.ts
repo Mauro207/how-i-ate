@@ -1,21 +1,8 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { RestaurantService } from '../../services/restaurant.service';
+import { RestaurantService, UserRankingItem } from '../../services/restaurant.service';
 import { NavigationComponent } from '../navigation/navigation.component';
-
-interface UserRankingItem {
-  restaurantId: string;
-  restaurantName: string;
-  cuisine?: string;
-  address?: string;
-  averageRating: number;
-  serviceRating: number;
-  priceRating: number;
-  menuRating: number;
-  comment: string;
-  createdAt: string;
-}
 
 @Component({
   selector: 'app-user-rankings',
