@@ -54,9 +54,10 @@ how-i-ate/
    ```
 
 4. Update the `.env` file with your configuration:
-   - `MONGODB_URI`: Your MongoDB connection string
+   - `MONGODB_URI`: Your MongoDB connection string (provided: `mongodb+srv://how-i-ate_db_user:5qAlW2jWNficu6E0@how-i-ate.ew2p1cl.mongodb.net/?appName=how-i-ate`)
    - `JWT_SECRET`: A secure random string for JWT signing
    - `JWT_EXPIRES_IN`: Token expiration time (default: 7d)
+   - `SUPERADMIN_PASSWORD`: (Optional) Custom password for superadmin account. If not set, defaults to `SuperAdmin123!`
 
 5. Initialize the superadmin account:
    ```bash
