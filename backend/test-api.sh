@@ -2,6 +2,10 @@
 # Test script for How I Ate API
 # This script demonstrates the API flow with example requests
 # 
+# WARNING: This script is for DEVELOPMENT and TESTING purposes only.
+# Do NOT use this script in production environments.
+# The script contains hardcoded credentials that should only be used for testing.
+# 
 # Prerequisites:
 # - Backend server must be running (npm start)
 # - MongoDB must be connected
