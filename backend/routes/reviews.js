@@ -33,13 +33,16 @@ router.get('/rankings/global', authenticate, async (req, res) => {
   try {
     const rankings = await Review.aggregate([
       {
+        $addFields: {
+          averageRating: {
+            $avg: ['$serviceRating', '$priceRating', '$menuRating']
+          }
+        }
+      },
+      {
         $group: {
           _id: '$restaurant',
-          averageRating: {
-            $avg: {
-              $avg: ['$serviceRating', '$priceRating', '$menuRating']
-            }
-          },
+          averageRating: { $avg: '$averageRating' },
           reviewCount: { $sum: 1 }
         }
       },
