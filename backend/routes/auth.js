@@ -311,7 +311,7 @@ router.put('/profile', writeLimiter, authenticate, async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
     
-    user.displayName = displayName ? displayName.trim() : null;
+    user.displayName = displayName || null;
     await user.save();
     
     res.json({

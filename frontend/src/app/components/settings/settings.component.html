@@ -21,9 +21,9 @@
           </div>
         </div>
         <div class="flex items-center space-x-4">
-          @if (authService.currentUser()) {
+          @if (authService.currentUser(); as user) {
             <span class="text-gray-700">
-              Welcome, {{ authService.currentUser()!.displayName || authService.currentUser()!.username }}
+              Welcome, {{ user.displayName || user.username }}
             </span>
             <button
               (click)="logout()"

@@ -12,7 +12,7 @@ import { AuthService } from '../../services/auth.service';
   styleUrl: './settings.component.css'
 })
 export class SettingsComponent implements OnInit {
-  displayName = signal('');
+  displayName = '';
   loading = signal(false);
   successMessage = signal('');
   errorMessage = signal('');
@@ -28,7 +28,7 @@ export class SettingsComponent implements OnInit {
       this.router.navigate(['/login']);
       return;
     }
-    this.displayName.set(user.displayName || '');
+    this.displayName = user.displayName || '';
   }
 
   updateDisplayName(): void {
@@ -36,7 +36,7 @@ export class SettingsComponent implements OnInit {
     this.successMessage.set('');
     this.errorMessage.set('');
 
-    this.authService.updateProfile(this.displayName()).subscribe({
+    this.authService.updateProfile(this.displayName).subscribe({
       next: () => {
         this.loading.set(false);
         this.successMessage.set('Display name updated successfully!');
