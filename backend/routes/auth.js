@@ -427,4 +427,99 @@ router.post('/create-admin', writeLimiter, authenticate, authorize('superadmin')
   }
 });
 
+/**
+ * @swagger
+ * /api/auth/create-user:
+ *   post:
+ *     summary: Create regular user (admin/superadmin only)
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - username
+ *               - email
+ *               - password
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 minLength: 3
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *                 minLength: 6
+ *     responses:
+ *       201:
+ *         description: User created successfully
+ *       400:
+ *         description: Invalid input or user already exists
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - admin or superadmin role required
+ */
+// Create regular user (admin or superadmin only) - Apply write rate limiting
+router.post('/create-user', writeLimiter, authenticate, authorize('admin', 'superadmin'), async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
+    
+    // Validate input
+    if (!username || !email || !password) {
+      return res.status(400).json({ 
+        message: 'Username, email, and password are required' 
+      });
+    }
+    
+    // Check if user already exists
+    const existingUser = await User.findOne({ 
+      $or: [{ email }, { username }] 
+    });
+    
+    if (existingUser) {
+      return res.status(400).json({ 
+        message: 'User with this email or username already exists' 
+      });
+    }
+    
+    // Create new regular user
+    const newUser = new User({
+      username,
+      email,
+      password,
+      role: 'user',
+      createdBy: req.user.userId
+    });
+    
+    await newUser.save();
+    
+    res.status(201).json({
+      message: 'User created successfully',
+      user: {
+        id: newUser._id,
+        username: newUser.username,
+        displayName: newUser.displayName,
+        email: newUser.email,
+        role: newUser.role
+      }
+    });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({ 
+        message: 'User with this email or username already exists' 
+      });
+    }
+    res.status(500).json({ 
+      message: 'Error creating user', 
+      error: error.message 
+    });
+  }
+});
+
 module.exports = router;

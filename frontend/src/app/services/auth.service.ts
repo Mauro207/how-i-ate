@@ -47,6 +47,14 @@ export class AuthService {
     return this.http.post(`${this.apiUrl}/register`, { username, email, password });
   }
 
+  createUser(username: string, email: string, password: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/create-user`, { username, email, password });
+  }
+
+  createAdmin(username: string, email: string, password: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/create-admin`, { username, email, password });
+  }
+
   updateProfile(displayName: string): Observable<any> {
     return this.http.put<{ message: string; user: User }>(`${this.apiUrl}/profile`, { displayName })
       .pipe(
