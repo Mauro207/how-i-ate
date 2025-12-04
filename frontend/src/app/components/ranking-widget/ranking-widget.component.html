@@ -26,7 +26,7 @@
       </div>
     } @else {
       <div class="divide-y divide-gray-100">
-        @for (rank of rankings().slice(0, 5); track rank.restaurantId; let i = $index) {
+        @for (rank of topRankings(); track rank.restaurantId; let i = $index) {
           <div 
             class="flex items-center justify-between p-4 transition-colors duration-150 cursor-pointer hover:bg-gray-50"
             (click)="viewRestaurant(rank.restaurantId)"
@@ -67,9 +67,9 @@
           </div>
         }
       </div>
-      @if (rankings().length > 5) {
+      @if (rankings().length > topRankings().length) {
         <div class="px-4 py-3 text-center border-t border-gray-200 bg-gray-50">
-          <p class="text-xs text-gray-500">Mostrando i migliori 5 su {{ rankings().length }} luoghi recensiti</p>
+          <p class="text-xs text-gray-500">Mostrando i migliori {{ topRankings().length }} su {{ rankings().length }} luoghi recensiti</p>
         </div>
       }
     }

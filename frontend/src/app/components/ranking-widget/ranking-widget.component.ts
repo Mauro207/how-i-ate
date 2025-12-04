@@ -12,8 +12,10 @@ import { RestaurantService, RankingItem } from '../../services/restaurant.servic
 })
 export class RankingWidgetComponent implements OnInit {
   rankings = signal<RankingItem[]>([]);
+  topRankings = signal<RankingItem[]>([]);
   loading = signal(true);
   error = signal('');
+  private readonly TOP_RANKINGS_COUNT = 5;
 
   constructor(
     private restaurantService: RestaurantService,
@@ -29,6 +31,7 @@ export class RankingWidgetComponent implements OnInit {
     this.restaurantService.getGlobalRankings().subscribe({
       next: (response) => {
         this.rankings.set(response.rankings);
+        this.topRankings.set(response.rankings.slice(0, this.TOP_RANKINGS_COUNT));
         this.loading.set(false);
       },
       error: (err) => {

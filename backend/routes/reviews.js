@@ -103,6 +103,11 @@ router.get('/rankings/global', authenticate, async (req, res) => {
 // Get user-specific restaurant rankings
 router.get('/rankings/user/:userId', authenticate, async (req, res) => {
   try {
+    // Validate userId is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(req.params.userId)) {
+      return res.status(400).json({ message: 'Invalid user ID' });
+    }
+
     const rankings = await Review.aggregate([
       {
         $match: { user: new mongoose.Types.ObjectId(req.params.userId) }
