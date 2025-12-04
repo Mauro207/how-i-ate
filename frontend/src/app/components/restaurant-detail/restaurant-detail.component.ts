@@ -33,6 +33,11 @@ export class RestaurantDetailComponent implements OnInit {
   submittingReview = signal(false);
   reviewError = signal('');
 
+  // Edit review
+  editingReviewId = signal<string | null>(null);
+  deletingReviewId = signal<string | null>(null);
+  deletingRestaurant = signal(false);
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -80,6 +85,14 @@ export class RestaurantDetailComponent implements OnInit {
   }
 
   submitReview(): void {
+    if (this.editingReviewId()) {
+      this.updateReview();
+    } else {
+      this.createReview();
+    }
+  }
+
+  createReview(): void {
     if (!this.comment().trim()) {
       this.reviewError.set('Please provide a comment');
       return;
@@ -130,5 +143,132 @@ export class RestaurantDetailComponent implements OnInit {
 
   viewUserRankings(userId: string, username: string): void {
     this.router.navigate(['/user-rankings', userId, username]);
+  }
+
+  canEditReview(review: Review): boolean {
+    const user = this.authService.currentUser();
+    if (!user) return false;
+    return review.user._id === user.id || user.role === 'admin' || user.role === 'superadmin';
+  }
+
+  canDeleteReview(review: Review): boolean {
+    return this.canEditReview(review);
+  }
+
+  editReview(review: Review): void {
+    this.editingReviewId.set(review._id);
+    this.serviceRating.set(review.serviceRating);
+    this.priceRating.set(review.priceRating);
+    this.menuRating.set(review.menuRating);
+    this.comment.set(review.comment);
+    this.showReviewForm.set(true);
+    this.reviewError.set('');
+  }
+
+  cancelEdit(): void {
+    this.editingReviewId.set(null);
+    this.resetReviewForm();
+    this.showReviewForm.set(false);
+  }
+
+  updateReview(): void {
+    if (!this.comment().trim()) {
+      this.reviewError.set('Please provide a comment');
+      return;
+    }
+
+    const reviewId = this.editingReviewId();
+    if (!reviewId) return;
+
+    this.submittingReview.set(true);
+    this.reviewError.set('');
+
+    const reviewData = {
+      serviceRating: this.serviceRating(),
+      priceRating: this.priceRating(),
+      menuRating: this.menuRating(),
+      comment: this.comment()
+    };
+
+    this.restaurantService.updateReview(reviewId, reviewData).subscribe({
+      next: () => {
+        this.submittingReview.set(false);
+        this.editingReviewId.set(null);
+        this.showReviewForm.set(false);
+        this.resetReviewForm();
+        const restaurantId = this.restaurant()?._id;
+        if (restaurantId) {
+          this.loadReviews(restaurantId);
+        }
+      },
+      error: (err) => {
+        this.submittingReview.set(false);
+        this.reviewError.set(err.error?.message || 'Failed to update review');
+      }
+    });
+  }
+
+  deleteReview(reviewId: string): void {
+    if (!confirm('Are you sure you want to delete this review?')) {
+      return;
+    }
+
+    this.deletingReviewId.set(reviewId);
+
+    this.restaurantService.deleteReview(reviewId).subscribe({
+      next: () => {
+        this.deletingReviewId.set(null);
+        const restaurantId = this.restaurant()?._id;
+        if (restaurantId) {
+          this.loadReviews(restaurantId);
+        }
+      },
+      error: (err) => {
+        this.deletingReviewId.set(null);
+        alert(err.error?.message || 'Failed to delete review');
+      }
+    });
+  }
+
+  getUserDisplayName(review: Review): string {
+    return review.user.displayName || review.user.username;
+  }
+
+  hasUserReviewed(): boolean {
+    const user = this.authService.currentUser();
+    if (!user) return false;
+    return this.reviews().some(review => review.user._id === user.id);
+  }
+
+  canDeleteRestaurant(): boolean {
+    const user = this.authService.currentUser();
+    const restaurant = this.restaurant();
+    if (!user || !restaurant) return false;
+    
+    const isCreator = restaurant.createdBy === user.id;
+    const isAdminOrSuperadmin = user.role === 'admin' || user.role === 'superadmin';
+    
+    return isCreator || isAdminOrSuperadmin;
+  }
+
+  deleteRestaurant(): void {
+    const restaurant = this.restaurant();
+    if (!restaurant) return;
+
+    if (!confirm(`Are you sure you want to delete "${restaurant.name}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    this.deletingRestaurant.set(true);
+
+    this.restaurantService.deleteRestaurant(restaurant._id).subscribe({
+      next: () => {
+        this.router.navigate(['/restaurants']);
+      },
+      error: (err) => {
+        this.deletingRestaurant.set(false);
+        alert(err.error?.message || 'Failed to delete restaurant');
+      }
+    });
   }
 }

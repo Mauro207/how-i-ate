@@ -6,14 +6,15 @@ import { RestaurantDetailComponent } from './components/restaurant-detail/restau
 import { NavigationComponent } from './components/navigation/navigation.component';
 import { SettingsComponent } from './components/settings/settings.component';
 import { UserRankingsComponent } from './components/user-rankings/user-rankings.component';
+import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
-  { path: 'restaurants', component: RestaurantsComponent },
-  { path: 'restaurants/create', component: RestaurantCreateComponent },
-  { path: 'restaurants/:id', component: RestaurantDetailComponent },
-  { path: 'settings', component: SettingsComponent },
-  { path: 'user-rankings/:userId/:username', component: UserRankingsComponent },
+  { path: 'restaurants', component: RestaurantsComponent, canActivate: [authGuard] },
+  { path: 'restaurants/create', component: RestaurantCreateComponent, canActivate: [authGuard] },
+  { path: 'restaurants/:id', component: RestaurantDetailComponent, canActivate: [authGuard] },
+  { path: 'settings', component: SettingsComponent, canActivate: [authGuard] },
+  { path: 'user-rankings/:userId/:username', component: UserRankingsComponent, canActivate: [authGuard] },
   { path: '**', redirectTo: '/login' }
 ];

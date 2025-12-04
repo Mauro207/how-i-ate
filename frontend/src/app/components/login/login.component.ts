@@ -1,7 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -11,16 +11,23 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   email = signal('');
   password = signal('');
   error = signal('');
   loading = signal(false);
+  private returnUrl = '/restaurants';
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
+
+  ngOnInit(): void {
+    // Get return URL from route parameters or default to '/restaurants'
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/restaurants';
+  }
 
   onSubmit(): void {
     if (!this.email() || !this.password()) {
@@ -33,7 +40,7 @@ export class LoginComponent {
 
     this.authService.login(this.email(), this.password()).subscribe({
       next: () => {
-        this.router.navigate(['/restaurants']);
+        this.router.navigate([this.returnUrl]);
       },
       error: (err) => {
         this.loading.set(false);
