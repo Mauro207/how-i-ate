@@ -6,6 +6,38 @@ const { writeLimiter } = require('../middleware/rateLimiter');
 
 const router = express.Router();
 
+/**
+ * @swagger
+ * /api/reviews/restaurant/{restaurantId}:
+ *   get:
+ *     summary: Get all reviews for a restaurant
+ *     tags: [Reviews]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: restaurantId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Restaurant ID
+ *     responses:
+ *       200:
+ *         description: List of reviews
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 count:
+ *                   type: integer
+ *                 reviews:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Review'
+ *       404:
+ *         description: Restaurant not found
+ */
 // Get all reviews for a restaurant
 router.get('/restaurant/:restaurantId', authenticate, async (req, res) => {
   try {
@@ -34,6 +66,34 @@ router.get('/restaurant/:restaurantId', authenticate, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/reviews/{id}:
+ *   get:
+ *     summary: Get single review
+ *     tags: [Reviews]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Review ID
+ *     responses:
+ *       200:
+ *         description: Review details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 review:
+ *                   $ref: '#/components/schemas/Review'
+ *       404:
+ *         description: Review not found
+ */
 // Get single review
 router.get('/:id', authenticate, async (req, res) => {
   try {
@@ -57,6 +117,55 @@ router.get('/:id', authenticate, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/reviews/restaurant/{restaurantId}:
+ *   post:
+ *     summary: Create review (authenticated users)
+ *     tags: [Reviews]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: restaurantId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Restaurant ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - serviceRating
+ *               - priceRating
+ *               - menuRating
+ *               - comment
+ *             properties:
+ *               serviceRating:
+ *                 type: integer
+ *                 minimum: 1
+ *                 maximum: 5
+ *               priceRating:
+ *                 type: integer
+ *                 minimum: 1
+ *                 maximum: 5
+ *               menuRating:
+ *                 type: integer
+ *                 minimum: 1
+ *                 maximum: 5
+ *               comment:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Review created successfully
+ *       400:
+ *         description: Invalid input or already reviewed
+ *       404:
+ *         description: Restaurant not found
+ */
 // Create review (all authenticated users) - Apply write rate limiting
 router.post('/restaurant/:restaurantId', writeLimiter, authenticate, async (req, res) => {
   try {
@@ -122,6 +231,50 @@ router.post('/restaurant/:restaurantId', writeLimiter, authenticate, async (req,
   }
 });
 
+/**
+ * @swagger
+ * /api/reviews/{id}:
+ *   put:
+ *     summary: Update review (owner only)
+ *     tags: [Reviews]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Review ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               serviceRating:
+ *                 type: integer
+ *                 minimum: 1
+ *                 maximum: 5
+ *               priceRating:
+ *                 type: integer
+ *                 minimum: 1
+ *                 maximum: 5
+ *               menuRating:
+ *                 type: integer
+ *                 minimum: 1
+ *                 maximum: 5
+ *               comment:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Review updated successfully
+ *       404:
+ *         description: Review not found
+ *       403:
+ *         description: Forbidden - not review owner
+ */
 // Update review (review owner only) - Apply write rate limiting
 router.put('/:id', writeLimiter, authenticate, async (req, res) => {
   try {
@@ -166,6 +319,29 @@ router.put('/:id', writeLimiter, authenticate, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/reviews/{id}:
+ *   delete:
+ *     summary: Delete review (owner/admin/superadmin)
+ *     tags: [Reviews]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Review ID
+ *     responses:
+ *       200:
+ *         description: Review deleted successfully
+ *       404:
+ *         description: Review not found
+ *       403:
+ *         description: Forbidden - not authorized to delete
+ */
 // Delete review (review owner, admin, or superadmin) - Apply write rate limiting
 router.delete('/:id', writeLimiter, authenticate, async (req, res) => {
   try {

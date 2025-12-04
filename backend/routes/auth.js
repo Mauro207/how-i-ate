@@ -15,6 +15,50 @@ const generateToken = (userId) => {
   );
 };
 
+/**
+ * @swagger
+ * /api/auth/register:
+ *   post:
+ *     summary: Register a new user
+ *     tags: [Authentication]
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - username
+ *               - email
+ *               - password
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 minLength: 3
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *                 minLength: 6
+ *     responses:
+ *       201:
+ *         description: User registered successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 token:
+ *                   type: string
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Invalid input or user already exists
+ */
 // Register new user - Apply strict rate limiting
 router.post('/register', authLimiter, async (req, res) => {
   try {
@@ -56,6 +100,7 @@ router.post('/register', authLimiter, async (req, res) => {
       user: {
         id: user._id,
         username: user.username,
+        displayName: user.displayName,
         email: user.email,
         role: user.role
       }
@@ -73,6 +118,45 @@ router.post('/register', authLimiter, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     summary: Login user
+ *     tags: [Authentication]
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 token:
+ *                   type: string
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Invalid credentials
+ */
 // Login user - Apply strict rate limiting
 router.post('/login', authLimiter, async (req, res) => {
   try {
@@ -107,6 +191,7 @@ router.post('/login', authLimiter, async (req, res) => {
       user: {
         id: user._id,
         username: user.username,
+        displayName: user.displayName,
         email: user.email,
         role: user.role
       }
@@ -119,6 +204,27 @@ router.post('/login', authLimiter, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/auth/me:
+ *   get:
+ *     summary: Get current user profile
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User profile retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Unauthorized
+ */
 // Get current user profile
 router.get('/me', authenticate, async (req, res) => {
   try {
@@ -128,6 +234,7 @@ router.get('/me', authenticate, async (req, res) => {
       user: {
         id: user._id,
         username: user.username,
+        displayName: user.displayName,
         email: user.email,
         role: user.role,
         createdAt: user.createdAt
@@ -141,6 +248,128 @@ router.get('/me', authenticate, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/auth/profile:
+ *   put:
+ *     summary: Update user profile (display name)
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               displayName:
+ *                 type: string
+ *                 maxLength: 50
+ *                 description: Display name (leave empty to clear)
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Invalid input
+ *       401:
+ *         description: Unauthorized
+ */
+// Update user profile (display name) - Apply write rate limiting
+router.put('/profile', writeLimiter, authenticate, async (req, res) => {
+  try {
+    const { displayName } = req.body;
+    
+    // Validate displayName if provided
+    if (displayName !== undefined && displayName !== null) {
+      if (typeof displayName !== 'string') {
+        return res.status(400).json({ 
+          message: 'Display name must be a string' 
+        });
+      }
+      
+      const trimmedDisplayName = displayName.trim();
+      if (trimmedDisplayName.length > 50) {
+        return res.status(400).json({ 
+          message: 'Display name must not exceed 50 characters' 
+        });
+      }
+    }
+    
+    // Update user
+    const user = await User.findById(req.user.userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    user.displayName = displayName || null;
+    await user.save();
+    
+    res.json({
+      message: 'Profile updated successfully',
+      user: {
+        id: user._id,
+        username: user.username,
+        displayName: user.displayName,
+        email: user.email,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      message: 'Error updating profile', 
+      error: error.message 
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /api/auth/create-admin:
+ *   post:
+ *     summary: Create admin user (superadmin only)
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - username
+ *               - email
+ *               - password
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 minLength: 3
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *                 minLength: 6
+ *     responses:
+ *       201:
+ *         description: Admin user created successfully
+ *       400:
+ *         description: Invalid input or user already exists
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - superadmin role required
+ */
 // Create admin user (superadmin only) - Apply write rate limiting
 router.post('/create-admin', writeLimiter, authenticate, authorize('superadmin'), async (req, res) => {
   try {
@@ -180,6 +409,7 @@ router.post('/create-admin', writeLimiter, authenticate, authorize('superadmin')
       user: {
         id: adminUser._id,
         username: adminUser.username,
+        displayName: adminUser.displayName,
         email: adminUser.email,
         role: adminUser.role
       }

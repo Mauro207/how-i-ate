@@ -1,7 +1,9 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const swaggerUi = require('swagger-ui-express');
 const connectDB = require('./config/database');
+const swaggerSpec = require('./config/swagger');
 const { apiLimiter } = require('./middleware/rateLimiter');
 
 // Load environment variables
@@ -31,6 +33,13 @@ const reviewRoutes = require('./routes/reviews');
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to How I Ate API' });
 });
+
+// Swagger API Documentation
+app.use('/api', swaggerUi.serve);
+app.get('/api', swaggerUi.setup(swaggerSpec, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'How I Ate API Documentation'
+}));
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });

@@ -3,6 +3,7 @@ import { LoginComponent } from './components/login/login.component';
 import { RestaurantsComponent } from './components/restaurants/restaurants.component';
 import { RestaurantCreateComponent } from './components/restaurant-create/restaurant-create.component';
 import { RestaurantDetailComponent } from './components/restaurant-detail/restaurant-detail.component';
+import { SettingsComponent } from './components/settings/settings.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -10,5 +11,6 @@ export const routes: Routes = [
   { path: 'restaurants', component: RestaurantsComponent },
   { path: 'restaurants/create', component: RestaurantCreateComponent },
   { path: 'restaurants/:id', component: RestaurantDetailComponent },
+  { path: 'settings', component: SettingsComponent },
   { path: '**', redirectTo: '/login' }
 ];
