@@ -2,6 +2,7 @@ const express = require('express');
 const Review = require('../models/Review');
 const Restaurant = require('../models/Restaurant');
 const { authenticate, authorize } = require('../middleware/auth');
+const { writeLimiter } = require('../middleware/rateLimiter');
 
 const router = express.Router();
 
@@ -56,8 +57,8 @@ router.get('/:id', authenticate, async (req, res) => {
   }
 });
 
-// Create review (all authenticated users)
-router.post('/restaurant/:restaurantId', authenticate, async (req, res) => {
+// Create review (all authenticated users) - Apply write rate limiting
+router.post('/restaurant/:restaurantId', writeLimiter, authenticate, async (req, res) => {
   try {
     const { rating, comment } = req.body;
     
@@ -119,8 +120,8 @@ router.post('/restaurant/:restaurantId', authenticate, async (req, res) => {
   }
 });
 
-// Update review (review owner only)
-router.put('/:id', authenticate, async (req, res) => {
+// Update review (review owner only) - Apply write rate limiting
+router.put('/:id', writeLimiter, authenticate, async (req, res) => {
   try {
     const { rating, comment } = req.body;
     
@@ -161,8 +162,8 @@ router.put('/:id', authenticate, async (req, res) => {
   }
 });
 
-// Delete review (review owner, admin, or superadmin)
-router.delete('/:id', authenticate, async (req, res) => {
+// Delete review (review owner, admin, or superadmin) - Apply write rate limiting
+router.delete('/:id', writeLimiter, authenticate, async (req, res) => {
   try {
     const review = await Review.findById(req.params.id);
     

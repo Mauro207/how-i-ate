@@ -1,6 +1,7 @@
 const express = require('express');
 const Restaurant = require('../models/Restaurant');
 const { authenticate, authorize } = require('../middleware/auth');
+const { writeLimiter } = require('../middleware/rateLimiter');
 
 const router = express.Router();
 
@@ -45,8 +46,8 @@ router.get('/:id', authenticate, async (req, res) => {
   }
 });
 
-// Create restaurant (admin and superadmin only)
-router.post('/', authenticate, authorize('admin', 'superadmin'), async (req, res) => {
+// Create restaurant (admin and superadmin only) - Apply write rate limiting
+router.post('/', writeLimiter, authenticate, authorize('admin', 'superadmin'), async (req, res) => {
   try {
     const { name, description, address, cuisine } = req.body;
     
@@ -79,8 +80,8 @@ router.post('/', authenticate, authorize('admin', 'superadmin'), async (req, res
   }
 });
 
-// Update restaurant (admin and superadmin only)
-router.put('/:id', authenticate, authorize('admin', 'superadmin'), async (req, res) => {
+// Update restaurant (admin and superadmin only) - Apply write rate limiting
+router.put('/:id', writeLimiter, authenticate, authorize('admin', 'superadmin'), async (req, res) => {
   try {
     const { name, description, address, cuisine } = req.body;
     
@@ -115,8 +116,8 @@ router.put('/:id', authenticate, authorize('admin', 'superadmin'), async (req, r
   }
 });
 
-// Delete restaurant (admin and superadmin only)
-router.delete('/:id', authenticate, authorize('admin', 'superadmin'), async (req, res) => {
+// Delete restaurant (admin and superadmin only) - Apply write rate limiting
+router.delete('/:id', writeLimiter, authenticate, authorize('admin', 'superadmin'), async (req, res) => {
   try {
     const restaurant = await Restaurant.findById(req.params.id);
     

@@ -2,6 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { authenticate, authorize } = require('../middleware/auth');
+const { authLimiter, writeLimiter } = require('../middleware/rateLimiter');
 
 const router = express.Router();
 
@@ -14,8 +15,8 @@ const generateToken = (userId) => {
   );
 };
 
-// Register new user
-router.post('/register', async (req, res) => {
+// Register new user - Apply strict rate limiting
+router.post('/register', authLimiter, async (req, res) => {
   try {
     const { username, email, password } = req.body;
     
@@ -72,8 +73,8 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// Login user
-router.post('/login', async (req, res) => {
+// Login user - Apply strict rate limiting
+router.post('/login', authLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
     
@@ -140,8 +141,8 @@ router.get('/me', authenticate, async (req, res) => {
   }
 });
 
-// Create admin user (superadmin only)
-router.post('/create-admin', authenticate, authorize('superadmin'), async (req, res) => {
+// Create admin user (superadmin only) - Apply write rate limiting
+router.post('/create-admin', writeLimiter, authenticate, authorize('superadmin'), async (req, res) => {
   try {
     const { username, email, password } = req.body;
     
