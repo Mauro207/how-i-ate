@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 export interface Restaurant {
@@ -39,7 +40,8 @@ export class RestaurantService {
   constructor(private http: HttpClient) {}
 
   getRestaurants(): Observable<Restaurant[]> {
-    return this.http.get<Restaurant[]>(`${this.apiUrl}/restaurants`);
+    return this.http.get<{ count: number; restaurants: Restaurant[] }>(`${this.apiUrl}/restaurants`)
+      .pipe(map(response => response.restaurants));
   }
 
   getRestaurant(id: string): Observable<{ restaurant: Restaurant }> {
