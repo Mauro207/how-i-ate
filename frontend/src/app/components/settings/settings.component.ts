@@ -21,10 +21,10 @@ export class SettingsComponent implements OnInit {
   
   // User creation form
   showUserForm = signal(false);
-  newUsername = signal('');
-  newEmail = signal('');
-  newPassword = signal('');
-  newUserRole = signal<'user' | 'admin'>('user');
+  newUsername = '';
+  newEmail = '';
+  newPassword = '';
+  newUserRole: 'user' | 'admin' = 'user';
   creatingUser = signal(false);
   userCreationSuccess = signal('');
   userCreationError = signal('');
@@ -79,16 +79,16 @@ export class SettingsComponent implements OnInit {
   }
 
   resetUserForm(): void {
-    this.newUsername.set('');
-    this.newEmail.set('');
-    this.newPassword.set('');
-    this.newUserRole.set('user');
+    this.newUsername = '';
+    this.newEmail = '';
+    this.newPassword = '';
+    this.newUserRole = 'user';
     this.userCreationSuccess.set('');
     this.userCreationError.set('');
   }
 
   createNewUser(): void {
-    if (!this.newUsername() || !this.newEmail() || !this.newPassword()) {
+    if (!this.newUsername || !this.newEmail || !this.newPassword) {
       this.userCreationError.set('All fields are required');
       return;
     }
@@ -97,14 +97,14 @@ export class SettingsComponent implements OnInit {
     this.userCreationSuccess.set('');
     this.userCreationError.set('');
 
-    const createObservable = this.newUserRole() === 'admin' 
-      ? this.authService.createAdmin(this.newUsername(), this.newEmail(), this.newPassword())
-      : this.authService.createUser(this.newUsername(), this.newEmail(), this.newPassword());
+    const createObservable = this.newUserRole === 'admin' 
+      ? this.authService.createAdmin(this.newUsername, this.newEmail, this.newPassword)
+      : this.authService.createUser(this.newUsername, this.newEmail, this.newPassword);
 
     createObservable.subscribe({
       next: (response) => {
         this.creatingUser.set(false);
-        this.userCreationSuccess.set(`${this.newUserRole() === 'admin' ? 'Admin' : 'User'} created successfully!`);
+        this.userCreationSuccess.set(`${this.newUserRole === 'admin' ? 'Admin' : 'User'} created successfully!`);
         setTimeout(() => {
           this.resetUserForm();
           this.showUserForm.set(false);

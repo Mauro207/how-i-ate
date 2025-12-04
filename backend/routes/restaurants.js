@@ -268,7 +268,7 @@ router.put('/:id', writeLimiter, authenticate, authorize('admin', 'superadmin'),
  *         description: Forbidden - admin role required
  */
 // Delete restaurant (creator, or any admin/superadmin) - Apply write rate limiting
-router.delete('/:id', writeLimiter, authenticate, authorize('admin', 'superadmin'), async (req, res) => {
+router.delete('/:id', writeLimiter, authenticate, async (req, res) => {
   try {
     const restaurant = await Restaurant.findById(req.params.id);
     
