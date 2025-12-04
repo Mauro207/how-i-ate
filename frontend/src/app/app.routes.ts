@@ -5,6 +5,7 @@ import { RestaurantCreateComponent } from './components/restaurant-create/restau
 import { RestaurantDetailComponent } from './components/restaurant-detail/restaurant-detail.component';
 import { NavigationComponent } from './components/navigation/navigation.component';
 import { SettingsComponent } from './components/settings/settings.component';
+import { UserRankingsComponent } from './components/user-rankings/user-rankings.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -13,5 +14,6 @@ export const routes: Routes = [
   { path: 'restaurants/create', component: RestaurantCreateComponent },
   { path: 'restaurants/:id', component: RestaurantDetailComponent },
   { path: 'settings', component: SettingsComponent },
+  { path: 'user-rankings/:userId/:username', component: UserRankingsComponent },
   { path: '**', redirectTo: '/login' }
 ];

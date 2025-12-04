@@ -1,0 +1,124 @@
+<div class="min-h-screen bg-gray-50">
+  <!-- Header/Navigation -->
+  <app-navigation></app-navigation>
+
+  <!-- Main Content -->
+  <div class="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
+    <!-- Header Section -->
+    <div class="mb-8">
+      <button 
+        routerLink="/restaurants" 
+        class="inline-flex items-center mb-4 text-sm font-medium text-indigo-600 transition duration-150 hover:text-indigo-800"
+      >
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Torna alla home
+      </button>
+      <h2 class="text-3xl font-bold text-gray-900">Classifica di {{ username() }}</h2>
+      <p class="mt-2 text-gray-600">Luoghi recensiti dall'utente</p>
+    </div>
+
+    <!-- Loading State -->
+    @if (loading()) {
+      <div class="flex items-center justify-center py-12">
+        <svg class="w-12 h-12 text-indigo-600 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+      </div>
+    }
+
+    <!-- Error State -->
+    @if (error()) {
+      <div class="px-4 py-3 text-red-700 border border-red-200 rounded-lg bg-red-50">
+        <p>{{ error() }}</p>
+      </div>
+    }
+
+    <!-- Rankings List -->
+    @if (!loading() && !error()) {
+      @if (rankings().length === 0) {
+        <div class="py-12 text-center bg-white rounded-lg shadow">
+          <p class="text-lg text-gray-500">Questo utente non ha ancora lasciato recensioni.</p>
+        </div>
+      } @else {
+        <div class="space-y-4">
+          @for (rank of rankings(); track rank.restaurantId; let i = $index) {
+            <div class="overflow-hidden transition-shadow duration-300 bg-white shadow-md cursor-pointer rounded-xl hover:shadow-xl"
+              (click)="viewRestaurant(rank.restaurantId)">
+              <div class="p-6">
+                <div class="flex items-start justify-between mb-4">
+                  <div class="flex items-center space-x-3 flex-1">
+                    <span class="flex items-center justify-center w-10 h-10 text-lg font-bold rounded-full"
+                      [ngClass]="{
+                        'bg-yellow-100 text-yellow-800': i === 0,
+                        'bg-gray-200 text-gray-600': i === 1,
+                        'bg-orange-100 text-orange-600': i === 2,
+                        'bg-gray-100 text-gray-500': i > 2
+                      }">
+                      {{ i + 1 }}
+                    </span>
+                    <div class="flex-1">
+                      <h3 class="text-xl font-bold text-gray-900">{{ rank.restaurantName }}</h3>
+                      @if (rank.cuisine) {
+                        <span class="inline-block px-2 py-1 mt-1 text-xs font-semibold text-indigo-600 bg-indigo-100 rounded-full">
+                          {{ rank.cuisine }}
+                        </span>
+                      }
+                    </div>
+                  </div>
+                  <div class="flex items-center ml-4 space-x-2">
+                    <div class="flex items-center space-x-1">
+                      @for (star of getStarArray(rank.averageRating); track $index) {
+                        <svg 
+                          class="w-5 h-5"
+                          [ngClass]="star ? 'text-yellow-400' : 'text-gray-300'"
+                          fill="currentColor" 
+                          viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                        </svg>
+                      }
+                    </div>
+                    <span class="text-lg font-bold text-gray-900">{{ rank.averageRating }}</span>
+                  </div>
+                </div>
+
+                <!-- Individual ratings -->
+                <div class="grid grid-cols-3 gap-4 mb-4">
+                  <div class="text-center">
+                    <p class="text-xs text-gray-500 uppercase">Servizio</p>
+                    <p class="text-lg font-semibold text-gray-900">{{ rank.serviceRating }}/5</p>
+                  </div>
+                  <div class="text-center">
+                    <p class="text-xs text-gray-500 uppercase">Prezzo</p>
+                    <p class="text-lg font-semibold text-gray-900">{{ rank.priceRating }}/5</p>
+                  </div>
+                  <div class="text-center">
+                    <p class="text-xs text-gray-500 uppercase">Menù</p>
+                    <p class="text-lg font-semibold text-gray-900">{{ rank.menuRating }}/5</p>
+                  </div>
+                </div>
+
+                <!-- Comment -->
+                <div class="p-4 rounded-lg bg-gray-50">
+                  <p class="text-sm text-gray-700">{{ rank.comment }}</p>
+                </div>
+
+                @if (rank.address) {
+                  <div class="flex items-center mt-3 text-sm text-gray-500">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>{{ rank.address }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+</div>

@@ -1,10 +1,157 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const Review = require('../models/Review');
 const Restaurant = require('../models/Restaurant');
 const { authenticate, authorize } = require('../middleware/auth');
 const { writeLimiter } = require('../middleware/rateLimiter');
 
 const router = express.Router();
+
+/**
+ * @swagger
+ * /api/reviews/rankings/global:
+ *   get:
+ *     summary: Get global restaurant rankings based on average ratings
+ *     tags: [Reviews]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of restaurants with their average ratings
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 rankings:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ */
+// Get global restaurant rankings
+router.get('/rankings/global', authenticate, async (req, res) => {
+  try {
+    const rankings = await Review.aggregate([
+      {
+        $group: {
+          _id: '$restaurant',
+          averageRating: {
+            $avg: {
+              $avg: ['$serviceRating', '$priceRating', '$menuRating']
+            }
+          },
+          reviewCount: { $sum: 1 }
+        }
+      },
+      {
+        $lookup: {
+          from: 'restaurants',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'restaurant'
+        }
+      },
+      {
+        $unwind: '$restaurant'
+      },
+      {
+        $sort: { averageRating: -1 }
+      },
+      {
+        $project: {
+          restaurantId: '$_id',
+          restaurantName: '$restaurant.name',
+          cuisine: '$restaurant.cuisine',
+          address: '$restaurant.address',
+          averageRating: { $round: ['$averageRating', 2] },
+          reviewCount: 1
+        }
+      }
+    ]);
+
+    res.json({ rankings });
+  } catch (error) {
+    res.status(500).json({ 
+      message: 'Error fetching global rankings', 
+      error: error.message 
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /api/reviews/rankings/user/{userId}:
+ *   get:
+ *     summary: Get restaurant rankings for a specific user
+ *     tags: [Reviews]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID
+ *     responses:
+ *       200:
+ *         description: List of restaurants reviewed by the user with their ratings
+ */
+// Get user-specific restaurant rankings
+router.get('/rankings/user/:userId', authenticate, async (req, res) => {
+  try {
+    const rankings = await Review.aggregate([
+      {
+        $match: { user: new mongoose.Types.ObjectId(req.params.userId) }
+      },
+      {
+        $addFields: {
+          averageRating: {
+            $avg: ['$serviceRating', '$priceRating', '$menuRating']
+          }
+        }
+      },
+      {
+        $lookup: {
+          from: 'restaurants',
+          localField: 'restaurant',
+          foreignField: '_id',
+          as: 'restaurant'
+        }
+      },
+      {
+        $unwind: '$restaurant'
+      },
+      {
+        $sort: { averageRating: -1 }
+      },
+      {
+        $project: {
+          restaurantId: '$restaurant._id',
+          restaurantName: '$restaurant.name',
+          cuisine: '$restaurant.cuisine',
+          address: '$restaurant.address',
+          averageRating: { $round: ['$averageRating', 2] },
+          serviceRating: 1,
+          priceRating: 1,
+          menuRating: 1,
+          comment: 1,
+          createdAt: 1
+        }
+      }
+    ]);
+
+    res.json({ rankings });
+  } catch (error) {
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.status(500).json({ 
+      message: 'Error fetching user rankings', 
+      error: error.message 
+    });
+  }
+});
 
 /**
  * @swagger

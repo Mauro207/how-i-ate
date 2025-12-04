@@ -104,4 +104,14 @@ export class RestaurantService {
   deleteReview(reviewId: string): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(`${this.apiUrl}/reviews/${reviewId}`);
   }
+
+  // Get global restaurant rankings
+  getGlobalRankings(): Observable<{ rankings: any[] }> {
+    return this.http.get<{ rankings: any[] }>(`${this.apiUrl}/reviews/rankings/global`);
+  }
+
+  // Get user-specific restaurant rankings
+  getUserRankings(userId: string): Observable<{ rankings: any[] }> {
+    return this.http.get<{ rankings: any[] }>(`${this.apiUrl}/reviews/rankings/user/${userId}`);
+  }
 }

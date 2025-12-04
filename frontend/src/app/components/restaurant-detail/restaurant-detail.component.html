@@ -204,7 +204,12 @@
                 <!-- Review Header -->
                 <div class="flex items-start justify-between mb-3">
                   <div>
-                    <h4 class="font-semibold text-gray-900">{{ review.user.username }}</h4>
+                    <h4 
+                      class="font-semibold text-indigo-600 cursor-pointer hover:text-indigo-800 transition duration-150"
+                      (click)="viewUserRankings(review.user._id, review.user.username)"
+                    >
+                      {{ review.user.username }}
+                    </h4>
                     <p class="text-sm text-gray-500">{{ review.createdAt | date: 'medium' }}</p>
                   </div>
                   <div class="flex items-center bg-indigo-100 px-3 py-1 rounded-full">

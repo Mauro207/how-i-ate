@@ -127,4 +127,8 @@ export class RestaurantDetailComponent implements OnInit {
   formatRating(rating: number): string {
     return rating.toFixed(1);
   }
+
+  viewUserRankings(userId: string, username: string): void {
+    this.router.navigate(['/user-rankings', userId, username]);
+  }
 }
