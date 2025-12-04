@@ -239,7 +239,7 @@
                 </div>
 
                 <!-- Review Comment -->
-                <p class="text-gray-700 mb-3">{{ review.comment }}</p>
+                <p class="text-gray-700 mb-4">{{ review.comment }}</p>
 
                 <!-- Edit/Delete Buttons -->
                 @if (canEditReview(review) || canDeleteReview(review)) {
@@ -247,7 +247,7 @@
                     @if (canEditReview(review)) {
                       <button
                         (click)="editReview(review)"
-                        [disabled]="deletingReviewId() === review._id"
+                        [disabled]="deletingReviewId() === review._id || submittingReview()"
                         class="px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Modifica
@@ -256,7 +256,7 @@
                     @if (canDeleteReview(review)) {
                       <button
                         (click)="deleteReview(review._id)"
-                        [disabled]="deletingReviewId() === review._id"
+                        [disabled]="deletingReviewId() === review._id || submittingReview()"
                         class="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         @if (deletingReviewId() === review._id) {
