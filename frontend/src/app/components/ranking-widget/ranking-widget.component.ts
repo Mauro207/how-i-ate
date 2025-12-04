@@ -2,6 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { RestaurantService, RankingItem } from '../../services/restaurant.service';
+import { getStarArray } from '../../utils/rating.utils';
 
 @Component({
   selector: 'app-ranking-widget',
@@ -49,6 +50,6 @@ export class RankingWidgetComponent implements OnInit {
   }
 
   getStarArray(rating: number): number[] {
-    return Array(5).fill(0).map((_, i) => i < Math.round(rating) ? 1 : 0);
+    return getStarArray(rating);
   }
 }

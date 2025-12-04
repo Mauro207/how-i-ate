@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { RestaurantService, UserRankingItem } from '../../services/restaurant.service';
 import { NavigationComponent } from '../navigation/navigation.component';
+import { getStarArray } from '../../utils/rating.utils';
 
 @Component({
   selector: 'app-user-rankings',
@@ -59,6 +60,6 @@ export class UserRankingsComponent implements OnInit {
   }
 
   getStarArray(rating: number): number[] {
-    return Array(5).fill(0).map((_, i) => i < Math.round(rating) ? 1 : 0);
+    return getStarArray(rating);
   }
 }
