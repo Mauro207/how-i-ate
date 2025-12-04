@@ -7,6 +7,7 @@ import { environment } from '../../environments/environment';
 export interface User {
   id: string;
   username: string;
+  displayName?: string;
   email: string;
   role: string;
 }
@@ -44,6 +45,15 @@ export class AuthService {
 
   register(username: string, email: string, password: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/register`, { username, email, password });
+  }
+
+  updateProfile(displayName: string): Observable<any> {
+    return this.http.put<{ message: string; user: User }>(`${this.apiUrl}/profile`, { displayName })
+      .pipe(
+        tap(response => {
+          this.currentUser.set(response.user);
+        })
+      );
   }
 
   logout(): void {
