@@ -32,7 +32,7 @@ const router = express.Router();
 router.get('/', authenticate, async (req, res) => {
   try {
     const restaurants = await Restaurant.find()
-      .populate('createdBy', 'username email')
+      .populate('createdBy', 'username email displayName')
       .sort({ createdAt: -1 });
     
     res.json({
@@ -79,7 +79,7 @@ router.get('/', authenticate, async (req, res) => {
 router.get('/:id', authenticate, async (req, res) => {
   try {
     const restaurant = await Restaurant.findById(req.params.id)
-      .populate('createdBy', 'username email');
+      .populate('createdBy', 'username email displayName');
     
     if (!restaurant) {
       return res.status(404).json({ message: 'Restaurant not found' });
@@ -152,7 +152,7 @@ router.post('/', writeLimiter, authenticate, authorize('admin', 'superadmin'), a
     
     await restaurant.save();
     
-    await restaurant.populate('createdBy', 'username email');
+    await restaurant.populate('createdBy', 'username email displayName');
     
     res.status(201).json({
       message: 'Restaurant created successfully',
@@ -225,7 +225,7 @@ router.put('/:id', writeLimiter, authenticate, authorize('admin', 'superadmin'),
     
     await restaurant.save();
     
-    await restaurant.populate('createdBy', 'username email');
+    await restaurant.populate('createdBy', 'username email displayName');
     
     res.json({
       message: 'Restaurant updated successfully',
@@ -267,13 +267,23 @@ router.put('/:id', writeLimiter, authenticate, authorize('admin', 'superadmin'),
  *       403:
  *         description: Forbidden - admin role required
  */
-// Delete restaurant (admin and superadmin only) - Apply write rate limiting
-router.delete('/:id', writeLimiter, authenticate, authorize('admin', 'superadmin'), async (req, res) => {
+// Delete restaurant (creator, or any admin/superadmin) - Apply write rate limiting
+router.delete('/:id', writeLimiter, authenticate, async (req, res) => {
   try {
     const restaurant = await Restaurant.findById(req.params.id);
     
     if (!restaurant) {
       return res.status(404).json({ message: 'Restaurant not found' });
+    }
+    
+    // Check if user is the creator or has admin/superadmin role
+    const isCreator = restaurant.createdBy.toString() === req.user.userId.toString();
+    const isAdminOrSuperadmin = ['admin', 'superadmin'].includes(req.user.role);
+    
+    if (!isCreator && !isAdminOrSuperadmin) {
+      return res.status(403).json({ 
+        message: 'You can only delete restaurants you created' 
+      });
     }
     
     await Restaurant.findByIdAndDelete(req.params.id);

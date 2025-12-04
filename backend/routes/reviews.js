@@ -200,7 +200,7 @@ router.get('/restaurant/:restaurantId', authenticate, async (req, res) => {
     }
     
     const reviews = await Review.find({ restaurant: req.params.restaurantId })
-      .populate('user', 'username email')
+      .populate('user', 'username email displayName')
       .sort({ createdAt: -1 });
     
     res.json({
@@ -250,7 +250,7 @@ router.get('/restaurant/:restaurantId', authenticate, async (req, res) => {
 router.get('/:id', authenticate, async (req, res) => {
   try {
     const review = await Review.findById(req.params.id)
-      .populate('user', 'username email')
+      .populate('user', 'username email displayName')
       .populate('restaurant', 'name');
     
     if (!review) {
@@ -360,7 +360,7 @@ router.post('/restaurant/:restaurantId', writeLimiter, authenticate, async (req,
     
     await review.save();
     
-    await review.populate('user', 'username email');
+    await review.populate('user', 'username email displayName');
     await review.populate('restaurant', 'name');
     
     res.status(201).json({
@@ -427,7 +427,7 @@ router.post('/restaurant/:restaurantId', writeLimiter, authenticate, async (req,
  *       403:
  *         description: Forbidden - not review owner
  */
-// Update review (review owner only) - Apply write rate limiting
+// Update review (review owner, admin, or superadmin) - Apply write rate limiting
 router.put('/:id', writeLimiter, authenticate, async (req, res) => {
   try {
     const { serviceRating, priceRating, menuRating, comment } = req.body;
@@ -438,8 +438,11 @@ router.put('/:id', writeLimiter, authenticate, async (req, res) => {
       return res.status(404).json({ message: 'Review not found' });
     }
     
-    // Check if user is the owner of the review
-    if (review.user.toString() !== req.user.userId.toString()) {
+    // Check if user is the owner of the review or has admin/superadmin role
+    const isOwner = review.user.toString() === req.user.userId.toString();
+    const isAdminOrSuperadmin = ['admin', 'superadmin'].includes(req.user.role);
+    
+    if (!isOwner && !isAdminOrSuperadmin) {
       return res.status(403).json({ 
         message: 'You can only update your own reviews' 
       });
@@ -453,7 +456,7 @@ router.put('/:id', writeLimiter, authenticate, async (req, res) => {
     
     await review.save();
     
-    await review.populate('user', 'username email');
+    await review.populate('user', 'username email displayName');
     await review.populate('restaurant', 'name');
     
     res.json({
