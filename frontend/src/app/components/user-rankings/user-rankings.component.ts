@@ -1,6 +1,7 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { RestaurantService, UserRankingItem } from '../../services/restaurant.service';
 import { NavigationComponent } from '../navigation/navigation.component';
 import { getStarArray } from '../../utils/rating.utils';
@@ -12,13 +13,14 @@ import { getStarArray } from '../../utils/rating.utils';
   templateUrl: './user-rankings.component.html',
   styleUrl: './user-rankings.component.css'
 })
-export class UserRankingsComponent implements OnInit {
+export class UserRankingsComponent implements OnInit, OnDestroy {
   rankings = signal<UserRankingItem[]>([]);
   loading = signal(true);
   error = signal('');
   userId = signal('');
   username = signal('');
   private readonly DEFAULT_USERNAME = 'Utente';
+  private routeSubscription?: Subscription;
 
   constructor(
     private restaurantService: RestaurantService,
@@ -27,7 +29,7 @@ export class UserRankingsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe(params => {
+    this.routeSubscription = this.route.paramMap.subscribe(params => {
       const userId = params.get('userId');
       const username = params.get('username');
       if (userId) {
@@ -36,6 +38,10 @@ export class UserRankingsComponent implements OnInit {
         this.loadUserRankings(userId);
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.routeSubscription?.unsubscribe();
   }
 
   loadUserRankings(userId: string): void {

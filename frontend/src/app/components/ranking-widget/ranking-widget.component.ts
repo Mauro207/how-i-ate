@@ -12,8 +12,8 @@ import { getStarArray } from '../../utils/rating.utils';
   styleUrl: './ranking-widget.component.css'
 })
 export class RankingWidgetComponent implements OnInit {
-  rankings = signal<RankingItem[]>([]);
   topRankings = signal<RankingItem[]>([]);
+  totalCount = signal(0);
   loading = signal(true);
   error = signal('');
   private readonly TOP_RANKINGS_COUNT = 5;
@@ -31,7 +31,7 @@ export class RankingWidgetComponent implements OnInit {
     this.loading.set(true);
     this.restaurantService.getGlobalRankings().subscribe({
       next: (response) => {
-        this.rankings.set(response.rankings);
+        this.totalCount.set(response.rankings.length);
         this.topRankings.set(response.rankings.slice(0, this.TOP_RANKINGS_COUNT));
         this.loading.set(false);
       },

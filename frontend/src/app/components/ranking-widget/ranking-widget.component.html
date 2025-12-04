@@ -20,7 +20,7 @@
   }
 
   @if (!loading() && !error()) {
-    @if (rankings().length === 0) {
+    @if (topRankings().length === 0) {
       <div class="p-8 text-center">
         <p class="text-sm text-gray-500">Nessuna recensione disponibile ancora</p>
       </div>
@@ -67,9 +67,9 @@
           </div>
         }
       </div>
-      @if (rankings().length > topRankings().length) {
+      @if (totalCount() > topRankings().length) {
         <div class="px-4 py-3 text-center border-t border-gray-200 bg-gray-50">
-          <p class="text-xs text-gray-500">Mostrando i migliori {{ topRankings().length }} su {{ rankings().length }} luoghi recensiti</p>
+          <p class="text-xs text-gray-500">Mostrando i migliori {{ topRankings().length }} su {{ totalCount() }} luoghi recensiti</p>
         </div>
       }
     }

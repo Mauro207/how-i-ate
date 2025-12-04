@@ -151,9 +151,6 @@ router.get('/rankings/user/:userId', authenticate, async (req, res) => {
 
     res.json({ rankings });
   } catch (error) {
-    if (error.kind === 'ObjectId') {
-      return res.status(404).json({ message: 'User not found' });
-    }
     res.status(500).json({ 
       message: 'Error fetching user rankings', 
       error: error.message 
