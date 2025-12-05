@@ -5,6 +5,7 @@ import { RestaurantService, Restaurant } from '../../services/restaurant.service
 import { AuthService } from '../../services/auth.service';
 import { NavigationComponent } from '../navigation/navigation.component';
 import { RankingWidgetComponent } from '../ranking-widget/ranking-widget.component'; 
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-restaurants',
@@ -21,11 +22,13 @@ export class RestaurantsComponent implements OnInit {
   constructor(
     public restaurantService: RestaurantService,
     public authService: AuthService,
-    private router: Router
+    private router: Router,
+    private title: Title
   ) {}
 
   ngOnInit(): void {
     this.loadRestaurants();
+    this.title.setTitle('Luoghi - How I Ate');
   }
 
   loadRestaurants(): void {
@@ -36,7 +39,7 @@ export class RestaurantsComponent implements OnInit {
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set('Failed to load restaurants');
+        this.error.set('Caricamento dei luoghi fallito.');
         this.loading.set(false);
       }
     });

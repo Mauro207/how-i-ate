@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-gray-50">
+<div class="min-h-screen bg-gray-50 dark:bg-[#1C1B1F]">
   <!-- Header/Navigation -->
   <app-navigation></app-navigation>
 
@@ -7,13 +7,13 @@
     <!-- Header Section -->
     <div class="flex items-center justify-between mb-8">
       <div>
-        <h2 class="text-3xl font-bold text-gray-900">Luoghi</h2>
-        <p class="mt-2 text-gray-600">Scopri e recensisci luoghi straordinari</p>
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Luoghi</h2>
+        <p class="mt-2 text-gray-600 dark:text-gray-200">Scopri e recensisci luoghi straordinari</p>
       </div>
       <button
         routerLink="/restaurants/create"
         *ngIf="canCreateRestaurant()"
-        class="fixed z-10 px-6 py-3 font-medium text-white transition duration-150 bg-indigo-600 rounded-full shadow-lg right-4 bottom-4 lg:static hover:bg-indigo-700 hover:shadow-xl"
+        class="fixed z-10 px-6 py-3 font-medium text-white transition duration-150 bg-indigo-600 dark:bg-white dark:text-[#121212] rounded-full shadow-lg right-4 bottom-4 lg:static hover:bg-indigo-700 hover:shadow-xl"
       >
         + Aggiungi luogo
       </button>

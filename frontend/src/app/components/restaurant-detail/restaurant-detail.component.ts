@@ -61,7 +61,7 @@ export class RestaurantDetailComponent implements OnInit {
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set('Failed to load restaurant');
+        this.error.set('Caricamento del luogo fallito.');
         this.loading.set(false);
       }
     });
@@ -73,7 +73,7 @@ export class RestaurantDetailComponent implements OnInit {
         this.reviews.set(response.reviews);
       },
       error: (err) => {
-        console.error('Failed to load reviews', err);
+        console.error('Caricamento del luogo fallito.', err);
       }
     });
   }
@@ -95,7 +95,7 @@ export class RestaurantDetailComponent implements OnInit {
 
   createReview(): void {
     if (!this.comment().trim()) {
-      this.reviewError.set('Please provide a comment');
+      this.reviewError.set('Per favore aggiungi un commento.');
       return;
     }
 

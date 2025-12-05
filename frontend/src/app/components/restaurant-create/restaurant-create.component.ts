@@ -26,7 +26,7 @@ export class RestaurantCreateComponent {
 
   onSubmit(): void {
     if (!this.name().trim()) {
-      this.error.set('Restaurant name is required');
+      this.error.set('Il nome del luogo è obbligatorio.');
       return;
     }
 
@@ -46,7 +46,7 @@ export class RestaurantCreateComponent {
       },
       error: (err) => {
         this.loading.set(false);
-        this.error.set(err.error?.message || 'Failed to create restaurant');
+        this.error.set(err.error?.message || 'Creazione del luogo fallita. Per favore riprova.');
       }
     });
   }

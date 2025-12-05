@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
+
   
 
 @Component({
@@ -25,6 +26,20 @@ export class NavigationComponent {
   }
 
   toggleMenu(): void {
-    this.menuOpen = !this.menuOpen; // Alterna lo stato del menu
+    this.menuOpen = !this.menuOpen; 
+  }
+
+  goToMyRankings(): void {
+    const user = this.authService.currentUser();
+    if (!user) {
+      // se vuoi puoi reindirizzare al login
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    const userId = user.id; // dipende da come è fatto il tuo user
+    const username = user.username || 'Utente';
+
+    this.router.navigate(['/user-rankings', userId, username]);
   }
 }

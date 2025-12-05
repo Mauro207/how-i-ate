@@ -51,12 +51,12 @@ export class SettingsComponent implements OnInit {
     this.authService.updateProfile(this.displayName).subscribe({
       next: () => {
         this.loading.set(false);
-        this.successMessage.set('Display name updated successfully!');
+        this.successMessage.set('Nome aggiornato con successo!');
         setTimeout(() => this.successMessage.set(''), 3000);
       },
       error: (err) => {
         this.loading.set(false);
-        this.errorMessage.set(err.error?.message || 'Failed to update display name');
+        this.errorMessage.set(err.error?.message || 'Aggiornamento del nome fallito. Per favore riprova.');
         setTimeout(() => this.errorMessage.set(''), 5000);
       }
     });
@@ -89,7 +89,7 @@ export class SettingsComponent implements OnInit {
 
   createNewUser(): void {
     if (!this.newUsername || !this.newEmail || !this.newPassword) {
-      this.userCreationError.set('All fields are required');
+      this.userCreationError.set('Tutti i campi sono richiesti');
       return;
     }
 
@@ -104,7 +104,7 @@ export class SettingsComponent implements OnInit {
     createObservable.subscribe({
       next: (response) => {
         this.creatingUser.set(false);
-        this.userCreationSuccess.set(`${this.newUserRole === 'admin' ? 'Admin' : 'User'} created successfully!`);
+        this.userCreationSuccess.set(`${this.newUserRole === 'admin' ? 'Admin' : 'User'} creato con successo!`);
         setTimeout(() => {
           this.resetUserForm();
           this.showUserForm.set(false);
@@ -112,7 +112,7 @@ export class SettingsComponent implements OnInit {
       },
       error: (err) => {
         this.creatingUser.set(false);
-        this.userCreationError.set(err.error?.message || 'Failed to create user');
+        this.userCreationError.set(err.error?.message || 'Creazione dell\'utente fallita. Per favore riprova.');
       }
     });
   }

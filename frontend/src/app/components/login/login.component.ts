@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-login',
@@ -21,17 +22,19 @@ export class LoginComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private title: Title
   ) {}
 
   ngOnInit(): void {
     // Get return URL from route parameters or default to '/restaurants'
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/restaurants';
+    this.title.setTitle('Accedi a How I Ate');
   }
 
   onSubmit(): void {
     if (!this.email() || !this.password()) {
-      this.error.set('Please fill in all fields');
+      this.error.set('Per favore compila i campi.');
       return;
     }
 
@@ -44,7 +47,7 @@ export class LoginComponent implements OnInit {
       },
       error: (err) => {
         this.loading.set(false);
-        this.error.set(err.error?.message || 'Login failed. Please try again.');
+        this.error.set(err.error?.message || 'Accesso fallito. Per favore riprova.');
       }
     });
   }
