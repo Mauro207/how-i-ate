@@ -1,8 +1,11 @@
 <div class="min-h-screen bg-gray-50">
+  <!-- Header/Navigation -->
+  <app-navigation></app-navigation>
+  
   <!-- Loading State -->
   @if (loading()) {
-    <div class="flex justify-center items-center py-24">
-      <svg class="animate-spin h-12 w-12 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+    <div class="flex items-center justify-center py-24">
+      <svg class="w-12 h-12 text-indigo-600 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
       </svg>
@@ -11,12 +14,12 @@
 
   <!-- Error State -->
   @if (error() && !loading()) {
-    <div class="max-w-4xl mx-auto px-4 py-12">
-      <div class="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg">
+    <div class="max-w-4xl px-4 py-12 mx-auto">
+      <div class="px-6 py-4 text-red-700 border border-red-200 rounded-lg bg-red-50">
         <p>{{ error() }}</p>
         <button
           routerLink="/restaurants"
-          class="mt-4 text-indigo-600 hover:text-indigo-800 font-medium"
+          class="mt-4 font-medium text-indigo-600 hover:text-indigo-800"
         >
           Torna indietro
         </button>
@@ -26,12 +29,12 @@
 
   <!-- Restaurant Details -->
   @if (restaurant() && !loading()) {
-    <div class="max-w-4xl mx-auto px-4 py-8">
+    <div class="max-w-4xl px-4 py-8 mx-auto">
       <!-- Back Button -->
       <div class="mb-6">
         <a
           routerLink="/restaurants"
-          class="inline-flex items-center text-indigo-600 hover:text-indigo-800 transition duration-150"
+          class="inline-flex items-center text-indigo-600 transition duration-150 hover:text-indigo-800"
         >
           <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -41,11 +44,11 @@
       </div>
 
       <!-- Restaurant Card -->
-      <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
+      <div class="mb-8 overflow-hidden bg-white shadow-lg rounded-xl">
         <div class="p-8">
-          <div class="flex justify-between items-start mb-4">
+          <div class="flex items-start justify-between mb-4">
             <div>
-              <h1 class="text-4xl font-bold text-gray-900 mb-2">{{ restaurant()!.name }}</h1>
+              <h1 class="mb-2 text-4xl font-bold text-gray-900">{{ restaurant()!.name }}</h1>
               @if (restaurant()!.cuisine) {
                 <span class="inline-block px-4 py-1 text-sm font-semibold text-indigo-600 bg-indigo-100 rounded-full">
                   {{ restaurant()!.cuisine }}
@@ -55,7 +58,7 @@
           </div>
 
           @if (restaurant()!.description) {
-            <p class="text-gray-700 text-lg mb-4">{{ restaurant()!.description }}</p>
+            <p class="mb-4 text-lg text-gray-700">{{ restaurant()!.description }}</p>
           }
 
           @if (restaurant()!.address) {
@@ -71,13 +74,13 @@
       </div>
 
       <!-- Reviews Section -->
-      <div class="bg-white rounded-xl shadow-lg p-8">
-        <div class="flex flex-col lg:flex-row gap-3 justify-between lg:items-center mb-6">
-          <h2 class="text-2xl font-bold text-gray-900">Recensioni ({{ reviews().length }})</h2>
+      <div class="p-8 bg-white shadow-lg rounded-xl">
+        <div class="flex flex-col justify-between gap-3 mb-6 lg:flex-row lg:items-center">
+          <h2 class="text-xl font-bold text-gray-900">Recensioni ({{ reviews().length }})</h2>
           @if (!showReviewForm() && !hasUserReviewed()) {
             <button
               (click)="toggleReviewForm()"
-              class="block px-6 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition duration-150 shadow-md hover:shadow-lg"
+              class="block px-6 py-2 font-medium text-white transition duration-150 bg-indigo-600 rounded-lg shadow-md hover:bg-indigo-700 hover:shadow-lg"
             >
                 Lascia una recensione
             </button>
@@ -86,13 +89,13 @@
 
         <!-- Review Form -->
         @if (showReviewForm()) {
-          <div class="mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
-            <h3 class="text-xl font-semibold text-gray-900 mb-4">
+          <div class="p-6 mb-8 border border-gray-200 rounded-lg bg-gray-50">
+            <h3 class="mb-4 text-xl font-semibold text-gray-900">
               {{ editingReviewId() ? 'Modifica recensione' : 'Lascia una recensione' }}
             </h3>
 
             @if (reviewError()) {
-              <div class="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+              <div class="px-4 py-3 mb-4 text-sm text-red-700 border border-red-200 rounded-lg bg-red-50">
                 {{ reviewError() }}
               </div>
             }
@@ -100,7 +103,7 @@
             <form (ngSubmit)="submitReview()">
               <!-- Service Rating -->
               <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
+                <label class="block mb-2 text-sm font-medium text-gray-700">
                   Servizio: {{ formatRating(serviceRating()) }} / {{ MAX_RATING }}.0
                 </label>
                 <input
@@ -116,7 +119,7 @@
 
               <!-- Price Rating -->
               <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
+                <label class="block mb-2 text-sm font-medium text-gray-700">
                   Prezzo: {{ formatRating(priceRating()) }} / {{ MAX_RATING }}.0
                 </label>
                 <input
@@ -132,7 +135,7 @@
 
               <!-- Menu Rating -->
               <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
+                <label class="block mb-2 text-sm font-medium text-gray-700">
                   Menu: {{ formatRating(menuRating()) }} / {{ MAX_RATING }}.0
                 </label>
                 <input
@@ -148,7 +151,7 @@
 
               <!-- Comment -->
               <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
+                <label class="block mb-2 text-sm font-medium text-gray-700">
                   Commento <span class="text-red-500">*</span>
                 </label>
                 <textarea
@@ -157,21 +160,21 @@
                   rows="4"
                   required
                   [disabled]="submittingReview()"
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed transition duration-150"
+                  class="w-full px-4 py-2 transition duration-150 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                   placeholder="Condividi la tua esperienza..."
                 ></textarea>
               </div>
 
               <!-- Action Buttons -->
-              <div class="flex flex-col lg:flex-row gap-4">
+              <div class="flex flex-col gap-4 lg:flex-row">
                 <button
                   type="submit"
                   [disabled]="submittingReview()"
-                  class="px-6 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400 disabled:cursor-not-allowed transition duration-150 shadow-md hover:shadow-lg"
+                  class="px-6 py-2 font-medium text-white transition duration-150 bg-indigo-600 rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400 disabled:cursor-not-allowed hover:shadow-lg"
                 >
                   @if (submittingReview()) {
                     <span class="flex items-center">
-                      <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <svg class="w-4 h-4 mr-2 -ml-1 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
@@ -185,7 +188,7 @@
                   type="button"
                   (click)="editingReviewId() ? cancelEdit() : toggleReviewForm()"
                   [disabled]="submittingReview()"
-                  class="px-6 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition duration-150"
+                  class="px-6 py-2 font-medium text-gray-700 transition duration-150 border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Annulla
                 </button>
@@ -196,26 +199,26 @@
 
         <!-- Reviews List -->
         @if (reviews().length === 0) {
-          <div class="text-center py-12 text-gray-500">
+          <div class="py-12 text-center text-gray-500">
             <p class="text-lg">Nessuna recensione presente. Lasciala per primo!</p>
           </div>
         } @else {
           <div class="space-y-6">
             @for (review of reviews(); track review._id) {
-              <div class="border-b border-gray-200 pb-6 last:border-b-0 last:pb-0">
+              <div class="pb-6 border-b border-gray-200 last:border-b-0 last:pb-0">
                 <!-- Review Header -->
                 <div class="flex items-start justify-between mb-3">
                   <div>
                     <h4 
-                      class="font-semibold text-indigo-600 cursor-pointer hover:text-indigo-800 transition duration-150"
+                      class="font-semibold text-indigo-600 transition duration-150 cursor-pointer hover:text-indigo-800"
                       (click)="viewUserRankings(review.user._id, review.user.username)"
                     >
                       {{ review.user.username }}
                     </h4>
                     <p class="text-sm text-gray-500">{{ review.createdAt | date: 'dd MMMM yyyy, HH:mm' }}</p>
                   </div>
-                  <div class="flex items-center bg-indigo-100 px-3 py-1 rounded-full">
-                    <svg class="w-5 h-5 text-indigo-600 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <div class="flex items-center px-3 py-1 bg-indigo-100 rounded-full">
+                    <svg class="w-5 h-5 mr-1 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                     </svg>
                     <span class="font-semibold text-indigo-900">{{ formatRating(calculateAverageRating(review)) }}</span>
@@ -224,31 +227,31 @@
 
                 <!-- Rating Breakdown -->
                 <div class="grid grid-cols-3 gap-4 mb-3">
-                  <div class="bg-blue-50 px-3 py-2 rounded-lg">
-                    <p class="text-xs text-gray-600 mb-1">Servizio</p>
+                  <div class="px-3 py-2 rounded-lg bg-blue-50">
+                    <p class="mb-1 text-xs text-gray-600">Servizio</p>
                     <p class="font-semibold text-blue-900">{{ formatRating(review.serviceRating) }}</p>
                   </div>
-                  <div class="bg-green-50 px-3 py-2 rounded-lg">
-                    <p class="text-xs text-gray-600 mb-1">Prezzo</p>
+                  <div class="px-3 py-2 rounded-lg bg-green-50">
+                    <p class="mb-1 text-xs text-gray-600">Prezzo</p>
                     <p class="font-semibold text-green-900">{{ formatRating(review.priceRating) }}</p>
                   </div>
-                  <div class="bg-purple-50 px-3 py-2 rounded-lg">
-                    <p class="text-xs text-gray-600 mb-1">Menu</p>
+                  <div class="px-3 py-2 rounded-lg bg-purple-50">
+                    <p class="mb-1 text-xs text-gray-600">Menu</p>
                     <p class="font-semibold text-purple-900">{{ formatRating(review.menuRating) }}</p>
                   </div>
                 </div>
 
                 <!-- Review Comment -->
-                <p class="text-gray-700 mb-4">{{ review.comment }}</p>
+                <p class="mb-4 text-gray-700">{{ review.comment }}</p>
 
                 <!-- Edit/Delete Buttons -->
                 @if (canEditReview(review) || canDeleteReview(review)) {
-                  <div class="flex gap-2 mt-4">
+                  <div class="flex flex-col gap-4 mt-4 lg:flex-row lg:gap-2">
                     @if (canEditReview(review)) {
                       <button
                         (click)="editReview(review)"
                         [disabled]="deletingReviewId() === review._id || submittingReview()"
-                        class="px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+                        class="px-4 py-4 font-medium text-indigo-600 transition duration-150 rounded-lg lg:text-sm lg:py-2 bg-indigo-50 hover:bg-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Modifica
                       </button>
@@ -257,11 +260,11 @@
                       <button
                         (click)="deleteReview(review._id)"
                         [disabled]="deletingReviewId() === review._id || submittingReview()"
-                        class="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+                        class="px-4 py-4 font-medium text-red-600 transition duration-150 rounded-lg lg:text-sm lg:py-2 bg-red-50 hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         @if (deletingReviewId() === review._id) {
                           <span class="flex items-center">
-                            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4 mr-2 -ml-1 text-red-600 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
