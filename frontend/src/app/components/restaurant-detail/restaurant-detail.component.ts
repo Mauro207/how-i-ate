@@ -121,7 +121,7 @@ export class RestaurantDetailComponent implements OnInit {
       },
       error: (err) => {
         this.submittingReview.set(false);
-        this.reviewError.set(err.error?.message || 'Failed to submit review');
+        this.reviewError.set(err.error?.message || 'Creazione della recensione fallita');
       }
     });
   }
@@ -174,7 +174,7 @@ export class RestaurantDetailComponent implements OnInit {
 
   updateReview(): void {
     if (!this.comment().trim()) {
-      this.reviewError.set('Please provide a comment');
+      this.reviewError.set('Aggiornamento della recensione fallita: aggiungi un commento');
       return;
     }
 
@@ -204,13 +204,13 @@ export class RestaurantDetailComponent implements OnInit {
       },
       error: (err) => {
         this.submittingReview.set(false);
-        this.reviewError.set(err.error?.message || 'Failed to update review');
+        this.reviewError.set(err.error?.message || 'Aggiornamento della recensione fallita');
       }
     });
   }
 
   deleteReview(reviewId: string): void {
-    if (!confirm('Are you sure you want to delete this review?')) {
+    if (!confirm('Confermi di voler cancellare questa recensione?')) {
       return;
     }
 
@@ -226,7 +226,7 @@ export class RestaurantDetailComponent implements OnInit {
       },
       error: (err) => {
         this.deletingReviewId.set(null);
-        alert(err.error?.message || 'Failed to delete review');
+        alert(err.error?.message || 'Cancellazione della recensione fallita');
       }
     });
   }
@@ -256,7 +256,7 @@ export class RestaurantDetailComponent implements OnInit {
     const restaurant = this.restaurant();
     if (!restaurant) return;
 
-    if (!confirm(`Are you sure you want to delete "${restaurant.name}"? This action cannot be undone.`)) {
+    if (!confirm(`Sei sicuro di voler eliminare "${restaurant.name}"? Questa azione non può essere annullata.`)) {
       return;
     }
 
@@ -268,7 +268,7 @@ export class RestaurantDetailComponent implements OnInit {
       },
       error: (err) => {
         this.deletingRestaurant.set(false);
-        alert(err.error?.message || 'Failed to delete restaurant');
+        alert(err.error?.message || 'Cancellazione del ristorante fallita');
       }
     });
   }
