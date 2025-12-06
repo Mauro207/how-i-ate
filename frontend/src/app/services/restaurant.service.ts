@@ -67,6 +67,20 @@ export class RestaurantService {
       .pipe(map(response => response.restaurants));
   }
 
+  searchRestaurants(query?: string, cuisine?: string): Observable<Restaurant[]> {
+    let params = '';
+    if (query) {
+      params += `?q=${encodeURIComponent(query)}`;
+    }
+    if (cuisine) {
+      params += (params ? '&' : '?') + `cuisine=${encodeURIComponent(cuisine)}`;
+    }
+    
+    return this.http.get<{ count: number; restaurants: Restaurant[] }>(
+      `${this.apiUrl}/restaurants/search${params}`
+    ).pipe(map(response => response.restaurants));
+  }
+
   getRestaurant(id: string): Observable<{ restaurant: Restaurant }> {
     return this.http.get<{ restaurant: Restaurant }>(`${this.apiUrl}/restaurants/${id}`);
   }

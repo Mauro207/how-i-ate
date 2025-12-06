@@ -49,6 +49,78 @@ router.get('/', authenticate, async (req, res) => {
 
 /**
  * @swagger
+ * /api/restaurants/search:
+ *   get:
+ *     summary: Search restaurants by name, cuisine, or address
+ *     tags: [Restaurants]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         schema:
+ *           type: string
+ *         description: Search query (searches name, cuisine, address)
+ *       - in: query
+ *         name: cuisine
+ *         schema:
+ *           type: string
+ *         description: Filter by cuisine type
+ *     responses:
+ *       200:
+ *         description: List of matching restaurants
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 count:
+ *                   type: integer
+ *                 restaurants:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Restaurant'
+ */
+// Search restaurants
+router.get('/search', authenticate, async (req, res) => {
+  try {
+    const { q, cuisine } = req.query;
+    let query = {};
+
+    // Build search query
+    if (q) {
+      // Case-insensitive search on multiple fields
+      query.$or = [
+        { name: { $regex: q, $options: 'i' } },
+        { cuisine: { $regex: q, $options: 'i' } },
+        { address: { $regex: q, $options: 'i' } },
+        { description: { $regex: q, $options: 'i' } }
+      ];
+    }
+
+    // Filter by cuisine if provided
+    if (cuisine) {
+      query.cuisine = { $regex: cuisine, $options: 'i' };
+    }
+
+    const restaurants = await Restaurant.find(query)
+      .populate('createdBy', 'username email displayName')
+      .sort({ createdAt: -1 });
+
+    res.json({
+      count: restaurants.length,
+      restaurants
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      message: 'Error searching restaurants', 
+      error: error.message 
+    });
+  }
+});
+
+/**
+ * @swagger
  * /api/restaurants/{id}:
  *   get:
  *     summary: Get single restaurant

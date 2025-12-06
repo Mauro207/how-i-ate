@@ -17,6 +17,57 @@
             Home
           </span>
         </button>
+        
+        <!-- Search Bar -->
+        <div class="relative hidden lg:block">
+          <div class="flex items-center bg-gray-100 dark:bg-[#49454F] rounded-lg px-3 py-2">
+            <input
+              type="text"
+              [value]="searchQuery()"
+              (input)="onSearchInputChange($event)"
+              (focus)="showSearchDropdown.set(true)"
+              placeholder="Cerca ristoranti..."
+              class="bg-transparent outline-none text-sm text-gray-700 dark:text-white w-40 placeholder-gray-500"
+            />
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" class="text-gray-500 dark:text-gray-400 fill-current">
+              <path d="M11 19c-4.412 0-8-3.588-8-8s3.588-8 8-8 8 3.588 8 8-3.588 8-8 8zm0-14c-3.309 0-6 2.691-6 6s2.691 6 6 6 6-2.691 6-6-2.691-6-6-6zm7.712-1c-.423 0-.827.167-1.128.469l-3.712 3.712c-.601-.511-1.371-.81-2.212-.81-2.001 0-3.635 1.634-3.635 3.635 0 .841.298 1.611.81 2.212l-3.712 3.712c-.302.301-.469.705-.469 1.128 0 .423.167.827.469 1.128.301.302.705.469 1.128.469.423 0 .827-.167 1.128-.469l3.712-3.712c.601.511 1.371.81 2.212.81 2.001 0 3.635-1.634 3.635-3.635 0-.841-.298-1.611-.81-2.212l3.712-3.712c.302-.301.469-.705.469-1.128 0-.423-.167-.827-.469-1.128-.301-.302-.705-.469-1.128-.469z"/>
+            </svg>
+          </div>
+
+          <!-- Search Results Dropdown -->
+          <div
+            *ngIf="showSearchDropdown()"
+            (mouseleave)="closeSearch()"
+            class="absolute top-full left-0 w-64 mt-2 bg-white dark:bg-[#49454F] rounded-lg shadow-lg z-20 max-h-96 overflow-y-auto"
+          >
+            <div *ngIf="isSearching()" class="p-4 text-center">
+              <svg class="w-5 h-5 text-indigo-600 animate-spin mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            </div>
+
+            <div *ngIf="!isSearching() && searchResults().length === 0 && searchQuery()" class="p-4 text-center text-gray-500 dark:text-gray-400">
+              Nessun ristorante trovato
+            </div>
+
+            <div *ngFor="let restaurant of searchResults()" class="border-b dark:border-gray-600 last:border-b-0">
+              <button
+                type="button"
+                (click)="selectRestaurant(restaurant._id)"
+                class="w-full text-left px-4 py-3 hover:bg-indigo-50 dark:hover:bg-[#3f3d44] transition duration-150"
+              >
+                <h4 class="font-semibold text-gray-900 dark:text-white">{{ restaurant.name }}</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-400" *ngIf="restaurant.cuisine">
+                  {{ restaurant.cuisine }}
+                </p>
+                <p class="text-xs text-gray-500 dark:text-gray-500" *ngIf="restaurant.address">
+                  {{ restaurant.address }}
+                </p>
+              </button>
+            </div>
+          </div>
+        </div>
         <button
           (click)="goToMyRankings()"
           class="inline-flex items-center justify-center gap-2 p-2 text-gray-700 rounded-md dark:text-white dark:hover:text-indigo-400 hover:text-indigo-600 hover:fill-indigo-500 dark:fill-white dark:hover:fill-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"

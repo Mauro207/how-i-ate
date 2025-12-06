@@ -20,10 +20,10 @@ export class RestaurantDetailComponent implements OnInit {
   error = signal('');
   
   // Review form constants
-  private readonly DEFAULT_RATING = 3;
-  readonly MIN_RATING = 1;
-  readonly MAX_RATING = 5;
-  readonly RATING_STEP = 0.1;
+  private readonly DEFAULT_RATING = 5;
+  readonly MIN_RATING = 0;
+  readonly MAX_RATING = 10;
+  readonly RATING_STEP = 0.25;
   
   // Review form
   showReviewForm = signal(false);
