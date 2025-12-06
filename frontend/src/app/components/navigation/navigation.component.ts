@@ -14,6 +14,7 @@ import { FormsModule } from '@angular/forms';
 export class NavigationComponent {
   menuOpen = false;
   showSearchDropdown = signal(false);
+  showMobileSearch = signal(false);
   searchQuery = signal('');
   searchResults = signal<any[]>([]);
   isSearching = signal(false);
@@ -84,5 +85,14 @@ export class NavigationComponent {
 
   closeSearch(): void {
     this.showSearchDropdown.set(false);
+  }
+
+  toggleMobileSearch(): void {
+    this.showMobileSearch.set(!this.showMobileSearch());
+    if (!this.showMobileSearch()) {
+      this.searchQuery.set('');
+      this.searchResults.set([]);
+      this.showSearchDropdown.set(false);
+    }
   }
 }
