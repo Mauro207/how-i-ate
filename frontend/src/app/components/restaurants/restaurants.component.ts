@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { RestaurantService, Restaurant } from '../../services/restaurant.service';
@@ -16,6 +16,12 @@ import { Title } from '@angular/platform-browser';
 })
 export class RestaurantsComponent implements OnInit {
   restaurants = signal<Restaurant[]>([]);
+  recentRestaurants = computed(() => {
+    // Ordina per data di creazione decrescente e prendi gli ultimi 5
+    return [...this.restaurants()]
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 5);
+  });
   loading = signal(true);
   error = signal('');
 
