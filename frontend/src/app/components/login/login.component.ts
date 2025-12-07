@@ -29,7 +29,7 @@ export class LoginComponent implements OnInit {
   ngOnInit(): void {
     // Get return URL from route parameters or default to '/restaurants'
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/restaurants';
-    this.title.setTitle('Accedi a How I Ate');
+    this.title.setTitle('Effettua l\'accesso - How I Ate');
   }
 
   onSubmit(): void {
