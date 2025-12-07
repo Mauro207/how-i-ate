@@ -139,7 +139,16 @@ export class RestaurantDetailComponent implements OnInit {
   }
 
   formatRating(rating: number): string {
-    return rating.toFixed(1);
+    // Round to nearest 0.25 to align with slider steps and consistent display
+    const rounded = Math.round(rating * 4) / 4;
+    const whole = Math.floor(rounded);
+    const remainder = +(rounded - whole).toFixed(2);
+
+    if (remainder === 0.25) return `${whole}+`;
+    if (remainder === 0.75) return `${whole + 1}-`;
+
+    // Keep .0 and .5 as standard decimals
+    return rounded.toFixed(1);
   }
 
   viewUserRankings(userId: string, username: string): void {

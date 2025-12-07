@@ -95,4 +95,8 @@ export class NavigationComponent {
       this.showSearchDropdown.set(false);
     }
   }
+
+  isSuperAdmin(): boolean {
+    return this.authService.currentUser()?.role === 'superadmin';
+  }
 }

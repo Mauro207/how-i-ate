@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { RestaurantService } from '../../services/restaurant.service';
+import { NavigationComponent } from '../navigation/navigation.component';
 
 @Component({
   selector: 'app-restaurant-create',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, NavigationComponent],
   templateUrl: './restaurant-create.component.html',
   styleUrl: './restaurant-create.component.css'
 })

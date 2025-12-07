@@ -11,7 +11,7 @@ const generateToken = (userId) => {
   return jwt.sign(
     { userId },
     process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+    { expiresIn: process.env.JWT_EXPIRES_IN || '90d' }
   );
 };
 
@@ -517,6 +517,56 @@ router.post('/create-user', writeLimiter, authenticate, authorize('admin', 'supe
     }
     res.status(500).json({ 
       message: 'Error creating user', 
+      error: error.message 
+    });
+  }
+});
+
+// Get all users (superadmin only)
+router.get('/users', authenticate, authorize('superadmin'), async (req, res) => {
+  try {
+    const users = await User.find().select('_id username displayName email role createdAt updatedAt');
+    const formatted = users.map((u) => ({
+      id: u._id,
+      username: u.username,
+      displayName: u.displayName,
+      email: u.email,
+      role: u.role,
+      createdAt: u.createdAt,
+      updatedAt: u.updatedAt
+    }));
+
+    res.json({ users: formatted });
+  } catch (error) {
+    res.status(500).json({ 
+      message: 'Error fetching users', 
+      error: error.message 
+    });
+  }
+});
+
+// Update user password (superadmin only)
+router.put('/users/:id/password', writeLimiter, authenticate, authorize('superadmin'), async (req, res) => {
+  try {
+    const { password } = req.body;
+    const { id } = req.params;
+
+    if (!password || typeof password !== 'string' || password.length < 6) {
+      return res.status(400).json({ message: 'La password deve avere almeno 6 caratteri.' });
+    }
+
+    const user = await User.findById(id).select('+password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.password = password;
+    await user.save();
+
+    res.json({ message: 'Password aggiornata con successo' });
+  } catch (error) {
+    res.status(500).json({ 
+      message: 'Errore durante l\'aggiornamento della password', 
       error: error.message 
     });
   }

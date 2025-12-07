@@ -64,6 +64,14 @@ export class AuthService {
       );
   }
 
+  getAllUsers(): Observable<{ users: User[] }> {
+    return this.http.get<{ users: User[] }>(`${this.apiUrl}/users`);
+  }
+
+  updateUserPassword(userId: string, password: string): Observable<{ message: string }> {
+    return this.http.put<{ message: string }>(`${this.apiUrl}/users/${userId}/password`, { password });
+  }
+
   logout(): void {
     localStorage.removeItem(this.tokenKey);
     this.currentUser.set(null);

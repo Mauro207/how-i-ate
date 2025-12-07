@@ -1,67 +1,67 @@
-<div class="min-h-screen bg-gray-50">
+<div class="min-h-screen bg-gray-50 dark:bg-[#1C1B1F]">
   <!-- Header/Navigation -->
   <app-navigation></app-navigation>
 
   <!-- Main Content -->
-  <div class="max-w-4xl px-4 py-8 mx-auto sm:px-6 lg:px-8">
+  <div class="max-w-4xl px-4 pt-6 pb-8 mx-auto sm:px-6 lg:px-8">
     <!-- Header Section -->
     <div class="mb-8">
-      <h2 class="text-3xl font-bold text-gray-900">Impostazioni</h2>
-      <p class="mt-2 text-gray-600">Gestisci le preferenze del tuo account</p>
+      <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Impostazioni</h2>
+      <p class="mt-2 text-gray-600 dark:text-gray-300">Gestisci le preferenze del tuo account</p>
     </div>
 
     <!-- Settings Card -->
-    <div class="overflow-hidden bg-white shadow-md rounded-xl">
-      <div class="p-6 border-b border-gray-200">
-        <h3 class="text-xl font-semibold text-gray-900">Informazioni sul profilo</h3>
+    <div class="overflow-hidden bg-white dark:bg-[#2C2C2C] shadow-md dark:shadow-lg rounded-xl">
+      <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Informazioni sul profilo</h3>
       </div>
       
       <div class="p-6 space-y-6">
         <!-- Account Details (Read-only) -->
         <div class="space-y-4">
           <div>
-            <label class="block mb-1 text-sm font-medium text-gray-700">
+            <label class="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
               Username
             </label>
             <input
               type="text"
               [value]="authService.currentUser()?.username"
               disabled
-              class="w-full px-4 py-2 text-gray-500 border border-gray-300 rounded-lg cursor-not-allowed bg-gray-50"
+              class="w-full px-4 py-2 text-gray-500 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-lg cursor-not-allowed bg-gray-50 dark:bg-[#3C3C3C]"
             />
-            <p class="mt-1 text-xs text-gray-500">Username non può essere cambiato</p>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Username non può essere cambiato</p>
           </div>
 
           <div>
-            <label class="block mb-1 text-sm font-medium text-gray-700">
+            <label class="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
               Email
             </label>
             <input
               type="email"
               [value]="authService.currentUser()?.email"
               disabled
-              class="w-full px-4 py-2 text-gray-500 border border-gray-300 rounded-lg cursor-not-allowed bg-gray-50"
+              class="w-full px-4 py-2 text-gray-500 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-lg cursor-not-allowed bg-gray-50 dark:bg-[#3C3C3C]"
             />
-            <p class="mt-1 text-xs text-gray-500">Email non può essere cambiata</p>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Email non può essere cambiata</p>
           </div>
 
           <div>
-            <label class="block mb-1 text-sm font-medium text-gray-700">
+            <label class="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
               Role
             </label>
             <input
               type="text"
               [value]="authService.currentUser()?.role"
               disabled
-              class="w-full px-4 py-2 text-gray-500 border border-gray-300 rounded-lg cursor-not-allowed bg-gray-50"
+              class="w-full px-4 py-2 text-gray-500 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-lg cursor-not-allowed bg-gray-50 dark:bg-[#3C3C3C]"
             />
           </div>
         </div>
 
         <!-- Display Name Form -->
-        <form (ngSubmit)="updateDisplayName()" class="pt-4 space-y-4 border-t border-gray-200">
+        <form (ngSubmit)="updateDisplayName()" class="pt-4 space-y-4 border-t border-gray-200 dark:border-gray-700">
           <div>
-            <label for="displayName" class="block mb-1 text-sm font-medium text-gray-700">
+            <label for="displayName" class="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
               Nome visibile
             </label>
             <input
@@ -71,16 +71,16 @@
               name="displayName"
               maxlength="50"
               placeholder="Inserisci il tuo nome visibile (opzionale)"
-              class="w-full px-4 py-2 transition duration-150 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              class="w-full px-4 py-2 transition duration-150 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-[#3C3C3C] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
-            <p class="mt-1 text-xs text-gray-500">
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
               Questo è il nome che verrà visualizzato nell'app. Lascia vuoto per utilizzare il tuo nome utente.
             </p>
           </div>
 
           <!-- Success Message -->
           @if (successMessage()) {
-            <div class="px-4 py-3 text-green-700 border border-green-200 rounded-lg bg-green-50">
+            <div class="px-4 py-3 text-green-700 border border-green-200 rounded-lg bg-green-50 dark:bg-green-900 dark:text-green-200 dark:border-green-700">
               <p class="flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
@@ -92,7 +92,7 @@
 
           <!-- Error Message -->
           @if (errorMessage()) {
-            <div class="px-4 py-3 text-red-700 border border-red-200 rounded-lg bg-red-50">
+            <div class="px-4 py-3 text-red-700 border border-red-200 rounded-lg bg-red-50 dark:bg-red-900 dark:text-red-200 dark:border-red-700">
               <p class="flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
@@ -106,7 +106,7 @@
             <button
               type="submit"
               [disabled]="loading()"
-              class="flex items-center justify-center w-full px-6 py-3 font-medium text-white transition duration-150 bg-indigo-600 rounded-lg shadow-lg lg:w-max hover:bg-indigo-700 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              class="flex items-center justify-center w-full px-6 py-3 font-medium text-white transition duration-150 bg-indigo-600 dark:bg-indigo-700 rounded-lg shadow-lg lg:w-max hover:bg-indigo-700 dark:hover:bg-indigo-600 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
             >
               @if (loading()) {
                 <svg class="w-5 h-5 mr-2 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -125,16 +125,16 @@
 
     <!-- User Management Section (Admin/Superadmin only) -->
     @if (canManageUsers()) {
-      <div class="mt-8 overflow-hidden bg-white shadow-md rounded-xl">
-        <div class="flex flex-col items-start gap-4 p-6 border-b border-gray-200 lg:justify-between lg:items-center lg:flex-row">
+      <div class="mt-8 overflow-hidden bg-white dark:bg-[#2C2C2C] shadow-md dark:shadow-lg rounded-xl">
+        <div class="flex flex-col items-start gap-4 p-6 border-b border-gray-200 dark:border-gray-700 lg:justify-between lg:items-center lg:flex-row">
           <div>
-            <h3 class="text-xl font-semibold text-gray-900">Gestione utenti</h3>
-            <p class="mt-1 text-sm text-gray-600">Crea nuovi utenti o amministratori</p>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Gestione utenti</h3>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Crea nuovi utenti o amministratori</p>
           </div>
           @if (!showUserForm()) {
             <button
               (click)="toggleUserForm()"
-              class="w-full px-6 py-3 font-medium text-white transition duration-150 bg-indigo-600 rounded-lg lg:w-max hover:bg-indigo-700"
+              class="w-full px-6 py-3 font-medium text-white transition duration-150 bg-indigo-600 dark:bg-indigo-700 rounded-lg lg:w-max hover:bg-indigo-700 dark:hover:bg-indigo-600"
             >
               Crea utente
             </button>
@@ -146,7 +146,7 @@
             <form (ngSubmit)="createNewUser()" class="space-y-4">
               <!-- Username -->
               <div>
-                <label for="newUsername" class="block mb-1 text-sm font-medium text-gray-700">
+                <label for="newUsername" class="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
                   Username <span class="text-red-500">*</span>
                 </label>
                 <input
@@ -156,14 +156,14 @@
                   name="newUsername"
                   required
                   [disabled]="creatingUser()"
-                  class="w-full px-4 py-2 transition duration-150 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  class="w-full px-4 py-2 transition duration-150 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed bg-white dark:bg-[#3C3C3C] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-500"
                   placeholder="Inserisci username"
                 />
               </div>
 
               <!-- Email -->
               <div>
-                <label for="newEmail" class="block mb-1 text-sm font-medium text-gray-700">
+                <label for="newEmail" class="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
                   Email <span class="text-red-500">*</span>
                 </label>
                 <input
@@ -173,14 +173,14 @@
                   name="newEmail"
                   required
                   [disabled]="creatingUser()"
-                  class="w-full px-4 py-2 transition duration-150 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  class="w-full px-4 py-2 transition duration-150 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed bg-white dark:bg-[#3C3C3C] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-500"
                   placeholder="Inserisci email"
                 />
               </div>
 
               <!-- Password -->
               <div>
-                <label for="newPassword" class="block mb-1 text-sm font-medium text-gray-700">
+                <label for="newPassword" class="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
                   Password <span class="text-red-500">*</span>
                 </label>
                 <input
@@ -191,14 +191,14 @@
                   required
                   minlength="6"
                   [disabled]="creatingUser()"
-                  class="w-full px-4 py-2 transition duration-150 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  class="w-full px-4 py-2 transition duration-150 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed bg-white dark:bg-[#3C3C3C] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-500"
                   placeholder="Inserisci password (min 6 caratteri)"
                 />
               </div>
 
               <!-- Role Selection -->
               <div>
-                <label class="block mb-2 text-sm font-medium text-gray-700">
+                <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                   Ruolo utente <span class="text-red-500">*</span>
                 </label>
                 <div class="flex space-x-4">
@@ -209,9 +209,9 @@
                       name="newUserRole"
                       value="user"
                       [disabled]="creatingUser()"
-                      class="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                      class="w-4 h-4 text-indigo-600 dark:text-indigo-400 border-gray-300 dark:border-gray-700 focus:ring-indigo-500"
                     />
-                    <span class="ml-2 text-sm text-gray-700">User</span>
+                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">User</span>
                   </label>
                   @if (isSuperAdmin()) {
                     <label class="flex items-center">
@@ -221,9 +221,9 @@
                         name="newUserRole"
                         value="admin"
                         [disabled]="creatingUser()"
-                        class="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                        class="w-4 h-4 text-indigo-600 dark:text-indigo-400 border-gray-300 dark:border-gray-700 focus:ring-indigo-500"
                       />
-                      <span class="ml-2 text-sm text-gray-700">Admin</span>
+                      <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Admin</span>
                     </label>
                   }
                 </div>
@@ -231,7 +231,7 @@
 
               <!-- Success Message -->
               @if (userCreationSuccess()) {
-                <div class="px-4 py-3 text-green-700 border border-green-200 rounded-lg bg-green-50">
+                <div class="px-4 py-3 text-green-700 border border-green-200 rounded-lg bg-green-50 dark:bg-green-900 dark:text-green-200 dark:border-green-700">
                   <p class="flex items-center">
                     <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
@@ -243,7 +243,7 @@
 
               <!-- Error Message -->
               @if (userCreationError()) {
-                <div class="px-4 py-3 text-red-700 border border-red-200 rounded-lg bg-red-50">
+                <div class="px-4 py-3 text-red-700 border border-red-200 rounded-lg bg-red-50 dark:bg-red-900 dark:text-red-200 dark:border-red-700">
                   <p class="flex items-center">
                     <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
@@ -258,7 +258,7 @@
                 <button
                   type="submit"
                   [disabled]="creatingUser()"
-                  class="flex items-center justify-center px-6 py-3 font-medium text-white transition duration-150 bg-indigo-600 rounded-lg shadow-lg hover:bg-indigo-700 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="flex items-center justify-center px-6 py-3 font-medium text-white transition duration-150 bg-indigo-600 dark:bg-indigo-700 rounded-lg shadow-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   @if (creatingUser()) {
                     <svg class="w-5 h-5 mr-2 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -274,7 +274,7 @@
                   type="button"
                   (click)="toggleUserForm()"
                   [disabled]="creatingUser()"
-                  class="items-center justify-center px-6 py-3 font-medium text-gray-700 transition duration-150 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="items-center justify-center px-6 py-3 font-medium text-gray-700 dark:text-gray-300 transition duration-150 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-[#3C3C3C] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Annulla
                 </button>

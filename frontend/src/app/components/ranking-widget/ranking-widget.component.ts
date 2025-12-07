@@ -52,4 +52,15 @@ export class RankingWidgetComponent implements OnInit {
   getStarArray(rating: number): number[] {
     return getStarArray(rating);
   }
+
+  formatRating(rating: number): string {
+    const rounded = Math.round(rating * 4) / 4;
+    const whole = Math.floor(rounded);
+    const remainder = +(rounded - whole).toFixed(2);
+
+    if (remainder === 0.25) return `${whole}+`;
+    if (remainder === 0.75) return `${whole + 1}-`;
+
+    return rounded.toFixed(1);
+  }
 }

@@ -11,9 +11,9 @@ const apiLimiter = rateLimit({
 
 // Strict rate limiter for authentication endpoints
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 requests per windowMs
-  message: 'Too many authentication attempts, please try again later.',
+  windowMs: 60 * 1000, // 1 minute
+  max: 5, // Allow up to 5 attempts per minute; block on the 6th
+  message: 'Too many authentication attempts, please try again in 1 minute.',
   standardHeaders: true,
   legacyHeaders: false,
 });

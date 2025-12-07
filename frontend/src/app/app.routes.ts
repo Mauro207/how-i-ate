@@ -6,7 +6,9 @@ import { RestaurantDetailComponent } from './components/restaurant-detail/restau
 import { NavigationComponent } from './components/navigation/navigation.component';
 import { SettingsComponent } from './components/settings/settings.component';
 import { UserRankingsComponent } from './components/user-rankings/user-rankings.component';
+import { UsersComponent } from './components/users/users.component';
 import { authGuard } from './guards/auth.guard';
+import { superadminGuard } from './guards/superadmin.guard';
 
 
 export const routes: Routes = [
@@ -17,5 +19,6 @@ export const routes: Routes = [
   { path: 'restaurants/:id', component: RestaurantDetailComponent, canActivate: [authGuard] },
   { path: 'settings', component: SettingsComponent, canActivate: [authGuard] },
   { path: 'user-rankings/:userId/:username', component: UserRankingsComponent, canActivate: [authGuard] },
+  { path: 'users', component: UsersComponent, canActivate: [authGuard, superadminGuard] },
   { path: '**', redirectTo: '/login' }
 ];
