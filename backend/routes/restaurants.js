@@ -358,6 +358,11 @@ router.delete('/:id', writeLimiter, authenticate, async (req, res) => {
       });
     }
     
+    // Delete all reviews associated with this restaurant
+    const Review = require('../models/Review');
+    await Review.deleteMany({ restaurant: req.params.id });
+    
+    // Delete the restaurant
     await Restaurant.findByIdAndDelete(req.params.id);
     
     res.json({ message: 'Restaurant deleted successfully' });
