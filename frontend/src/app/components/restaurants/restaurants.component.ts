@@ -34,7 +34,7 @@ export class RestaurantsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadRestaurants();
-    this.title.setTitle('Luoghi - How I Ate');
+    this.title.setTitle('Dashboard - How I Ate');
   }
 
   loadRestaurants(): void {

@@ -17,6 +17,7 @@ export class LoginComponent implements OnInit {
   password = signal('');
   error = signal('');
   loading = signal(false);
+  showPassword = signal(false);
   private returnUrl = '/restaurants';
 
   constructor(
@@ -50,5 +51,9 @@ export class LoginComponent implements OnInit {
         this.error.set(err.error?.message || 'Accesso fallito. Per favore riprova.');
       }
     });
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword.set(!this.showPassword());
   }
 }
