@@ -16,6 +16,7 @@ import { NavigationComponent } from '../navigation/navigation.component';
 export class RestaurantDetailComponent implements OnInit {
   restaurant = signal<Restaurant | null>(null);
   reviews = signal<Review[]>([]);
+  reviewAccordionOpen = signal<Record<string, boolean>>({});
   loading = signal(true);
   error = signal('');
   
@@ -83,6 +84,18 @@ export class RestaurantDetailComponent implements OnInit {
     if (this.showReviewForm()) {
       this.reviewError.set('');
     }
+  }
+
+  toggleReviewAccordion(reviewId: string): void {
+    const current = this.reviewAccordionOpen();
+    this.reviewAccordionOpen.set({
+      ...current,
+      [reviewId]: !current[reviewId]
+    });
+  }
+
+  isReviewAccordionOpen(reviewId: string): boolean {
+    return !!this.reviewAccordionOpen()[reviewId];
   }
 
   submitReview(): void {

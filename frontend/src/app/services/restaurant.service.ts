@@ -52,6 +52,7 @@ export interface UserRankingItem {
   menuRating: number;
   comment: string;
   createdAt: string;
+  reviewCount: number;
 }
 
 @Injectable({

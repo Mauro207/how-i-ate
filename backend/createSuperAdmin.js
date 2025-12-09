@@ -9,13 +9,13 @@ const createSuperAdmin = async () => {
   try {
     // Connect to MongoDB
     await mongoose.connect(process.env.MONGODB_URI);
-    console.log('MongoDB connected successfully');
+    console.log('Connessione con MongoDB avvenuta con successo');
     
     // Check if superadmin already exists
     const existingSuperAdmin = await User.findOne({ role: 'superadmin' });
     
     if (existingSuperAdmin) {
-      console.log('Superadmin already exists:', existingSuperAdmin.username);
+      console.log('Superadmin esiste già:', existingSuperAdmin.username);
       process.exit(0);
     }
     
@@ -38,7 +38,7 @@ const createSuperAdmin = async () => {
     
     process.exit(0);
   } catch (error) {
-    console.error('Error creating superadmin:', error);
+    console.error('Errore nella creazione di superadmin:', error);
     process.exit(1);
   }
 };

@@ -30,7 +30,7 @@
       <div class="flex flex-row justify-between mb-6">
         <a
           routerLink="/restaurants"
-          class="inline-flex items-center text-indigo-600 dark:text-gray-100 transition duration-150 hover:text-indigo-800 dark:hover:text-gray-400"
+          class="inline-flex items-center text-indigo-600 transition duration-150 dark:text-gray-100 hover:text-indigo-800 dark:hover:text-gray-400"
         >
           <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -53,7 +53,7 @@
             <div>
               <h1 class="mb-2 text-4xl font-bold text-gray-900 dark:text-white">{{ restaurant()!.name }}</h1>
               @if (restaurant()!.cuisine) {
-                <span class="inline-block px-4 py-1 text-sm font-semibold text-indigo-600 dark:text-indigo-100 bg-indigo-100 dark:bg-gray-600 rounded-full">
+                <span class="inline-block px-4 py-1 text-sm font-semibold text-indigo-600 bg-indigo-100 rounded-full dark:text-indigo-100 dark:bg-gray-600">
                   {{ restaurant()!.cuisine }}
                 </span>
               }
@@ -84,7 +84,7 @@
           @if (!showReviewForm() && !hasUserReviewed()) {
             <button
               (click)="toggleReviewForm()"
-              class="block px-6 py-2 font-medium text-white transition duration-150 bg-indigo-600 dark:bg-indigo-700 rounded-lg shadow-md hover:bg-indigo-700 dark:hover:bg-indigo-600 hover:shadow-lg"
+              class="block px-6 py-2 font-medium text-white transition duration-150 bg-indigo-600 rounded-lg shadow-md dark:bg-indigo-700 hover:bg-indigo-700 dark:hover:bg-indigo-600 hover:shadow-lg"
             >
                 Lascia una recensione
             </button>
@@ -117,7 +117,7 @@
                   [step]="RATING_STEP"
                   [(ngModel)]="serviceRating"
                   name="serviceRating"
-                  class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                  class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-indigo-600"
                 />
               </div>
 
@@ -133,7 +133,7 @@
                   [step]="RATING_STEP"
                   [(ngModel)]="priceRating"
                   name="priceRating"
-                  class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                  class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-indigo-600"
                 />
               </div>
 
@@ -149,7 +149,7 @@
                   [step]="RATING_STEP"
                   [(ngModel)]="menuRating"
                   name="menuRating"
-                  class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                  class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-indigo-600"
                 />
               </div>
 
@@ -214,23 +214,62 @@
                 <div class="flex items-start justify-between mb-3">
                   <div>
                     <h4 
-                      class="font-semibold text-indigo-600 dark:text-indigo-400 transition duration-150 cursor-pointer hover:text-indigo-800 dark:hover:text-indigo-300"
+                      class="font-semibold text-indigo-600 transition duration-150 cursor-pointer dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300"
                       (click)="viewUserRankings(review.user._id, review.user.username)"
                     >
                       {{ review.user.username }}
                     </h4>
                     <p class="text-sm text-gray-500 dark:text-gray-400">{{ review.createdAt | date: 'dd MMMM yyyy, HH:mm' }}</p>
                   </div>
-                  <div class="flex items-center px-3 py-1 bg-indigo-100 dark:bg-indigo-900 rounded-full">
+                  <button 
+                    id="badge-value" 
+                    type="button"
+                    (click)="toggleReviewAccordion(review._id)"
+                    class="flex items-center px-3 py-1 bg-indigo-100 rounded-full dark:bg-indigo-900"
+                  >
                     <svg class="w-5 h-5 mr-1 text-indigo-600 dark:text-indigo-300" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                     </svg>
                     <span class="font-semibold text-indigo-900 dark:text-indigo-200">{{ formatRating(calculateAverageRating(review)) }}</span>
-                  </div>
+                    <svg
+                      class="w-4 h-4 ml-2 text-gray-700 transition-transform duration-150 dark:text-indigo-200 md:hidden"
+                      [class.rotate-180]="isReviewAccordionOpen(review._id)"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- Mobile: accordion (mostra/nascondi) -->
+                <div
+                class="grid grid-cols-3 gap-4 mb-3 md:hidden"
+                *ngIf="isReviewAccordionOpen(review._id)"
+                >
+                <div class="px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-900">
+                  <p class="mb-1 text-xs text-gray-600 dark:text-gray-400">Servizio</p>
+                  <p class="font-semibold text-blue-900 dark:text-blue-200">
+                    {{ formatRating(review.serviceRating) }}
+                  </p>
+                </div>
+                <div class="px-3 py-2 rounded-lg bg-green-50 dark:bg-green-900">
+                  <p class="mb-1 text-xs text-gray-600 dark:text-gray-400">Prezzo</p>
+                  <p class="font-semibold text-green-900 dark:text-green-200">
+                    {{ formatRating(review.priceRating) }}
+                  </p>
+                </div>
+                <div class="px-3 py-2 rounded-lg bg-purple-50 dark:bg-purple-900">
+                  <p class="mb-1 text-xs text-gray-600 dark:text-gray-400">Menu</p>
+                  <p class="font-semibold text-purple-900 dark:text-purple-200">
+                    {{ formatRating(review.menuRating) }}
+                  </p>
+                </div>
                 </div>
 
                 <!-- Rating Breakdown -->
-                <div class="grid grid-cols-3 gap-4 mb-3">
+                <div class="hidden grid-cols-3 gap-4 mb-3 md:grid">
                   <div class="px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-900">
                     <p class="mb-1 text-xs text-gray-600 dark:text-gray-400">Servizio</p>
                     <p class="font-semibold text-blue-900 dark:text-blue-200">{{ formatRating(review.serviceRating) }}</p>
@@ -255,7 +294,7 @@
                       <button
                         (click)="editReview(review)"
                         [disabled]="deletingReviewId() === review._id || submittingReview()"
-                        class="w-full px-4 py-4 font-medium text-indigo-600 dark:text-indigo-300 transition duration-150 rounded-lg lg:w-max lg:text-sm lg:py-2 bg-indigo-50 dark:bg-indigo-900 hover:bg-indigo-100 dark:hover:bg-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                        class="w-full px-4 py-4 font-medium text-indigo-600 transition duration-150 rounded-lg dark:text-indigo-300 lg:w-max lg:text-sm lg:py-2 bg-indigo-50 dark:bg-indigo-900 hover:bg-indigo-100 dark:hover:bg-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Modifica
                       </button>
@@ -264,7 +303,7 @@
                       <button
                         (click)="deleteReview(review._id)"
                         [disabled]="deletingReviewId() === review._id || submittingReview()"
-                        class="w-full px-4 py-4 font-medium text-red-600 dark:text-red-300 transition duration-150 rounded-lg lg:w-max lg:text-sm lg:py-2 bg-red-50 dark:bg-red-900 hover:bg-red-100 dark:hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                        class="w-full px-4 py-4 font-medium text-red-600 transition duration-150 rounded-lg dark:text-red-300 lg:w-max lg:text-sm lg:py-2 bg-red-50 dark:bg-red-900 hover:bg-red-100 dark:hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         @if (deletingReviewId() === review._id) {
                           <span class="flex items-center">
