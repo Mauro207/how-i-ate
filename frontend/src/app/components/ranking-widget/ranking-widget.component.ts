@@ -13,9 +13,13 @@ import { getStarArray } from '../../utils/rating.utils';
 })
 export class RankingWidgetComponent implements OnInit {
   topRankings = signal<RankingItem[]>([]);
+  allRankings = signal<RankingItem[]>([]);
   totalCount = signal(0);
   loading = signal(true);
   error = signal('');
+  showFilters = signal(false);
+  availableCuisines = signal<string[]>([]);
+  excludedCuisines = signal<Set<string>>(new Set());
   private readonly TOP_RANKINGS_COUNT = 5;
 
   constructor(
@@ -31,8 +35,13 @@ export class RankingWidgetComponent implements OnInit {
     this.loading.set(true);
     this.restaurantService.getGlobalRankings().subscribe({
       next: (response) => {
-        this.totalCount.set(response.rankings.length);
-        this.topRankings.set(response.rankings.slice(0, this.TOP_RANKINGS_COUNT));
+        this.allRankings.set(response.rankings);
+        const cuisines = new Set<string>();
+        response.rankings.forEach(r => {
+          if (r.cuisine) cuisines.add(r.cuisine);
+        });
+        this.availableCuisines.set(Array.from(cuisines).sort());
+        this.applyFilters();
         this.loading.set(false);
       },
       error: (err) => {
@@ -62,5 +71,34 @@ export class RankingWidgetComponent implements OnInit {
     if (remainder === 0.75) return `${whole + 1}-`;
 
     return rounded.toFixed(1);
+  }
+
+  toggleFilters(): void {
+    this.showFilters.set(!this.showFilters());
+  }
+
+  toggleCuisine(cuisine: string): void {
+    const excluded = new Set(this.excludedCuisines());
+    if (excluded.has(cuisine)) {
+      excluded.delete(cuisine);
+    } else {
+      excluded.add(cuisine);
+    }
+    this.excludedCuisines.set(excluded);
+    this.applyFilters();
+  }
+
+  isCuisineExcluded(cuisine: string): boolean {
+    return this.excludedCuisines().has(cuisine);
+  }
+
+  applyFilters(): void {
+    const excluded = this.excludedCuisines();
+    const filtered = this.allRankings().filter(r => {
+      if (!r.cuisine) return true;
+      return !excluded.has(r.cuisine);
+    });
+    this.totalCount.set(filtered.length);
+    this.topRankings.set(filtered.slice(0, this.TOP_RANKINGS_COUNT));
   }
 }

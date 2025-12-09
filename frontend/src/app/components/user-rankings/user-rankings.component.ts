@@ -15,10 +15,14 @@ import { getStarArray } from '../../utils/rating.utils';
 })
 export class UserRankingsComponent implements OnInit, OnDestroy {
   rankings = signal<UserRankingItem[]>([]);
+  allRankings = signal<UserRankingItem[]>([]);
   loading = signal(true);
   error = signal('');
   userId = signal('');
   username = signal('');
+  showFilters = signal(false);
+  availableCuisines = signal<string[]>([]);
+  excludedCuisines = signal<Set<string>>(new Set());
   private readonly DEFAULT_USERNAME = 'Utente';
   private routeSubscription?: Subscription;
 
@@ -48,7 +52,13 @@ export class UserRankingsComponent implements OnInit, OnDestroy {
     this.loading.set(true);
     this.restaurantService.getUserRankings(userId).subscribe({
       next: (response) => {
-        this.rankings.set(response.rankings);
+        this.allRankings.set(response.rankings);
+        const cuisines = new Set<string>();
+        response.rankings.forEach(r => {
+          if (r.cuisine) cuisines.add(r.cuisine);
+        });
+        this.availableCuisines.set(Array.from(cuisines).sort());
+        this.applyFilters();
         this.loading.set(false);
       },
       error: (err) => {
@@ -67,5 +77,33 @@ export class UserRankingsComponent implements OnInit, OnDestroy {
 
   getStarArray(rating: number): number[] {
     return getStarArray(rating);
+  }
+
+  toggleFilters(): void {
+    this.showFilters.set(!this.showFilters());
+  }
+
+  toggleCuisine(cuisine: string): void {
+    const excluded = new Set(this.excludedCuisines());
+    if (excluded.has(cuisine)) {
+      excluded.delete(cuisine);
+    } else {
+      excluded.add(cuisine);
+    }
+    this.excludedCuisines.set(excluded);
+    this.applyFilters();
+  }
+
+  isCuisineExcluded(cuisine: string): boolean {
+    return this.excludedCuisines().has(cuisine);
+  }
+
+  applyFilters(): void {
+    const excluded = this.excludedCuisines();
+    const filtered = this.allRankings().filter(r => {
+      if (!r.cuisine) return true;
+      return !excluded.has(r.cuisine);
+    });
+    this.rankings.set(filtered);
   }
 }

@@ -240,6 +240,106 @@ router.post('/', writeLimiter, authenticate, authorize('admin', 'superadmin'), a
 
 /**
  * @swagger
+ * /api/restaurants/batch:
+ *   post:
+ *     summary: Create multiple restaurants (admin/superadmin only)
+ *     tags: [Restaurants]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - restaurants
+ *             properties:
+ *               restaurants:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - name
+ *                   properties:
+ *                     name:
+ *                       type: string
+ *                     description:
+ *                       type: string
+ *                     address:
+ *                       type: string
+ *                     cuisine:
+ *                       type: string
+ *     responses:
+ *       201:
+ *         description: Restaurants created successfully
+ *       400:
+ *         description: Invalid input
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - admin role required
+ */
+// Create multiple restaurants (admin and superadmin only) - Apply write rate limiting
+router.post('/batch', writeLimiter, authenticate, authorize('admin', 'superadmin'), async (req, res) => {
+  try {
+    const { restaurants } = req.body;
+    
+    // Validate input
+    if (!restaurants || !Array.isArray(restaurants) || restaurants.length === 0) {
+      return res.status(400).json({ message: 'Restaurants array is required and must not be empty' });
+    }
+    
+    // Validate each restaurant
+    for (const rest of restaurants) {
+      if (!rest.name) {
+        return res.status(400).json({ message: 'All restaurants must have a name' });
+      }
+    }
+    
+    // Create all restaurants
+    const createdRestaurants = [];
+    const errors = [];
+    
+    for (const restData of restaurants) {
+      try {
+        const restaurant = new Restaurant({
+          name: restData.name,
+          description: restData.description,
+          address: restData.address,
+          cuisine: restData.cuisine,
+          createdBy: req.user.userId
+        });
+        
+        await restaurant.save();
+        await restaurant.populate('createdBy', 'username email displayName');
+        
+        createdRestaurants.push(restaurant);
+      } catch (error) {
+        errors.push({
+          restaurant: restData.name,
+          error: error.message
+        });
+      }
+    }
+    
+    res.status(201).json({
+      message: `${createdRestaurants.length} restaurants created successfully`,
+      created: createdRestaurants.length,
+      failed: errors.length,
+      restaurants: createdRestaurants,
+      errors: errors.length > 0 ? errors : undefined
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      message: 'Error creating restaurants', 
+      error: error.message 
+    });
+  }
+});
+
+/**
+ * @swagger
  * /api/restaurants/{id}:
  *   put:
  *     summary: Update restaurant (admin/superadmin only)

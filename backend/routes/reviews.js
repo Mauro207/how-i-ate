@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const Review = require('../models/Review');
 const Restaurant = require('../models/Restaurant');
+const User = require('../models/User');
 const { authenticate, authorize } = require('../middleware/auth');
 const { writeLimiter } = require('../middleware/rateLimiter');
 
@@ -378,6 +379,165 @@ router.post('/restaurant/:restaurantId', writeLimiter, authenticate, async (req,
     }
     res.status(500).json({ 
       message: 'Error creating review', 
+      error: error.message 
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /api/reviews/batch:
+ *   post:
+ *     summary: Create multiple reviews (superadmin only, can act on behalf of other users)
+ *     tags: [Reviews]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - reviews
+ *             properties:
+ *               reviews:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - restaurantId
+ *                     - userId
+ *                     - serviceRating
+ *                     - priceRating
+ *                     - menuRating
+ *                     - comment
+ *                   properties:
+ *                     restaurantId:
+ *                       type: string
+ *                     userId:
+ *                       type: string
+ *                     serviceRating:
+ *                       type: integer
+ *                       minimum: 1
+ *                       maximum: 5
+ *                     priceRating:
+ *                       type: integer
+ *                       minimum: 1
+ *                       maximum: 5
+ *                     menuRating:
+ *                       type: integer
+ *                       minimum: 1
+ *                       maximum: 5
+ *                     comment:
+ *                       type: string
+ *     responses:
+ *       201:
+ *         description: Reviews created successfully
+ *       400:
+ *         description: Invalid input
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - superadmin role required
+ */
+// Create multiple reviews (superadmin only, can impersonate users) - Apply write rate limiting
+router.post('/batch', writeLimiter, authenticate, authorize('superadmin'), async (req, res) => {
+  try {
+    const { reviews } = req.body;
+    
+    // Validate input
+    if (!reviews || !Array.isArray(reviews) || reviews.length === 0) {
+      return res.status(400).json({ message: 'Reviews array is required and must not be empty' });
+    }
+    
+    // Validate each review
+    for (const rev of reviews) {
+      if (!rev.restaurantId || !rev.userId || !rev.serviceRating || !rev.priceRating || !rev.menuRating || !rev.comment) {
+        return res.status(400).json({ 
+          message: 'Each review must have restaurantId, userId, serviceRating, priceRating, menuRating, and comment' 
+        });
+      }
+    }
+    
+    // Create all reviews
+    const createdReviews = [];
+    const errors = [];
+    
+    for (const revData of reviews) {
+      try {
+        // Check if restaurant exists
+        const restaurant = await Restaurant.findById(revData.restaurantId);
+        
+        if (!restaurant) {
+          errors.push({
+            restaurantId: revData.restaurantId,
+            userId: revData.userId,
+            error: 'Restaurant not found'
+          });
+          continue;
+        }
+
+        // Check if target user exists
+        const targetUser = await User.findById(revData.userId);
+
+        if (!targetUser) {
+          errors.push({
+            restaurantId: revData.restaurantId,
+            userId: revData.userId,
+            error: 'User not found'
+          });
+          continue;
+        }
+        
+        // Check if user has already reviewed this restaurant
+        const existingReview = await Review.findOne({
+          restaurant: revData.restaurantId,
+          user: revData.userId
+        });
+        
+        if (existingReview) {
+          errors.push({
+            restaurantId: revData.restaurantId,
+            userId: revData.userId,
+            error: 'User has already reviewed this restaurant'
+          });
+          continue;
+        }
+        
+        const review = new Review({
+          restaurant: revData.restaurantId,
+          user: revData.userId,
+          serviceRating: revData.serviceRating,
+          priceRating: revData.priceRating,
+          menuRating: revData.menuRating,
+          comment: revData.comment
+        });
+        
+        await review.save();
+        await review.populate('user', 'username email displayName');
+        await review.populate('restaurant', 'name');
+        
+        createdReviews.push(review);
+      } catch (error) {
+        errors.push({
+          restaurantId: revData.restaurantId,
+          userId: revData.userId,
+          error: error.message
+        });
+      }
+    }
+    
+    res.status(201).json({
+      message: `${createdReviews.length} reviews created successfully`,
+      created: createdReviews.length,
+      failed: errors.length,
+      reviews: createdReviews,
+      errors: errors.length > 0 ? errors : undefined
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      message: 'Error creating reviews', 
       error: error.message 
     });
   }
