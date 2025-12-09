@@ -10,5 +10,25 @@
 </head>
 <body class="min-h-screen bg-gray-50 text-gray-900 antialiased dark:bg-[#121212] dark:text-gray-100">
   <app-root></app-root>
+  <script>
+    // Disabilita il double-tap zoom sui dispositivi touch (es. Safari iOS)
+    (function () {
+      let lastTouchEnd = 0;
+
+      document.addEventListener(
+        'touchend',
+        function (event) {
+          const now = Date.now();
+
+          // se due tap ravvicinati (<300ms), previeni lo zoom
+          if (now - lastTouchEnd <= 300) {
+            event.preventDefault();
+          }
+          lastTouchEnd = now;
+        },
+        { passive: false }
+      );
+    })();
+  </script>
 </body>
 </html>
