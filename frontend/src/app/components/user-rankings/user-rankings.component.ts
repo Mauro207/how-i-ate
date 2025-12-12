@@ -22,7 +22,7 @@ export class UserRankingsComponent implements OnInit, OnDestroy {
   username = signal('');
   showFilters = signal(false);
   availableCuisines = signal<string[]>([]);
-  excludedCuisines = signal<Set<string>>(new Set());
+  includedCuisines = signal<Set<string>>(new Set());
   private readonly DEFAULT_USERNAME = 'Utente';
   private routeSubscription?: Subscription;
 
@@ -84,25 +84,31 @@ export class UserRankingsComponent implements OnInit, OnDestroy {
   }
 
   toggleCuisine(cuisine: string): void {
-    const excluded = new Set(this.excludedCuisines());
-    if (excluded.has(cuisine)) {
-      excluded.delete(cuisine);
+    const included = new Set(this.includedCuisines());
+    if (included.has(cuisine)) {
+      included.delete(cuisine);
     } else {
-      excluded.add(cuisine);
+      included.add(cuisine);
     }
-    this.excludedCuisines.set(excluded);
+    this.includedCuisines.set(included);
     this.applyFilters();
   }
 
-  isCuisineExcluded(cuisine: string): boolean {
-    return this.excludedCuisines().has(cuisine);
+  isCuisineIncluded(cuisine: string): boolean {
+    return this.includedCuisines().has(cuisine);
   }
 
   applyFilters(): void {
-    const excluded = this.excludedCuisines();
+    const included = this.includedCuisines();
+    // If no cuisines are selected, show all
+    if (included.size === 0) {
+      this.rankings.set(this.allRankings());
+      return;
+    }
+    // Otherwise, show only selected cuisines
     const filtered = this.allRankings().filter(r => {
-      if (!r.cuisine) return true;
-      return !excluded.has(r.cuisine);
+      if (!r.cuisine) return false;
+      return included.has(r.cuisine);
     });
     this.rankings.set(filtered);
   }
