@@ -194,6 +194,13 @@ export class RestaurantDetailComponent implements OnInit {
     this.showReviewForm.set(false);
   }
 
+  getRestaurantAverageRating(): number | null {
+    const all = this.reviews();
+    if (!all.length) return null;
+    const total = all.reduce((sum, review) => sum + this.calculateAverageRating(review), 0);
+    return total / all.length;
+  }
+
   updateReview(): void {
     if (!this.comment().trim()) {
       this.reviewError.set('Aggiornamento della recensione fallita: aggiungi un commento');

@@ -2,30 +2,26 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { RestaurantService, RankingItem } from '../../services/restaurant.service';
-import { getStarArray } from '../../utils/rating.utils';
+import { NavigationComponent } from '../navigation/navigation.component';
 
 @Component({
-  selector: 'app-ranking-widget',
+  selector: 'app-rankings',
   standalone: true,
-  imports: [CommonModule, RouterLink],
-  templateUrl: './ranking-widget.component.html',
-  styleUrl: './ranking-widget.component.css'
+  imports: [CommonModule, RouterLink, NavigationComponent],
+  templateUrl: './rankings.component.html',
+  styleUrl: './rankings.component.css'
 })
-export class RankingWidgetComponent implements OnInit {
-  topRankings = signal<RankingItem[]>([]);
-  allRankings = signal<RankingItem[]>([]);
+export class RankingsComponent implements OnInit {
+  rankings = signal<RankingItem[]>([]);
+  filtered = signal<RankingItem[]>([]);
   totalCount = signal(0);
   loading = signal(true);
   error = signal('');
   showFilters = signal(false);
   availableCuisines = signal<string[]>([]);
   includedCuisines = signal<Set<string>>(new Set());
-  private readonly TOP_RANKINGS_COUNT = 5;
 
-  constructor(
-    private restaurantService: RestaurantService,
-    private router: Router
-  ) {}
+  constructor(private restaurantService: RestaurantService, private router: Router) {}
 
   ngOnInit(): void {
     this.loadRankings();
@@ -35,9 +31,9 @@ export class RankingWidgetComponent implements OnInit {
     this.loading.set(true);
     this.restaurantService.getGlobalRankings().subscribe({
       next: (response) => {
-        this.allRankings.set(response.rankings);
+        this.rankings.set(response.rankings);
         const cuisines = new Set<string>();
-        response.rankings.forEach(r => {
+        response.rankings.forEach((r) => {
           if (r.cuisine) cuisines.add(r.cuisine);
         });
         this.availableCuisines.set(Array.from(cuisines).sort());
@@ -45,8 +41,8 @@ export class RankingWidgetComponent implements OnInit {
         this.loading.set(false);
       },
       error: (err) => {
-        const errorMsg = err.status === 404 
-          ? 'Nessuna classifica disponibile' 
+        const errorMsg = err.status === 404
+          ? 'Nessuna classifica disponibile'
           : 'Errore nel caricamento della classifica';
         this.error.set(errorMsg);
         this.loading.set(false);
@@ -56,10 +52,6 @@ export class RankingWidgetComponent implements OnInit {
 
   viewRestaurant(restaurantId: string): void {
     this.router.navigate(['/restaurants', restaurantId]);
-  }
-
-  getStarArray(rating: number): number[] {
-    return getStarArray(rating);
   }
 
   formatRating(rating: number): string {
@@ -79,11 +71,7 @@ export class RankingWidgetComponent implements OnInit {
 
   toggleCuisine(cuisine: string): void {
     const included = new Set(this.includedCuisines());
-    if (included.has(cuisine)) {
-      included.delete(cuisine);
-    } else {
-      included.add(cuisine);
-    }
+    included.has(cuisine) ? included.delete(cuisine) : included.add(cuisine);
     this.includedCuisines.set(included);
     this.applyFilters();
   }
@@ -94,18 +82,14 @@ export class RankingWidgetComponent implements OnInit {
 
   applyFilters(): void {
     const included = this.includedCuisines();
-    // If no cuisines are selected, show all
+    const all = this.rankings();
     if (included.size === 0) {
-      this.totalCount.set(this.allRankings().length);
-      this.topRankings.set(this.allRankings().slice(0, this.TOP_RANKINGS_COUNT));
+      this.filtered.set(all);
+      this.totalCount.set(all.length);
       return;
     }
-    // Otherwise, show only selected cuisines
-    const filtered = this.allRankings().filter(r => {
-      if (!r.cuisine) return false;
-      return included.has(r.cuisine);
-    });
+    const filtered = all.filter((r) => r.cuisine && included.has(r.cuisine));
+    this.filtered.set(filtered);
     this.totalCount.set(filtered.length);
-    this.topRankings.set(filtered.slice(0, this.TOP_RANKINGS_COUNT));
   }
 }

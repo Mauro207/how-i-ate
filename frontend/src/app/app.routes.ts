@@ -7,6 +7,7 @@ import { NavigationComponent } from './components/navigation/navigation.componen
 import { SettingsComponent } from './components/settings/settings.component';
 import { UserRankingsComponent } from './components/user-rankings/user-rankings.component';
 import { UsersComponent } from './components/users/users.component';
+import { RankingsComponent } from './components/rankings/rankings.component';
 import { authGuard } from './guards/auth.guard';
 import { superadminGuard } from './guards/superadmin.guard';
 
@@ -17,6 +18,7 @@ export const routes: Routes = [
   { path: 'restaurants', component: RestaurantsComponent, canActivate: [authGuard] },
   { path: 'restaurants/create', component: RestaurantCreateComponent, canActivate: [authGuard] },
   { path: 'restaurants/:id', component: RestaurantDetailComponent, canActivate: [authGuard] },
+  { path: 'rankings', component: RankingsComponent, canActivate: [authGuard] },
   { path: 'settings', component: SettingsComponent, canActivate: [authGuard] },
   { path: 'user-rankings/:userId/:username', component: UserRankingsComponent, canActivate: [authGuard] },
   { path: 'users', component: UsersComponent, canActivate: [authGuard, superadminGuard] },

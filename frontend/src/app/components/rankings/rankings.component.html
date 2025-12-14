@@ -1,0 +1,123 @@
+<div class="min-h-screen bg-gray-50 dark:bg-[#1C1B1F]">
+  <app-navigation></app-navigation>
+
+  <div class="max-w-5xl px-4 py-8 mx-auto sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Classifica generale</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Basata sulle recensioni degli utenti</p>
+      </div>
+      @if (availableCuisines().length > 0) {
+        <button
+          type="button"
+          (click)="toggleFilters()"
+          class="p-2 text-gray-600 transition rounded-lg dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+          [title]="showFilters() ? 'Nascondi filtri' : 'Mostra filtri'"
+          [attr.aria-label]="showFilters() ? 'Nascondi filtri' : 'Mostra filtri'"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" class="fill-current">
+            <path d="M1,4.75H3.736a3.728,3.728,0,0,0,7.195,0H23a1,1,0,0,0,0-2H10.931a3.728,3.728,0,0,0-7.195,0H1a1,1,0,0,0,0,2ZM7.333,2a1.75,1.75,0,1,1-1.75,1.75A1.752,1.752,0,0,1,7.333,2Z"/><path d="M23,11H20.264a3.727,3.727,0,0,0-7.194,0H1a1,1,0,0,0,0,2H13.07a3.727,3.727,0,0,0,7.194,0H23a1,1,0,0,0,0-2Zm-6.333,2.75A1.75,1.75,0,1,1,18.417,12,1.752,1.752,0,0,1,16.667,13.75Z"/><path d="M23,19.25H10.931a3.728,3.728,0,0,0-7.195,0H1a1,1,0,0,0,0,2H3.736a3.728,3.728,0,0,0,7.195,0H23a1,1,0,0,0,0-2ZM7.333,22a1.75,1.75,0,1,1,1.75-1.75A1.753,1.753,0,0,1,7.333,22Z"/>
+          </svg>
+        </button>
+      }
+    </div>
+
+    @if (showFilters()) {
+      <div class="p-4 mb-6 border border-gray-200 rounded-lg dark:border-gray-700 bg-white dark:bg-[#2C2C2C]">
+        <p class="mb-3 text-xs font-semibold text-gray-700 uppercase dark:text-gray-300">
+          Filtra per categoria:
+          @if (includedCuisines().size === 0) {
+            <span class="ml-1 font-normal lowercase text-gray-500 dark:text-gray-400">(tutte)</span>
+          }
+        </p>
+        <div class="flex flex-wrap gap-2">
+          @for (cuisine of availableCuisines(); track cuisine) {
+            <button
+              type="button"
+              (click)="toggleCuisine(cuisine)"
+              class="px-3 py-1 text-sm font-medium transition rounded-full"
+              [ngClass]="{
+                'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-200 ring-2 ring-indigo-500 dark:ring-indigo-400': isCuisineIncluded(cuisine),
+                'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600': !isCuisineIncluded(cuisine)
+              }"
+            >
+              {{ cuisine }}
+            </button>
+          }
+        </div>
+      </div>
+    }
+
+    @if (loading()) {
+      <div class="flex items-center justify-center py-12">
+        <svg class="w-10 h-10 text-indigo-600 dark:text-indigo-400 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+      </div>
+    }
+
+    @if (error()) {
+      <div class="p-6 mb-4 text-sm text-red-600 border border-red-200 rounded-lg dark:text-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/30">
+        {{ error() }}
+      </div>
+    }
+
+    @if (!loading() && !error()) {
+      @if (filtered().length === 0) {
+        <div class="p-8 text-center bg-white dark:bg-[#2C2C2C] rounded-lg shadow">
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            @if (includedCuisines().size > 0) {
+              Nessun ristorante trovato per le categorie selezionate
+            } @else {
+              Nessuna recensione disponibile ancora
+            }
+          </p>
+        </div>
+      } @else {
+        <div class="overflow-hidden bg-white divide-y divide-gray-100 rounded-lg shadow dark:bg-[#2C2C2C] dark:divide-gray-700">
+          @for (rank of filtered(); track rank.restaurantId; let i = $index) {
+            <div
+              class="flex items-center justify-between p-4 transition-colors duration-150 cursor-pointer hover:bg-gray-50 dark:hover:bg-[#1C1B1F]"
+              (click)="viewRestaurant(rank.restaurantId)"
+            >
+              <div class="flex items-center flex-1 min-w-0 space-x-3">
+                <div class="flex-shrink-0">
+                  <span class="flex items-center justify-center w-8 h-8 text-sm font-bold rounded-full"
+                    [ngClass]="{
+                      'bg-yellow-500 text-white': i === 0,
+                      'bg-gray-400 text-white': i === 1,
+                      'bg-orange-600 text-white': i === 2,
+                      'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400': i > 2
+                    }">
+                    {{ i + 1 }}
+                  </span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-semibold text-gray-900 truncate dark:text-white">{{ rank.restaurantName }}</p>
+                  @if (rank.cuisine) {
+                    <p class="text-xs text-gray-500 truncate dark:text-gray-400">{{ rank.cuisine }}</p>
+                  }
+                  @if (rank.address) {
+                    <p class="text-xs text-gray-400 truncate dark:text-gray-500">{{ rank.address }}</p>
+                  }
+                </div>
+              </div>
+              <div class="flex items-center ml-4 space-x-2">
+                <div class="flex items-center px-3 py-1 bg-indigo-100 rounded-full dark:bg-gray-600">
+                  <svg class="w-5 h-5 mr-1 text-indigo-600 dark:text-gray-100" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                  <span class="text-sm font-semibold text-indigo-900 dark:text-gray-100">{{ formatRating(rank.averageRating) }}</span>
+                  <span class="ml-2 text-[10px] text-gray-500 dark:text-gray-200">
+                    ({{ rank.reviewCount }})
+                  </span>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+</div>
