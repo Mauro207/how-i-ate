@@ -6,6 +6,9 @@ const { authLimiter, writeLimiter } = require('../middleware/rateLimiter');
 
 const router = express.Router();
 
+// Cookie configuration constants
+const COOKIE_MAX_AGE = 90 * 24 * 60 * 60 * 1000; // 90 days in milliseconds
+
 // Generate JWT token
 const generateToken = (userId) => {
   return jwt.sign(
@@ -13,6 +16,18 @@ const generateToken = (userId) => {
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN || '90d' }
   );
+};
+
+// Get cookie options based on environment
+const getCookieOptions = () => {
+  const isProduction = process.env.NODE_ENV === 'production';
+  
+  return {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
+    maxAge: COOKIE_MAX_AGE
+  };
 };
 
 /**
@@ -95,12 +110,7 @@ router.post('/register', authLimiter, async (req, res) => {
     const token = generateToken(user._id);
     
     // Set HTTP-only cookie
-    res.cookie('jwt', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      maxAge: 90 * 24 * 60 * 60 * 1000 // 90 days
-    });
+    res.cookie('jwt', token, getCookieOptions());
     
     res.status(201).json({
       message: 'User registered successfully',
@@ -194,12 +204,7 @@ router.post('/login', authLimiter, async (req, res) => {
     const token = generateToken(user._id);
     
     // Set HTTP-only cookie
-    res.cookie('jwt', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      maxAge: 90 * 24 * 60 * 60 * 1000 // 90 days
-    });
+    res.cookie('jwt', token, getCookieOptions());
     
     res.json({
       message: 'Login successful',
@@ -281,11 +286,10 @@ router.get('/me', authenticate, async (req, res) => {
 // Logout user - clear cookie
 router.post('/logout', authenticate, async (req, res) => {
   try {
-    res.clearCookie('jwt', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
-    });
+    const cookieOptions = getCookieOptions();
+    delete cookieOptions.maxAge; // Remove maxAge for clearing cookie
+    
+    res.clearCookie('jwt', cookieOptions);
     
     res.json({ message: 'Logout successful' });
   } catch (error) {
