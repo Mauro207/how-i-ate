@@ -22,6 +22,10 @@ const generateToken = (userId) => {
 const getCookieOptions = () => {
   const isProduction = process.env.NODE_ENV === 'production';
   
+  // Note: CSRF protection is provided by the sameSite attribute:
+  // - 'lax' in development: Prevents cookies from being sent in cross-site requests
+  // - 'none' in production: Required for cross-domain cookies, but secure flag ensures HTTPS
+  // Additional CSRF token not needed as API uses JWT authentication without session state
   return {
     httpOnly: true,
     secure: isProduction,

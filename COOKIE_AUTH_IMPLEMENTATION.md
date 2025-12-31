@@ -107,6 +107,9 @@ export const environment = {
 - **HTTP-only cookies**: JavaScript cannot access the token, preventing XSS attacks
 - **Secure flag**: Cookies only sent over HTTPS in production
 - **SameSite attribute**: Protection against CSRF attacks
+  - `lax` in development: Prevents cookies from being sent in most cross-site requests
+  - `none` in production: Required for cross-domain cookies with Vercel, combined with `secure` flag
+  - No additional CSRF token needed as API uses stateless JWT authentication
 - **CORS with credentials**: Restricted to specific frontend origins
 - **Dual authentication**: Supports both cookie and Bearer token methods
 
@@ -161,6 +164,18 @@ export const environment = {
 - Ensure `FRONTEND_URL` environment variable is set correctly
 - Verify `sameSite: 'none'` for cross-site cookies
 - Confirm both frontend and backend use HTTPS
+
+### CSRF Protection
+
+**Q: Do we need additional CSRF protection?**
+
+**A**: No. The implementation provides adequate CSRF protection through:
+- `sameSite` cookie attribute prevents cross-site request forgery
+- CORS configuration restricts allowed origins
+- JWT tokens in cookies are stateless (no server-side session state)
+- All state-changing operations require valid JWT authentication
+
+Traditional CSRF tokens are not needed for REST APIs using JWT authentication without session state.
 
 ## Backward Compatibility
 
