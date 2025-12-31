@@ -94,6 +94,14 @@ router.post('/register', authLimiter, async (req, res) => {
     
     const token = generateToken(user._id);
     
+    // Set HTTP-only cookie
+    res.cookie('jwt', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 90 * 24 * 60 * 60 * 1000 // 90 days
+    });
+    
     res.status(201).json({
       message: 'User registered successfully',
       token,
@@ -185,6 +193,14 @@ router.post('/login', authLimiter, async (req, res) => {
     
     const token = generateToken(user._id);
     
+    // Set HTTP-only cookie
+    res.cookie('jwt', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 90 * 24 * 60 * 60 * 1000 // 90 days
+    });
+    
     res.json({
       message: 'Login successful',
       token,
@@ -243,6 +259,38 @@ router.get('/me', authenticate, async (req, res) => {
   } catch (error) {
     res.status(500).json({ 
       message: 'Error fetching user profile', 
+      error: error.message 
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /api/auth/logout:
+ *   post:
+ *     summary: Logout user
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Logout successful
+ *       401:
+ *         description: Unauthorized
+ */
+// Logout user - clear cookie
+router.post('/logout', authenticate, async (req, res) => {
+  try {
+    res.clearCookie('jwt', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    });
+    
+    res.json({ message: 'Logout successful' });
+  } catch (error) {
+    res.status(500).json({ 
+      message: 'Error logging out', 
       error: error.message 
     });
   }

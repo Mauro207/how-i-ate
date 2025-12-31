@@ -4,13 +4,19 @@ const User = require('../models/User');
 // Verify JWT token and attach user to request
 const authenticate = async (req, res, next) => {
   try {
-    const authHeader = req.headers.authorization;
+    // Try to get token from cookie first, then fall back to Authorization header
+    let token = req.cookies?.jwt;
     
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ message: 'No token provided' });
+    if (!token) {
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.split(' ')[1];
+      }
     }
     
-    const token = authHeader.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ message: 'No token provided' });
+    }
     
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     

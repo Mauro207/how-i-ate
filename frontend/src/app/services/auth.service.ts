@@ -73,10 +73,22 @@ export class AuthService {
   }
 
   logout(): void {
-    localStorage.removeItem(this.tokenKey);
-    this.currentUser.set(null);
-    this.isAuthenticated.set(false);
-    this.router.navigate(['/login']);
+    // Call backend to clear cookie
+    this.http.post(`${this.apiUrl}/logout`, {}).subscribe({
+      next: () => {
+        localStorage.removeItem(this.tokenKey);
+        this.currentUser.set(null);
+        this.isAuthenticated.set(false);
+        this.router.navigate(['/login']);
+      },
+      error: () => {
+        // Even if backend call fails, clear local state
+        localStorage.removeItem(this.tokenKey);
+        this.currentUser.set(null);
+        this.isAuthenticated.set(false);
+        this.router.navigate(['/login']);
+      }
+    });
   }
 
   getToken(): string | null {
