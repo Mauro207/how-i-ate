@@ -56,7 +56,9 @@ how-i-ate/
 4. Update the `.env` file with your configuration:
    - `MONGODB_URI`: Your MongoDB connection string (provided: `mongodb+srv://how-i-ate_db_user:5qAlW2jWNficu6E0@how-i-ate.ew2p1cl.mongodb.net/?appName=how-i-ate`)
    - `JWT_SECRET`: A secure random string for JWT signing
-   - `JWT_EXPIRES_IN`: Token expiration time (default: 7d)
+   - `JWT_EXPIRES_IN`: Token expiration time (default: 90d)
+   - `NODE_ENV`: Set to `production` for production deployments
+   - `FRONTEND_URL`: URL of your frontend application (e.g., `http://localhost:4200` for local development, or your Vercel frontend URL for production)
    - `SUPERADMIN_PASSWORD`: (Optional) Custom password for superadmin account. If not set, defaults to `SuperAdmin123!`
 
 5. Initialize the superadmin account:
@@ -175,6 +177,19 @@ GET /api/auth/me
 Authorization: Bearer <token>
 ```
 
+#### Logout
+```http
+POST /api/auth/logout
+Authorization: Bearer <token>
+```
+
+Response:
+```json
+{
+  "message": "Logout successful"
+}
+```
+
 #### Create Admin User (Superadmin only)
 ```http
 POST /api/auth/create-admin
@@ -288,7 +303,28 @@ Authorization: Bearer <token>
 - Backend runs on port 3000 (configurable via .env)
 - Frontend runs on port 4200 (Angular default)
 - CORS is enabled for local development
-- JWT tokens expire after 7 days (configurable)
+- JWT tokens expire after 90 days (configurable)
+
+## Authentication
+
+The application uses JWT-based authentication with HTTP-only cookies for enhanced security:
+
+- **Cookie Storage**: JWT tokens are stored in HTTP-only cookies, preventing XSS attacks
+- **Persistent Sessions**: Users remain logged in across browser refreshes
+- **Dual Authentication**: Supports both cookie-based and Bearer token authentication for backward compatibility
+- **Secure Configuration**: Cookies use `secure` flag in production and `sameSite` attribute for CSRF protection
+
+### Vercel Deployment
+
+For Vercel deployment, ensure the following environment variables are set:
+
+**Backend (Vercel)**:
+- `NODE_ENV=production`
+- `FRONTEND_URL=https://your-frontend-domain.vercel.app`
+- `JWT_SECRET=your-secure-secret`
+- `MONGODB_URI=your-mongodb-connection-string`
+
+**Frontend**: Update `src/environments/environment.prod.ts` with your backend URL.
 
 ## Database Models
 
@@ -316,11 +352,12 @@ Authorization: Bearer <token>
 ## Security Notes
 
 1. Passwords are hashed using bcrypt
-2. JWT tokens are used for authentication
-3. Role-based authorization is enforced on protected routes
-4. The `.env` file containing sensitive data is excluded from version control
-5. Change the default superadmin password immediately after setup
-6. Rate limiting is implemented to prevent brute force attacks and abuse:
+2. JWT tokens are used for authentication with HTTP-only cookies
+3. Cookies are protected with `httpOnly`, `secure`, and `sameSite` attributes
+4. Role-based authorization is enforced on protected routes
+5. The `.env` file containing sensitive data is excluded from version control
+6. Change the default superadmin password immediately after setup
+7. Rate limiting is implemented to prevent brute force attacks and abuse:
    - General API: 100 requests per 15 minutes
    - Authentication endpoints: 5 requests per 15 minutes
    - Write operations: 30 requests per 15 minutes
