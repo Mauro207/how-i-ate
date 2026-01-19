@@ -20,7 +20,13 @@ export const routes: Routes = [
   { path: 'restaurants/:id', component: RestaurantDetailComponent, canActivate: [authGuard] },
   { path: 'rankings', component: RankingsComponent, canActivate: [authGuard] },
   { path: 'settings', component: SettingsComponent, canActivate: [authGuard] },
+
+  // Nuova rotta canonical (solo userId)
+  { path: 'user-rankings/:userId', component: UserRankingsComponent, canActivate: [authGuard] },
+
+  // Rotta legacy/compat (userId + username)
   { path: 'user-rankings/:userId/:username', component: UserRankingsComponent, canActivate: [authGuard] },
+
   { path: 'users', component: UsersComponent, canActivate: [authGuard, superadminGuard] },
   { path: '**', redirectTo: '/login' }
 ];

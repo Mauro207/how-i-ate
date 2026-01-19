@@ -34,11 +34,20 @@ export class UserRankingsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.routeSubscription = this.route.paramMap.subscribe(params => {
-      const userId = params.get('userId');
-      const username = params.get('username');
+      const userId =
+        params.get('userId') ||
+        this.route.snapshot.queryParamMap.get('userId');
+
+      // Nota: sulla rotta canonical /user-rankings/:userId NON esiste :username
+      // quindi qui può arrivare solo via rotta legacy o querystring.
+      const username =
+        params.get('username') ||
+        this.route.snapshot.queryParamMap.get('username') ||
+        this.DEFAULT_USERNAME;
+
       if (userId) {
         this.userId.set(userId);
-        this.username.set(username || this.DEFAULT_USERNAME);
+        this.username.set(username);
         this.loadUserRankings(userId);
       }
     });

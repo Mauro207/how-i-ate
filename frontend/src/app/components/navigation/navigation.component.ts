@@ -147,7 +147,14 @@ export class NavigationComponent implements OnDestroy {
       return;
     }
 
-    this.router.navigate(['/settings'], { queryParams: { userId: item.id } });
+    // Vai alla classifica personale dell'utente (passa anche username per header frontend)
+    const username = item.subtitle?.startsWith('@') ? item.subtitle.slice(1) : undefined;
+    if (username) {
+      this.router.navigate(['/user-rankings', item.id, username]);
+      return;
+    }
+
+    this.router.navigate(['/user-rankings', item.id]);
   }
 
   isSuperAdmin(): boolean {
