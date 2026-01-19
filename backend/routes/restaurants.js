@@ -87,24 +87,26 @@ router.get('/search', authenticate, async (req, res) => {
     const { q, cuisine } = req.query;
     let query = {};
 
-    // Build search query
+    const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
     if (q) {
-      // Case-insensitive search on multiple fields
+      const safeQ = escapeRegex(q.toString().trim());
       query.$or = [
-        { name: { $regex: q, $options: 'i' } },
-        { cuisine: { $regex: q, $options: 'i' } },
-        { address: { $regex: q, $options: 'i' } },
-        { description: { $regex: q, $options: 'i' } }
+        { name: { $regex: safeQ, $options: 'i' } },
+        { cuisine: { $regex: safeQ, $options: 'i' } },
+        { address: { $regex: safeQ, $options: 'i' } },
+        { description: { $regex: safeQ, $options: 'i' } }
       ];
     }
 
-    // Filter by cuisine if provided
     if (cuisine) {
-      query.cuisine = { $regex: cuisine, $options: 'i' };
+      const safeCuisine = escapeRegex(cuisine.toString().trim());
+      query.cuisine = { $regex: safeCuisine, $options: 'i' };
     }
 
     const restaurants = await Restaurant.find(query)
-      .populate('createdBy', 'username email displayName')
+      .select('_id name cuisine address') // autocomplete payload leggero
+      .limit(10)
       .sort({ createdAt: -1 });
 
     res.json({
@@ -112,9 +114,9 @@ router.get('/search', authenticate, async (req, res) => {
       restaurants
     });
   } catch (error) {
-    res.status(500).json({ 
-      message: 'Error searching restaurants', 
-      error: error.message 
+    res.status(500).json({
+      message: 'Error searching restaurants',
+      error: error.message
     });
   }
 });

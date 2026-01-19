@@ -20,7 +20,7 @@ export class RestaurantCreateComponent {
   error = signal('');
   loading = signal(false);
 
-  cuisineOptions = ['Pizzeria', 'Ristorante', 'Pub', 'Paninoteca', 'Braceria', 'Enoteca', 'Sushi']; 
+  cuisineOptions = ['Pizzeria', 'Ristorante', 'Pub', 'Paninoteca', 'Bar', 'Braceria', 'Enoteca', 'Sushi']; 
   
   constructor(
     private restaurantService: RestaurantService,

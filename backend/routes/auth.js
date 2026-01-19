@@ -572,4 +572,33 @@ router.put('/users/:id/password', writeLimiter, authenticate, authorize('superad
   }
 });
 
+// Search users (authenticated users)
+const searchUsersHandler = async (req, res) => {
+  try {
+    const q = (req.query.q || '').toString().trim();
+    if (!q) {
+      return res.json({ count: 0, users: [] });
+    }
+
+    const regex = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+
+    const users = await User.find({
+      $or: [
+        { username: regex },
+        { displayName: regex },
+        { email: regex }
+      ]
+    })
+      .select('_id username displayName role') // <-- rimosso email
+      .limit(10)
+      .sort({ createdAt: -1 });
+
+    return res.json({ count: users.length, users });
+  } catch (error) {
+    return res.status(500).json({ message: 'Error searching users', error: error.message });
+  }
+};
+
+router.get('/users/search', authenticate, searchUsersHandler);
+
 module.exports = router;

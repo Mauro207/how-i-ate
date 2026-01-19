@@ -1,5 +1,5 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
@@ -55,31 +55,32 @@ export interface UserRankingItem {
   reviewCount: number;
 }
 
+export interface RestaurantSearchResult {
+  _id: string;
+  name: string;
+  cuisine?: string;
+  address?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class RestaurantService {
   private apiUrl = environment.apiUrl;
-
-  constructor(private http: HttpClient) {}
+  private http = inject(HttpClient);
 
   getRestaurants(): Observable<Restaurant[]> {
-    return this.http.get<{ count: number; restaurants: Restaurant[] }>(`${this.apiUrl}/restaurants`)
+    return this.http
+      .get<{ count: number; restaurants: Restaurant[] }>(`${this.apiUrl}/restaurants`)
       .pipe(map(response => response.restaurants));
   }
 
-  searchRestaurants(query?: string, cuisine?: string): Observable<Restaurant[]> {
-    let params = '';
-    if (query) {
-      params += `?q=${encodeURIComponent(query)}`;
-    }
-    if (cuisine) {
-      params += (params ? '&' : '?') + `cuisine=${encodeURIComponent(cuisine)}`;
-    }
-    
-    return this.http.get<{ count: number; restaurants: Restaurant[] }>(
-      `${this.apiUrl}/restaurants/search${params}`
-    ).pipe(map(response => response.restaurants));
+  searchRestaurants(q: string): Observable<{ count: number; restaurants: RestaurantSearchResult[] }> {
+    const params = new HttpParams().set('q', q);
+    return this.http.get<{ count: number; restaurants: RestaurantSearchResult[] }>(
+      `${environment.apiUrl}/restaurants/search`,
+      { params }
+    );
   }
 
   getRestaurant(id: string): Observable<{ restaurant: Restaurant }> {

@@ -1,9 +1,15 @@
-import { Component, signal } from '@angular/core';
-import { AuthService } from '../../services/auth.service';
-import { RestaurantService } from '../../services/restaurant.service';
+import { Component, inject, signal, OnDestroy } from '@angular/core';
+import { forkJoin, of, Subject } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, map, switchMap, takeUntil, tap } from 'rxjs/operators';
+import { RestaurantService, RestaurantSearchResult } from '../../services/restaurant.service';
+import { AuthService, UserSearchResult } from '../../services/auth.service';
 import { RouterLink, Router } from '@angular/router';
 import { CommonModule, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
+type SearchItem =
+  | { type: 'restaurant'; id: string; title: string; subtitle?: string }
+  | { type: 'user'; id: string; title: string; subtitle?: string };
 
 @Component({
   selector: 'app-navigation',
@@ -11,19 +17,82 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./navigation.component.css'],
   imports: [ RouterLink, CommonModule, FormsModule, NgIf ] 
 })
-export class NavigationComponent {
+export class NavigationComponent implements OnDestroy {
   menuOpen = false;
   showSearchDropdown = signal(false);
   showMobileSearch = signal(false);
   searchQuery = signal('');
-  searchResults = signal<any[]>([]);
-  isSearching = signal(false);
 
-  constructor(
-    public authService: AuthService,
-    private router: Router,
-    private restaurantService: RestaurantService
-  ) {}
+  // usa SOLO questi nel template
+  results = signal<SearchItem[]>([]);
+  searching = signal(false);
+
+  private readonly restaurantService = inject(RestaurantService);
+  public readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+
+  private readonly destroy$ = new Subject<void>();
+  private readonly searchInput$ = new Subject<string>();
+
+  constructor() {
+    this.searchInput$
+      .pipe(
+        map(q => (q || '').trim()),
+        tap(q => {
+          this.searchQuery.set(q);
+          if (!q) {
+            this.results.set([]);
+            this.searching.set(false);
+          }
+        }),
+        debounceTime(250),
+        distinctUntilChanged(),
+        switchMap(query => {
+          if (!query) return of([] as SearchItem[]);
+          this.searching.set(true);
+
+          return forkJoin({
+            restaurants: this.restaurantService
+              .searchRestaurants(query)
+              .pipe(catchError(() => of({ count: 0, restaurants: [] as RestaurantSearchResult[] }))),
+
+            users: this.authService
+              .searchUsers(query)
+              .pipe(catchError(() => of({ count: 0, users: [] as UserSearchResult[] })))
+          }).pipe(
+            map(({ restaurants, users }) => {
+              const rItems: SearchItem[] = restaurants.restaurants.map(r => ({
+                type: 'restaurant',
+                id: r._id,
+                title: r.name,
+                subtitle: [r.cuisine, r.address].filter(Boolean).join(' • ') || undefined
+              }));
+
+              const uItems: SearchItem[] = users.users.map(u => ({
+                type: 'user',
+                id: u._id,
+                title: u.displayName?.trim() ? u.displayName : u.username,
+                subtitle: `@${u.username}`
+              }));
+
+              return [...rItems, ...uItems];
+            }),
+            tap(() => this.searching.set(false)),
+            catchError(() => {
+              this.searching.set(false);
+              return of([] as SearchItem[]);
+            })
+          );
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(items => this.results.set(items));
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
   logout() {
     this.authService.logout();
@@ -49,38 +118,10 @@ export class NavigationComponent {
     this.router.navigate(['/user-rankings', userId, username]);
   }
 
-  onSearchInputChange(event: any): void {
-    const query = event.target.value;
-    this.searchQuery.set(query);
-    
-    if (!query.trim()) {
-      this.searchResults.set([]);
-      this.showSearchDropdown.set(false);
-      return;
-    }
-
-    this.isSearching.set(true);
+  onSearchInputChange(event: Event): void {
+    const value = (event.target as HTMLInputElement)?.value ?? '';
     this.showSearchDropdown.set(true);
-
-    this.restaurantService.searchRestaurants(query).subscribe({
-      next: (results) => {
-        console.log('Risultati ricerca:', results);
-        this.searchResults.set(results.slice(0, 5));
-        this.isSearching.set(false);
-      },
-      error: (err) => {
-        console.error('Errore nella ricerca:', err);
-        this.searchResults.set([]);
-        this.isSearching.set(false);
-      }
-    });
-  }
-
-  selectRestaurant(restaurantId: string): void {
-    this.searchQuery.set('');
-    this.searchResults.set([]);
-    this.showSearchDropdown.set(false);
-    this.router.navigate(['/restaurants', restaurantId]);
+    this.searchInput$.next(value);
   }
 
   closeSearch(): void {
@@ -91,9 +132,22 @@ export class NavigationComponent {
     this.showMobileSearch.set(!this.showMobileSearch());
     if (!this.showMobileSearch()) {
       this.searchQuery.set('');
-      this.searchResults.set([]);
+      this.results.set([]);
       this.showSearchDropdown.set(false);
     }
+  }
+
+  goToResult(item: SearchItem) {
+    this.searchQuery.set('');
+    this.results.set([]);
+    this.showSearchDropdown.set(false);
+
+    if (item.type === 'restaurant') {
+      this.router.navigate(['/restaurants', item.id]);
+      return;
+    }
+
+    this.router.navigate(['/settings'], { queryParams: { userId: item.id } });
   }
 
   isSuperAdmin(): boolean {
