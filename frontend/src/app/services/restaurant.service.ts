@@ -62,6 +62,23 @@ export interface RestaurantSearchResult {
   address?: string;
 }
 
+export interface Suggestion {
+  _id: string;
+  name: string;
+  description?: string;
+  address?: string;
+  cuisine?: string;
+  status: 'pending';
+  suggestedBy: {
+    _id: string;
+    username: string;
+    displayName?: string;
+    email: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -152,5 +169,33 @@ export class RestaurantService {
   // Get user-specific restaurant rankings
   getUserRankings(userId: string): Observable<{ rankings: UserRankingItem[] }> {
     return this.http.get<{ rankings: UserRankingItem[] }>(`${this.apiUrl}/reviews/rankings/user/${userId}`);
+  }
+
+  // Suggestions
+  createSuggestion(data: {
+    name: string;
+    description?: string;
+    address?: string;
+    cuisine?: string;
+  }): Observable<{ message: string; suggestion: Suggestion }> {
+    return this.http.post<{ message: string; suggestion: Suggestion }>(
+      `${this.apiUrl}/suggestions`,
+      data
+    );
+  }
+
+  getSuggestions(): Observable<{ count: number; suggestions: Suggestion[] }> {
+    return this.http.get<{ count: number; suggestions: Suggestion[] }>(`${this.apiUrl}/suggestions`);
+  }
+
+  approveSuggestion(id: string): Observable<{ message: string; restaurant: Restaurant }> {
+    return this.http.put<{ message: string; restaurant: Restaurant }>(
+      `${this.apiUrl}/suggestions/${id}/approve`,
+      {}
+    );
+  }
+
+  rejectSuggestion(id: string): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.apiUrl}/suggestions/${id}`);
   }
 }

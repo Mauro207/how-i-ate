@@ -160,4 +160,9 @@ export class NavigationComponent implements OnDestroy {
   isSuperAdmin(): boolean {
     return this.authService.currentUser()?.role === 'superadmin';
   }
+
+  isAdminOrSuperAdmin(): boolean {
+    const role = this.authService.currentUser()?.role;
+    return role === 'admin' || role === 'superadmin';
+  }
 }

@@ -8,8 +8,11 @@ import { SettingsComponent } from './components/settings/settings.component';
 import { UserRankingsComponent } from './components/user-rankings/user-rankings.component';
 import { UsersComponent } from './components/users/users.component';
 import { RankingsComponent } from './components/rankings/rankings.component';
+import { SuggestPlaceComponent } from './components/suggest-place/suggest-place.component';
+import { SuggestionsComponent } from './components/suggestions/suggestions.component';
 import { authGuard } from './guards/auth.guard';
 import { superadminGuard } from './guards/superadmin.guard';
+import { adminGuard } from './guards/admin.guard';
 
 
 export const routes: Routes = [
@@ -17,6 +20,7 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'restaurants', component: RestaurantsComponent, canActivate: [authGuard] },
   { path: 'restaurants/create', component: RestaurantCreateComponent, canActivate: [authGuard] },
+  { path: 'restaurants/suggest', component: SuggestPlaceComponent, canActivate: [authGuard] },
   { path: 'restaurants/:id', component: RestaurantDetailComponent, canActivate: [authGuard] },
   { path: 'rankings', component: RankingsComponent, canActivate: [authGuard] },
   { path: 'settings', component: SettingsComponent, canActivate: [authGuard] },
@@ -28,5 +32,6 @@ export const routes: Routes = [
   { path: 'user-rankings/:userId/:username', component: UserRankingsComponent, canActivate: [authGuard] },
 
   { path: 'users', component: UsersComponent, canActivate: [authGuard, superadminGuard] },
+  { path: 'suggestions', component: SuggestionsComponent, canActivate: [authGuard, adminGuard] },
   { path: '**', redirectTo: '/login' }
 ];

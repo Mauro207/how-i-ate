@@ -22,6 +22,13 @@
       >
         + Aggiungi luogo
       </button>
+      <button
+        routerLink="/restaurants/suggest"
+        *ngIf="!canCreateRestaurant()"
+        class="fixed z-10 px-6 py-3 font-medium text-white transition duration-150 bg-emerald-600 dark:bg-emerald-500 rounded-full shadow-lg right-4 bottom-4 lg:static hover:bg-emerald-700 hover:shadow-xl"
+      >
+        💡 Suggerisci luogo
+      </button>
     </div>
 
     <!-- Loading State -->

@@ -28,6 +28,7 @@ app.use('/api/', apiLimiter);
 const authRoutes = require('./routes/auth');
 const restaurantRoutes = require('./routes/restaurants');
 const reviewRoutes = require('./routes/reviews');
+const suggestionRoutes = require('./routes/suggestions');
 
 // Routes
 app.get('/', (req, res) => {
@@ -49,6 +50,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/restaurants', restaurantRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/suggestions', suggestionRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
