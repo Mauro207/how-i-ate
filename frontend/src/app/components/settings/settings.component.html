@@ -3,7 +3,7 @@
   <app-navigation></app-navigation>
 
   <!-- Main Content -->
-  <div class="max-w-4xl px-4 pt-6 pb-8 mx-auto sm:px-6 lg:px-8">
+  <div class="max-w-5xl px-4 pt-6 pb-8 mx-auto sm:px-6 lg:px-8">
     <!-- Header Section -->
     <div class="mb-8">
       <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Impostazioni</h2>
@@ -106,7 +106,7 @@
             <button
               type="submit"
               [disabled]="loading()"
-              class="flex items-center justify-center w-full px-6 py-3 font-medium text-white transition duration-150 bg-indigo-600 dark:bg-indigo-700 rounded-lg shadow-lg lg:w-max hover:bg-indigo-700 dark:hover:bg-indigo-600 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              class="flex items-center justify-center w-full px-6 py-3 font-medium text-white transition duration-150 bg-indigo-600 rounded-lg shadow-lg dark:bg-indigo-700 lg:w-max hover:bg-indigo-700 dark:hover:bg-indigo-600 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
             >
               @if (loading()) {
                 <svg class="w-5 h-5 mr-2 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -134,7 +134,7 @@
           @if (!showUserForm()) {
             <button
               (click)="toggleUserForm()"
-              class="w-full px-6 py-3 font-medium text-white transition duration-150 bg-indigo-600 dark:bg-indigo-700 rounded-lg lg:w-max hover:bg-indigo-700 dark:hover:bg-indigo-600"
+              class="w-full px-6 py-3 font-medium text-white transition duration-150 bg-indigo-600 rounded-lg dark:bg-indigo-700 lg:w-max hover:bg-indigo-700 dark:hover:bg-indigo-600"
             >
               Crea utente
             </button>
@@ -209,7 +209,7 @@
                       name="newUserRole"
                       value="user"
                       [disabled]="creatingUser()"
-                      class="w-4 h-4 text-indigo-600 dark:text-indigo-400 border-gray-300 dark:border-gray-700 focus:ring-indigo-500"
+                      class="w-4 h-4 text-indigo-600 border-gray-300 dark:text-indigo-400 dark:border-gray-700 focus:ring-indigo-500"
                     />
                     <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">User</span>
                   </label>
@@ -221,7 +221,7 @@
                         name="newUserRole"
                         value="admin"
                         [disabled]="creatingUser()"
-                        class="w-4 h-4 text-indigo-600 dark:text-indigo-400 border-gray-300 dark:border-gray-700 focus:ring-indigo-500"
+                        class="w-4 h-4 text-indigo-600 border-gray-300 dark:text-indigo-400 dark:border-gray-700 focus:ring-indigo-500"
                       />
                       <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Admin</span>
                     </label>
@@ -258,7 +258,7 @@
                 <button
                   type="submit"
                   [disabled]="creatingUser()"
-                  class="flex items-center justify-center px-6 py-3 font-medium text-white transition duration-150 bg-indigo-600 dark:bg-indigo-700 rounded-lg shadow-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="flex items-center justify-center px-6 py-3 font-medium text-white transition duration-150 bg-indigo-600 rounded-lg shadow-lg dark:bg-indigo-700 hover:bg-indigo-700 dark:hover:bg-indigo-600 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   @if (creatingUser()) {
                     <svg class="w-5 h-5 mr-2 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
