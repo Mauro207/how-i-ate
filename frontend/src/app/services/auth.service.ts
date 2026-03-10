@@ -1,7 +1,7 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 export interface User {
@@ -35,6 +35,14 @@ export class AuthService {
 
   currentUser = signal<User | null>(null);
   isAuthenticated = signal<boolean>(false);
+
+  private authInitialized$ = new BehaviorSubject<boolean>(false);
+
+  // This BehaviorSubject does not need to be completed: AuthService is a root-level
+  // singleton that lives for the entire application lifetime and is never destroyed.
+  get authInitialized(): Observable<boolean> {
+    return this.authInitialized$.asObservable();
+  }
 
   constructor(private httpClient: HttpClient, private router: Router) {
     this.loadUserFromToken();
@@ -106,12 +114,16 @@ export class AuthService {
         next: (response) => {
           this.currentUser.set(response.user);
           this.isAuthenticated.set(true);
+          this.authInitialized$.next(true);
         },
         error: () => {
           localStorage.removeItem(this.tokenKey);
           this.isAuthenticated.set(false);
+          this.authInitialized$.next(true);
         }
       });
+    } else {
+      this.authInitialized$.next(true);
     }
   }
 }
