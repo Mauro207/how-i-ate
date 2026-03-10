@@ -97,13 +97,11 @@ router.put('/:id/approve', writeLimiter, authenticate, authorize('admin', 'super
 // Reject a suggestion (admin/superadmin only) - deletes it
 router.delete('/:id', writeLimiter, authenticate, authorize('admin', 'superadmin'), async (req, res) => {
   try {
-    const suggestion = await Suggestion.findById(req.params.id);
+    const deleted = await Suggestion.findByIdAndDelete(req.params.id);
 
-    if (!suggestion) {
+    if (!deleted) {
       return res.status(404).json({ message: 'Suggestion not found' });
     }
-
-    await Suggestion.findByIdAndDelete(req.params.id);
 
     res.json({ message: 'Suggestion rejected' });
   } catch (error) {
