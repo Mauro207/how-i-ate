@@ -48,6 +48,16 @@ export class LoginComponent implements OnInit {
       },
       error: (err) => {
         this.loading.set(false);
+        if (err.status === 0) {
+          this.error.set('Impossibile raggiungere il server. Verifica che il backend sia attivo e riprova.');
+          return;
+        }
+
+        if (err.status === 429) {
+          this.error.set(err.error?.message || 'Troppi tentativi di accesso. Attendi 1 minuto e riprova.');
+          return;
+        }
+
         this.error.set(err.error?.message || 'Accesso fallito. Per favore riprova.');
       }
     });

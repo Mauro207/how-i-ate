@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { NavigationComponent } from '../navigation/navigation.component'; 
+import { NotificationService } from '../../services/notification.service';
 
 
 @Component({
@@ -18,6 +19,10 @@ export class SettingsComponent implements OnInit {
   loading = signal(false);
   successMessage = signal('');
   errorMessage = signal('');
+
+    // Notifications
+    notificationLoading = signal(false);
+    notificationError = signal('');
   
   // User creation form
   showUserForm = signal(false);
@@ -31,6 +36,7 @@ export class SettingsComponent implements OnInit {
 
   constructor(
     public authService: AuthService,
+    public notificationService: NotificationService,
     private router: Router
   ) {}
 
@@ -41,6 +47,7 @@ export class SettingsComponent implements OnInit {
       return;
     }
     this.displayName = user.displayName || '';
+    this.notificationService.syncStatus();
   }
 
   updateDisplayName(): void {
@@ -115,6 +122,30 @@ export class SettingsComponent implements OnInit {
         this.userCreationError.set(err.error?.message || 'Creazione dell\'utente fallita. Per favore riprova.');
       }
     });
+  }
+
+  get notificationsSupported(): boolean {
+    return this.notificationService.isSupported;
+  }
+
+  get notificationPermissionDenied(): boolean {
+    return this.notificationService.permissionState === 'denied';
+  }
+
+  async toggleNotifications(): Promise<void> {
+    this.notificationLoading.set(true);
+    this.notificationError.set('');
+    try {
+      if (this.notificationService.notificationsEnabled()) {
+        await this.notificationService.disable();
+      } else {
+        await this.notificationService.enable();
+      }
+    } catch (err: any) {
+      this.notificationError.set(err.message || 'Errore nella gestione delle notifiche.');
+    } finally {
+      this.notificationLoading.set(false);
+    }
   }
 
   isSuperAdmin(): boolean {

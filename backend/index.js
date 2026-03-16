@@ -1,13 +1,15 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const path = require('path');
 const swaggerUi = require('swagger-ui-express');
 const connectDB = require('./config/database');
 const swaggerSpec = require('./config/swagger');
 const { apiLimiter } = require('./middleware/rateLimiter');
 
-// Load environment variables
-dotenv.config();
+// Load environment variables from backend/.env regardless of current working directory
+// and override shell/system values to keep local development deterministic.
+dotenv.config({ path: path.join(__dirname, '.env'), override: true });
 
 // Initialize express app
 const app = express();
@@ -29,6 +31,7 @@ const authRoutes = require('./routes/auth');
 const restaurantRoutes = require('./routes/restaurants');
 const reviewRoutes = require('./routes/reviews');
 const suggestionRoutes = require('./routes/suggestions');
+const notificationRoutes = require('./routes/notifications');
 
 // Routes
 app.get('/', (req, res) => {
@@ -51,6 +54,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/restaurants', restaurantRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/suggestions', suggestionRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

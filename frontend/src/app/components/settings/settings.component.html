@@ -27,6 +27,7 @@
               type="text"
               [value]="authService.currentUser()?.username"
               disabled
+                            title="Username"
               class="w-full px-4 py-2 text-gray-500 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-lg cursor-not-allowed bg-gray-50 dark:bg-[#3C3C3C]"
             />
             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Username non può essere cambiato</p>
@@ -39,6 +40,7 @@
             <input
               type="email"
               [value]="authService.currentUser()?.email"
+                            title="Email"
               disabled
               class="w-full px-4 py-2 text-gray-500 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-lg cursor-not-allowed bg-gray-50 dark:bg-[#3C3C3C]"
             />
@@ -52,6 +54,7 @@
             <input
               type="text"
               [value]="authService.currentUser()?.role"
+                            title="Ruolo"
               disabled
               class="w-full px-4 py-2 text-gray-500 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-lg cursor-not-allowed bg-gray-50 dark:bg-[#3C3C3C]"
             />
@@ -122,6 +125,76 @@
         </form>
       </div>
     </div>
+
+    <!-- Notifications Section -->
+    @if (notificationsSupported) {
+      <div class="mt-8 overflow-hidden bg-white dark:bg-[#2C2C2C] shadow-md dark:shadow-lg rounded-xl">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Notifiche</h3>
+          <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Ricevi una notifica ogni volta che viene aggiunto un nuovo luogo</p>
+        </div>
+        <div class="p-6">
+          <!-- Permission denied warning -->
+          @if (notificationPermissionDenied) {
+            <div class="px-4 py-3 mb-4 text-yellow-700 border border-yellow-200 rounded-lg bg-yellow-50 dark:bg-yellow-900 dark:text-yellow-200 dark:border-yellow-700">
+              <p class="flex items-center gap-2">
+                <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+                Le notifiche sono state bloccate dal browser. Per attivarle, modifica le impostazioni del sito nel tuo browser.
+              </p>
+            </div>
+          }
+
+          <!-- Error Message -->
+          @if (notificationError()) {
+            <div class="px-4 py-3 mb-4 text-red-700 border border-red-200 rounded-lg bg-red-50 dark:bg-red-900 dark:text-red-200 dark:border-red-700">
+              <p class="flex items-center gap-2">
+                <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                </svg>
+                {{ notificationError() }}
+              </p>
+            </div>
+          }
+
+          <!-- Toggle row -->
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="font-medium text-gray-900 dark:text-white">Notifiche push</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">
+                @if (notificationService.notificationsEnabled()) {
+                  Attive — riceverai notifiche sui nuovi luoghi
+                } @else {
+                  Disattivate
+                }
+              </p>
+            </div>
+            <button
+              type="button"
+              (click)="toggleNotifications()"
+              [disabled]="notificationLoading() || notificationPermissionDenied"
+              title="Attiva/disattiva notifiche push"
+              [attr.aria-label]="notificationService.notificationsEnabled() ? 'Disattiva notifiche' : 'Attiva notifiche'"
+                            aria-checked="false"
+              [attr.aria-checked]="notificationService.notificationsEnabled() ? 'true' : 'false'"
+              role="switch"
+              class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-[#2C2C2C] disabled:opacity-50 disabled:cursor-not-allowed"
+              [class.bg-indigo-600]="notificationService.notificationsEnabled()"
+              [class.dark:bg-indigo-500]="notificationService.notificationsEnabled()"
+              [class.bg-gray-300]="!notificationService.notificationsEnabled()"
+              [class.dark:bg-gray-600]="!notificationService.notificationsEnabled()"
+            >
+              <span
+                class="inline-block w-4 h-4 transition-transform transform bg-white rounded-full"
+                [class.translate-x-6]="notificationService.notificationsEnabled()"
+                [class.translate-x-1]="!notificationService.notificationsEnabled()"
+              ></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    }
 
     <!-- User Management Section (Admin/Superadmin only) -->
     @if (canManageUsers()) {

@@ -2,6 +2,8 @@ const express = require('express');
 const Restaurant = require('../models/Restaurant');
 const { authenticate, authorize } = require('../middleware/auth');
 const { writeLimiter } = require('../middleware/rateLimiter');
+const PushSubscription = require('../models/PushSubscription');
+const { webpush, getPushConfig } = require('../config/push');
 
 const router = express.Router();
 
@@ -227,7 +229,41 @@ router.post('/', writeLimiter, authenticate, authorize('admin', 'superadmin'), a
     await restaurant.save();
     
     await restaurant.populate('createdBy', 'username email displayName');
-    
+
+    // Send push notifications to all subscribers (non-blocking)
+    const { pushConfigured } = getPushConfig();
+    if (pushConfigured) {
+      PushSubscription.find().then(async subscriptions => {
+        if (!subscriptions.length) return;
+
+        const payload = JSON.stringify({
+          title: 'Nuovo luogo aggiunto!',
+          body: `"${name}" è stato aggiunto a How I Ate`,
+          url: `/restaurants/${restaurant._id}`
+        });
+
+        console.log(`[push] Invio notifica per "${name}" a ${subscriptions.length} subscriber(s)`);
+
+        const results = await Promise.allSettled(
+          subscriptions.map(sub =>
+            webpush.sendNotification(sub.subscription, payload).catch(async err => {
+              if (err.statusCode === 410 || err.statusCode === 404) {
+                console.log(`[push] Subscription scaduta rimossa: ${sub.subscription.endpoint}`);
+                await PushSubscription.deleteOne({ _id: sub._id });
+              } else {
+                console.error(`[push] Errore invio notifica a ${sub.subscription.endpoint}:`, err.message);
+              }
+            })
+          )
+        );
+
+        const sent = results.filter(r => r.status === 'fulfilled').length;
+        console.log(`[push] Notifiche inviate: ${sent}/${subscriptions.length}`);
+      }).catch(err => console.error('[push] Errore recupero subscriptions:', err.message));
+    } else {
+      console.log('[push] VAPID non configurato, notifiche non inviate.');
+    }
+
     res.status(201).json({
       message: 'Restaurant created successfully',
       restaurant
