@@ -230,7 +230,12 @@
                     >
                       {{ review.user.username }}
                     </h4>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ review.createdAt | date: 'dd MMMM yyyy, HH:mm' }}</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                      {{ review.createdAt | date: 'dd MMMM yyyy, HH:mm' }}
+                      @if (review.updatedAt !== review.createdAt) {
+                        <span class="text-xs italic">(modificata il {{ review.updatedAt | date: 'dd MMMM yyyy, HH:mm' }})</span>
+                      }
+                    </p>
                   </div>
                   <button 
                     id="badge-value" 
