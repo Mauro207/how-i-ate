@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { Title } from '@angular/platform-browser';
+import { filter, take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-login',
@@ -31,6 +32,17 @@ export class LoginComponent implements OnInit {
     // Get return URL from route parameters or default to '/restaurants'
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/restaurants';
     this.title.setTitle('Effettua l\'accesso - How I Ate');
+
+    this.authService.authInitialized
+      .pipe(
+        filter(initialized => initialized),
+        take(1)
+      )
+      .subscribe(() => {
+        if (this.authService.isAuthenticated()) {
+          this.router.navigateByUrl(this.returnUrl);
+        }
+      });
   }
 
   onSubmit(): void {

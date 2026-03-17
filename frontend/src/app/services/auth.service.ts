@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { TokenStorageService } from './token-storage.service';
 
 export interface User {
   id: string;
@@ -30,8 +31,8 @@ export interface UserSearchResult {
 })
 export class AuthService {
   private apiUrl = `${environment.apiUrl}/auth`;
-  private tokenKey = 'auth_token';
   private http = inject(HttpClient);
+  private tokenStorage = inject(TokenStorageService);
 
   currentUser = signal<User | null>(null);
   isAuthenticated = signal<boolean>(false);
@@ -52,7 +53,7 @@ export class AuthService {
     return this.httpClient.post<LoginResponse>(`${this.apiUrl}/login`, { email, password })
       .pipe(
         tap(response => {
-          localStorage.setItem(this.tokenKey, response.token);
+          this.tokenStorage.setToken(response.token);
           this.currentUser.set(response.user);
           this.isAuthenticated.set(true);
         })
@@ -97,14 +98,14 @@ export class AuthService {
   }
 
   logout(): void {
-    localStorage.removeItem(this.tokenKey);
+    this.tokenStorage.clearToken();
     this.currentUser.set(null);
     this.isAuthenticated.set(false);
     this.router.navigate(['/login']);
   }
 
   getToken(): string | null {
-    return localStorage.getItem(this.tokenKey);
+    return this.tokenStorage.getToken();
   }
 
   private loadUserFromToken(): void {
@@ -120,7 +121,7 @@ export class AuthService {
           // Rimuovi il token SOLO se è esplicitamente non valido (401/403)
           // Per errori di rete (0, 500, ecc.) mantieni il token e considera l'utente autenticato
           if (err.status === 401 || err.status === 403) {
-            localStorage.removeItem(this.tokenKey);
+            this.tokenStorage.clearToken();
             this.isAuthenticated.set(false);
           } else {
             // Rete assente o backend freddo: decodifica il token localmente
@@ -128,7 +129,7 @@ export class AuthService {
               const payload = JSON.parse(atob(token.split('.')[1]));
               const isExpired = payload.exp && payload.exp * 1000 < Date.now();
               if (isExpired) {
-                localStorage.removeItem(this.tokenKey);
+                this.tokenStorage.clearToken();
                 this.isAuthenticated.set(false);
               } else {
                 // Token ancora valido per scadenza: considera l'utente autenticato
@@ -142,7 +143,7 @@ export class AuthService {
                 this.isAuthenticated.set(true);
               }
             } catch {
-              localStorage.removeItem(this.tokenKey);
+              this.tokenStorage.clearToken();
               this.isAuthenticated.set(false);
             }
           }

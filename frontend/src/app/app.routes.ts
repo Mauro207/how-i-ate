@@ -13,11 +13,12 @@ import { SuggestionsComponent } from './components/suggestions/suggestions.compo
 import { authGuard } from './guards/auth.guard';
 import { superadminGuard } from './guards/superadmin.guard';
 import { adminGuard } from './guards/admin.guard';
+import { guestGuard } from './guards/guest.guard';
 
 
 export const routes: Routes = [
-  { path: '', redirectTo: '/login', pathMatch: 'full' },
-  { path: 'login', component: LoginComponent },
+  { path: '', redirectTo: '/restaurants', pathMatch: 'full' },
+  { path: 'login', component: LoginComponent, canActivate: [guestGuard] },
   { path: 'restaurants', component: RestaurantsComponent, canActivate: [authGuard] },
   { path: 'restaurants/create', component: RestaurantCreateComponent, canActivate: [authGuard] },
   { path: 'restaurants/suggest', component: SuggestPlaceComponent, canActivate: [authGuard] },
