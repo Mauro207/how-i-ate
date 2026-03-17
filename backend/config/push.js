@@ -1,16 +1,37 @@
 const webpush = require('web-push');
+const fs = require('fs');
+const path = require('path');
 
-// Inizializza le chiavi VAPID UNA SOLA VOLTA al caricamento del modulo
 const isProduction = process.env.NODE_ENV === 'production';
 let vapidPublicKey = process.env.VAPID_PUBLIC_KEY;
 let vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
 
+// In sviluppo: se le chiavi non ci sono, le genera e le persiste nel .env
 if ((!vapidPublicKey || !vapidPrivateKey) && !isProduction) {
+  const envPath = path.join(__dirname, '..', '.env');
   const generated = webpush.generateVAPIDKeys();
   vapidPublicKey = generated.publicKey;
   vapidPrivateKey = generated.privateKey;
-  console.warn('[push] VAPID non configurate: uso chiavi temporanee per sviluppo locale.');
-  console.warn('[push] VAPID_PUBLIC_KEY temporanea:', vapidPublicKey);
+
+  console.warn('[push] VAPID non configurate: genero chiavi stabili e le scrivo in .env');
+  console.warn('[push] VAPID_PUBLIC_KEY:', vapidPublicKey);
+
+  try {
+    let envContent = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf8') : '';
+
+    const upsert = (content, key, value) => {
+      const regex = new RegExp(`^${key}=.*$`, 'm');
+      const line = `${key}=${value}`;
+      return regex.test(content) ? content.replace(regex, line) : content + `\n${line}`;
+    };
+
+    envContent = upsert(envContent, 'VAPID_PUBLIC_KEY', vapidPublicKey);
+    envContent = upsert(envContent, 'VAPID_PRIVATE_KEY', vapidPrivateKey);
+    fs.writeFileSync(envPath, envContent, 'utf8');
+    console.warn('[push] Chiavi VAPID scritte in .env — riavvia il server per applicarle stabilmente.');
+  } catch (err) {
+    console.error('[push] Impossibile scrivere le chiavi VAPID in .env:', err.message);
+  }
 }
 
 const pushConfigured = !!(vapidPublicKey && vapidPrivateKey);
@@ -30,7 +51,4 @@ function getPushConfig() {
   return { pushConfigured, vapidPublicKey };
 }
 
-module.exports = {
-  webpush,
-  getPushConfig
-};
+module.exports = { webpush, getPushConfig };

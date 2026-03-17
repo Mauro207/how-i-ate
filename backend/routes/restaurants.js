@@ -247,11 +247,18 @@ router.post('/', writeLimiter, authenticate, authorize('admin', 'superadmin'), a
         const results = await Promise.allSettled(
           subscriptions.map(sub =>
             webpush.sendNotification(sub.subscription, payload).catch(async err => {
-              if (err.statusCode === 410 || err.statusCode === 404) {
-                console.log(`[push] Subscription scaduta rimossa: ${sub.subscription.endpoint}`);
+              // Rimuovi subscription non valide o con chiavi VAPID non corrispondenti
+              const shouldRemove =
+                err.statusCode === 410 ||
+                err.statusCode === 404 ||
+                err.statusCode === 400 ||
+                (err.message && err.message.includes('unexpected response'));
+
+              if (shouldRemove) {
+                console.log(`[push] Subscription non valida rimossa (${err.statusCode ?? 'unknown'}): ${sub.subscription.endpoint}`);
                 await PushSubscription.deleteOne({ _id: sub._id });
               } else {
-                console.error(`[push] Errore invio notifica a ${sub.subscription.endpoint}:`, err.message);
+                console.error(`[push] Errore invio notifica a ${sub.subscription.endpoint}:`, err.statusCode, err.message);
               }
             })
           )
