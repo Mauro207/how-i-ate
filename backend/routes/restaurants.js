@@ -238,7 +238,7 @@ router.post('/', writeLimiter, authenticate, authorize('admin', 'superadmin'), a
 
         const payload = JSON.stringify({
           title: 'Nuovo luogo aggiunto!',
-          body: `"${name}" è stato aggiunto a How I Ate`,
+          body: `Ora puoi recensire "${name}"!`,
           url: `/restaurants/${restaurant._id}`
         });
 
@@ -445,7 +445,7 @@ router.put('/:id', writeLimiter, authenticate, authorize('admin', 'superadmin'),
     await restaurant.populate('createdBy', 'username email displayName');
     
     res.json({
-      message: 'Restaurant updated successfully',
+      message: 'Ristorante aggiornato con successo',
       restaurant
     });
   } catch (error) {
@@ -490,7 +490,7 @@ router.delete('/:id', writeLimiter, authenticate, async (req, res) => {
     const restaurant = await Restaurant.findById(req.params.id);
     
     if (!restaurant) {
-      return res.status(404).json({ message: 'Restaurant not found' });
+      return res.status(404).json({ message: 'Ristorante non trovato' });
     }
     
     // Check if user is the creator or has admin/superadmin role
@@ -510,7 +510,7 @@ router.delete('/:id', writeLimiter, authenticate, async (req, res) => {
     // Delete the restaurant
     await Restaurant.findByIdAndDelete(req.params.id);
     
-    res.json({ message: 'Restaurant deleted successfully' });
+    res.json({ message: 'Ristorante eliminato con successo' });
   } catch (error) {
     if (error.kind === 'ObjectId') {
       return res.status(404).json({ message: 'Restaurant not found' });
