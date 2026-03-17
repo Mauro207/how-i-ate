@@ -19,6 +19,12 @@ export class NotificationService {
     this.notificationsEnabled.set(localStorage.getItem(this.LOCAL_KEY) === 'true');
   }
 
+  /** true se il browser mostra la sezione notifiche (anche su Safari) */
+  get isUIVisible(): boolean {
+    return 'Notification' in window;
+  }
+
+  /** true = il browser supporta completamente le Push API */
   get isSupported(): boolean {
     return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
   }

@@ -128,6 +128,11 @@ export class SettingsComponent implements OnInit {
     return this.notificationService.isSupported;
   }
 
+  /** Mostra la sezione anche su Safari o browser senza Push API completa */
+  get notificationsUIVisible(): boolean {
+    return this.notificationService.isUIVisible;
+  }
+
   get notificationPermissionDenied(): boolean {
     return this.notificationService.permissionState === 'denied';
   }
