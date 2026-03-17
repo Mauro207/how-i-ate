@@ -116,9 +116,36 @@ export class AuthService {
           this.isAuthenticated.set(true);
           this.authInitialized$.next(true);
         },
-        error: () => {
-          localStorage.removeItem(this.tokenKey);
-          this.isAuthenticated.set(false);
+        error: (err) => {
+          // Rimuovi il token SOLO se è esplicitamente non valido (401/403)
+          // Per errori di rete (0, 500, ecc.) mantieni il token e considera l'utente autenticato
+          if (err.status === 401 || err.status === 403) {
+            localStorage.removeItem(this.tokenKey);
+            this.isAuthenticated.set(false);
+          } else {
+            // Rete assente o backend freddo: decodifica il token localmente
+            try {
+              const payload = JSON.parse(atob(token.split('.')[1]));
+              const isExpired = payload.exp && payload.exp * 1000 < Date.now();
+              if (isExpired) {
+                localStorage.removeItem(this.tokenKey);
+                this.isAuthenticated.set(false);
+              } else {
+                // Token ancora valido per scadenza: considera l'utente autenticato
+                this.currentUser.set({
+                  id: payload.userId ?? payload.id,
+                  username: payload.username,
+                  displayName: payload.displayName,
+                  email: payload.email,
+                  role: payload.role
+                });
+                this.isAuthenticated.set(true);
+              }
+            } catch {
+              localStorage.removeItem(this.tokenKey);
+              this.isAuthenticated.set(false);
+            }
+          }
           this.authInitialized$.next(true);
         }
       });
