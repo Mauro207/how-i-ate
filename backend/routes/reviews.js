@@ -5,6 +5,7 @@ const Restaurant = require('../models/Restaurant');
 const User = require('../models/User');
 const { authenticate, authorize } = require('../middleware/auth');
 const { writeLimiter } = require('../middleware/rateLimiter');
+const { sortRankings, toRankingAverage } = require('../utils/ranking');
 
 const router = express.Router();
 
@@ -59,21 +60,25 @@ router.get('/rankings/global', authenticate, async (req, res) => {
         $unwind: '$restaurant'
       },
       {
-        $sort: { averageRating: -1 }
-      },
-      {
         $project: {
           restaurantId: '$_id',
           restaurantName: '$restaurant.name',
           cuisine: '$restaurant.cuisine',
           address: '$restaurant.address',
-          averageRating: { $round: ['$averageRating', 2] },
+          averageRating: 1,
           reviewCount: 1
         }
       }
     ]);
 
-    res.json({ rankings });
+    const sortedRankings = rankings
+      .map(ranking => ({
+        ...ranking,
+        averageRating: toRankingAverage(ranking.averageRating)
+      }))
+      .sort(sortRankings);
+
+    res.json({ rankings: sortedRankings });
   } catch (error) {
     res.status(500).json({ 
       message: 'Error fetching global rankings', 
@@ -129,10 +134,20 @@ router.get('/rankings/user/:userId', authenticate, async (req, res) => {
         }
       },
       {
+        $lookup: {
+          from: 'reviews',
+          localField: 'restaurant._id',
+          foreignField: 'restaurant',
+          as: 'restaurantReviews'
+        }
+      },
+      {
         $unwind: '$restaurant'
       },
       {
-        $sort: { averageRating: -1 }
+        $addFields: {
+          reviewCount: { $size: '$restaurantReviews' }
+        }
       },
       {
         $project: {
@@ -140,7 +155,8 @@ router.get('/rankings/user/:userId', authenticate, async (req, res) => {
           restaurantName: '$restaurant.name',
           cuisine: '$restaurant.cuisine',
           address: '$restaurant.address',
-          averageRating: { $round: ['$averageRating', 2] },
+          averageRating: 1,
+          reviewCount: 1,
           serviceRating: 1,
           priceRating: 1,
           menuRating: 1,
@@ -150,7 +166,14 @@ router.get('/rankings/user/:userId', authenticate, async (req, res) => {
       }
     ]);
 
-    res.json({ rankings });
+    const sortedRankings = rankings
+      .map(ranking => ({
+        ...ranking,
+        averageRating: toRankingAverage(ranking.averageRating)
+      }))
+      .sort(sortRankings);
+
+    res.json({ rankings: sortedRankings });
   } catch (error) {
     res.status(500).json({ 
       message: 'Error fetching user rankings', 

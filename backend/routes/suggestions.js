@@ -60,9 +60,9 @@ router.post('/', writeLimiter, authenticate, async (req, res) => {
       const adminIds = admins.map(u => u._id);
       const adminSubs = await PushSubscription.find({ user: { $in: adminIds } });
       const notificationPayload = JSON.stringify({
-        title: 'Nuova segnalazione',
-        body: `È stata aggiunta una nuova segnalazione: ${name}`,
-        url: '/admin/suggestions'
+        title: 'Nuovo suggerimento ricevuto!',
+        body: `È stato inviato un nuovo suggerimento: ${name}`,
+        url: '/suggestions'
       });
       for (const sub of adminSubs) {
         try {
@@ -109,7 +109,15 @@ router.put('/:id/approve', writeLimiter, authenticate, authorize('admin', 'super
     const suggestion = await Suggestion.findById(req.params.id);
 
     if (!suggestion) {
-      return res.status(404).json({ message: 'Suggestion not found' });
+      return res.status(404).json({ message: 'Suggerimento non trovato' });
+    }
+
+    const suggestionReviews = await Review.find({ restaurant: suggestion._id });
+
+    if (!suggestionReviews.length) {
+      return res.status(400).json({
+        message: 'Non è possibile approvare il suggerimento senza la recensione richiesta. Assicurati di aver inviato una recensione valida insieme al suggerimento.'
+      });
     }
 
     const restaurant = new Restaurant({
@@ -121,6 +129,10 @@ router.put('/:id/approve', writeLimiter, authenticate, authorize('admin', 'super
     });
 
     await restaurant.save();
+    await Review.updateMany(
+      { restaurant: suggestion._id },
+      { $set: { restaurant: restaurant._id } }
+    );
     await restaurant.populate('createdBy', 'username email displayName');
 
     // Invia notifica push a tutti gli iscritti, come nella creazione admin di un nuovo luogo
