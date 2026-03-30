@@ -123,6 +123,46 @@ router.put('/:id/approve', writeLimiter, authenticate, authorize('admin', 'super
     await restaurant.save();
     await restaurant.populate('createdBy', 'username email displayName');
 
+    // Invia notifica push a tutti gli iscritti, come nella creazione admin di un nuovo luogo
+    const { pushConfigured } = getPushConfig();
+    if (pushConfigured) {
+      PushSubscription.find().then(async subscriptions => {
+        if (!subscriptions.length) return;
+
+        const payload = JSON.stringify({
+          title: 'Nuovo luogo aggiunto!',
+          body: `Ora puoi recensire "${restaurant.name}"!`,
+          url: `/restaurants/${restaurant._id}`
+        });
+
+        console.log(`[push] Invio notifica approvazione per "${restaurant.name}" a ${subscriptions.length} subscriber(s)`);
+
+        const results = await Promise.allSettled(
+          subscriptions.map(sub =>
+            webpush.sendNotification(sub.subscription, payload).catch(async err => {
+              const shouldRemove =
+                err.statusCode === 410 ||
+                err.statusCode === 404 ||
+                err.statusCode === 400 ||
+                (err.message && err.message.includes('unexpected response'));
+
+              if (shouldRemove) {
+                console.log(`[push] Subscription non valida rimossa (${err.statusCode ?? 'unknown'}): ${sub.subscription.endpoint}`);
+                await PushSubscription.deleteOne({ _id: sub._id });
+              } else {
+                console.error(`[push] Errore invio notifica a ${sub.subscription.endpoint}:`, err.statusCode, err.message);
+              }
+            })
+          )
+        );
+
+        const sent = results.filter(r => r.status === 'fulfilled').length;
+        console.log(`[push] Notifiche inviate: ${sent}/${subscriptions.length}`);
+      }).catch(err => console.error('[push] Errore recupero subscriptions:', err.message));
+    } else {
+      console.log('[push] VAPID non configurato, notifiche non inviate.');
+    }
+
     await Suggestion.findByIdAndDelete(req.params.id);
 
     res.json({
