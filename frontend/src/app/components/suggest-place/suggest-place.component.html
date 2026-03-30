@@ -113,6 +113,73 @@
             ></textarea>
           </div>
 
+          <!-- Review Fields (identico a restaurant-detail) -->
+          <div class="pt-2 pb-2 border-t border-gray-200 dark:border-gray-700">
+            <h2 class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">La tua recensione <span class="text-red-500">*</span></h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Servizio: {{ formatRating(serviceRating()) }} / {{ MAX_RATING }}.0
+                </label>
+                <input
+                  type="range"
+                  [min]="MIN_RATING"
+                  [max]="MAX_RATING"
+                  [step]="RATING_STEP"
+                  [(ngModel)]="serviceRating"
+                  name="serviceRating"
+                  [disabled]="loading()"
+                  class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-emerald-600"
+                />
+              </div>
+              <div>
+                <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Prezzo: {{ formatRating(priceRating()) }} / {{ MAX_RATING }}.0
+                </label>
+                <input
+                  type="range"
+                  [min]="MIN_RATING"
+                  [max]="MAX_RATING"
+                  [step]="RATING_STEP"
+                  [(ngModel)]="priceRating"
+                  name="priceRating"
+                  [disabled]="loading()"
+                  class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-emerald-600"
+                />
+              </div>
+              <div>
+                <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Menu: {{ formatRating(menuRating()) }} / {{ MAX_RATING }}.0
+                </label>
+                <input
+                  type="range"
+                  [min]="MIN_RATING"
+                  [max]="MAX_RATING"
+                  [step]="RATING_STEP"
+                  [(ngModel)]="menuRating"
+                  name="menuRating"
+                  [disabled]="loading()"
+                  class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-emerald-600"
+                />
+              </div>
+            </div>
+            <div class="mt-4">
+              <label for="comment" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                Commento <span class="text-red-500">*</span>
+              </label>
+              <textarea
+                id="comment"
+                name="comment"
+                rows="4"
+                required
+                [(ngModel)]="comment"
+                [disabled]="loading()"
+                class="w-full px-4 py-2 transition duration-150 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-[#3C3C3C] text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
+                placeholder="Condividi la tua esperienza..."
+              ></textarea>
+            </div>
+          </div>
+
           <!-- Action Buttons -->
           <div class="flex flex-col gap-4 pt-4 lg:space-x-4 lg:flex-row">
             <button
@@ -132,7 +199,6 @@
                 <span>Invia suggerimento</span>
               }
             </button>
-            
             <button
               type="button"
               routerLink="/restaurants"

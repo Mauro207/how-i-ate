@@ -21,6 +21,18 @@ export class SuggestPlaceComponent {
   loading = signal(false);
   success = signal(false);
 
+  // Review form constants (come restaurant-detail)
+  private readonly DEFAULT_RATING = 5;
+  readonly MIN_RATING = 0.25;
+  readonly MAX_RATING = 10;
+  readonly RATING_STEP = 0.25;
+
+  // Campi recensione obbligatori
+  serviceRating = signal(this.DEFAULT_RATING);
+  priceRating = signal(this.DEFAULT_RATING);
+  menuRating = signal(this.DEFAULT_RATING);
+  comment = signal('');
+
   cuisineOptions = ['Pizzeria', 'Ristorante', 'Pub', 'Paninoteca', 'Bar', 'Braceria', 'Enoteca', 'Sushi'];
 
   constructor(
@@ -28,9 +40,27 @@ export class SuggestPlaceComponent {
     private router: Router
   ) {}
 
+  formatRating(rating: number): string {
+    const rounded = Math.round(rating * 4) / 4;
+    const whole = Math.floor(rounded);
+    const remainder = +(rounded - whole).toFixed(2);
+    if (remainder === 0.25) return `${whole}+`;
+    if (remainder === 0.75) return `${whole + 1}-`;
+    return rounded.toFixed(1);
+  }
+
   onSubmit(): void {
     if (!this.name().trim()) {
       this.error.set('Il nome del luogo è obbligatorio.');
+      return;
+    }
+    if (
+      this.serviceRating() == null ||
+      this.priceRating() == null ||
+      this.menuRating() == null ||
+      !this.comment().trim() || this.comment().trim().length < 5
+    ) {
+      this.error.set('Compila tutti i campi della recensione (tutti obbligatori, commento minimo 5 caratteri).');
       return;
     }
 
@@ -41,7 +71,13 @@ export class SuggestPlaceComponent {
       name: this.name(),
       description: this.description() || undefined,
       address: this.address() || undefined,
-      cuisine: this.cuisine() || undefined
+      cuisine: this.cuisine() || undefined,
+      review: {
+        serviceRating: this.serviceRating(),
+        priceRating: this.priceRating(),
+        menuRating: this.menuRating(),
+        comment: this.comment().trim()
+      }
     };
 
     this.restaurantService.createSuggestion(data).subscribe({
