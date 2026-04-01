@@ -1,14 +1,21 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+const path = require('path');
 const User = require('./models/User');
 
 // Load environment variables
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '.env'), override: true });
 
 const createSuperAdmin = async () => {
   try {
+    const mongoUri = process.env.MONGODB_URI || process.env.DATABASE_URL;
+
+    if (!mongoUri) {
+      throw new Error('Missing MongoDB connection string. Set MONGODB_URI or DATABASE_URL in backend/.env.');
+    }
+
     // Connect to MongoDB
-    await mongoose.connect(process.env.MONGODB_URI);
+    await mongoose.connect(mongoUri);
     console.log('Connessione con MongoDB avvenuta con successo');
     
     // Check if superadmin already exists

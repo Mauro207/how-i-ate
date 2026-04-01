@@ -3,13 +3,19 @@ const mongoose = require('mongoose');
 let cached = global.mongoose || { conn: null, promise: null };
 
 const connectDB = async () => {
+  const mongoUri = process.env.MONGODB_URI || process.env.DATABASE_URL;
+
   // Return cached connection if exists
   if (cached.conn) {
     return cached.conn;
   }
 
+  if (!mongoUri) {
+    throw new Error('Missing MongoDB connection string. Set MONGODB_URI or DATABASE_URL in backend/.env.');
+  }
+
   if (!cached.promise) {
-    cached.promise = mongoose.connect(process.env.MONGODB_URI, {
+    cached.promise = mongoose.connect(mongoUri, {
       maxPoolSize: 10,
       minPoolSize: 2,
       serverSelectionTimeoutMS: 5000,

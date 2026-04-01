@@ -32,6 +32,7 @@ Configure the following environment variables:
 
 - `PORT` - Server port (default: 3000)
 - `NODE_ENV` - Environment (development/production)
+- `MONGODB_URI` or `DATABASE_URL` - MongoDB connection string
 
 ## Running the Server
 
