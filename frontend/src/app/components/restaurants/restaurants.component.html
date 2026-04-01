@@ -3,7 +3,7 @@
   <app-navigation></app-navigation>
 
   <!-- Main Content -->
-  <div class="px-4 pt-6 pb-16 mx-auto max-w-7xl sm:px-6 lg:px-8">
+  <div class="px-4 pt-6 pb-32 mx-auto max-w-7xl sm:px-6 lg:px-8">
     <!-- Header Section -->
     <div class="flex items-center justify-between lg:mb-8">
       <div class="lg:hidden">
@@ -18,14 +18,14 @@
       <button
         routerLink="/restaurants/create"
         *ngIf="canCreateRestaurant()"
-        class="hidden fixed z-10 px-6 py-3 text-lg font-medium text-white transition duration-150 bg-indigo-600 dark:bg-white dark:text-[#121212] rounded-full shadow-lg right-4 bottom-[calc(8vh+1rem)] lg:static lg:bottom-auto hover:bg-indigo-700 hover:shadow-xl"
+        class="hidden fixed z-10 px-6 py-3 text-lg font-medium text-white transition duration-150 bg-indigo-600 dark:bg-white dark:text-[#121212] rounded-full shadow-lg right-4 bottom-[calc(75px+1rem)] lg:static lg:bottom-auto hover:bg-indigo-700 hover:shadow-xl"
       >
         + Aggiungi luogo
       </button>
       <button
         routerLink="/restaurants/suggest"
         *ngIf="!canCreateRestaurant()"
-        class="hidden fixed z-10 px-6 py-3 text-lg font-medium text-white transition duration-150 rounded-full shadow-lg bg-emerald-600 dark:bg-emerald-500 right-4 bottom-[calc(8vh+1rem)] lg:static lg:bottom-auto hover:bg-emerald-700 hover:shadow-xl"
+        class="hidden fixed z-10 px-6 py-3 text-lg font-medium text-white transition duration-150 rounded-full shadow-lg bg-emerald-600 dark:bg-emerald-500 right-4 bottom-[calc(75px+1rem)] lg:static lg:bottom-auto hover:bg-emerald-700 hover:shadow-xl"
       >
         + Suggerisci luogo
       </button>
