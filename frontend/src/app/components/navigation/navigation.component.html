@@ -139,7 +139,7 @@
 
   </div>
 
-  <div class="mobile-bottom-nav lg:hidden bg-white dark:bg-[#121212] dark:border-gray-700">
+  <div class="mobile-bottom-nav lg:hidden bg-white dark:bg-[#121212] dark:border-gray-700" [class.mobile-bottom-nav--admin]="isAdminOrSuperAdmin()">
     <button
       routerLink="/restaurants"
       class="mobile-bottom-nav__item"
@@ -200,6 +200,48 @@
       </svg>
       <span>Impostazioni</span>
     </button>
+
+    <div
+      *ngIf="isAdminOrSuperAdmin()"
+      class="relative mobile-bottom-nav__item mobile-bottom-nav__menu-item"
+    >
+      <button
+        type="button"
+        class="w-full mobile-bottom-nav__item"
+        (click)="toggleAdminQuickMenu()"
+        [ngClass]="adminQuickMenuOpen ? ['!text-gray-900', 'dark:!text-white'] : []"
+        aria-label="Azioni admin"
+        [attr.aria-expanded]="adminQuickMenuOpen"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" class="fill-current">
+          <circle cx="5" cy="12" r="2"/>
+          <circle cx="12" cy="12" r="2"/>
+          <circle cx="19" cy="12" r="2"/>
+        </svg>
+        <span>Altro</span>
+      </button>
+
+      <div
+        *ngIf="adminQuickMenuOpen"
+        class="mobile-admin-quick-menu"
+      >
+        <a
+          routerLink="/suggestions"
+          (click)="closeAdminQuickMenu()"
+          class="mobile-admin-quick-menu__link"
+        >
+          Suggerimenti
+        </a>
+        <a
+          *ngIf="isSuperAdmin()"
+          routerLink="/users"
+          (click)="closeAdminQuickMenu()"
+          class="mobile-admin-quick-menu__link"
+        >
+          Utenti
+        </a>
+      </div>
+    </div>
   </div>
 
 </nav>

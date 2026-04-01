@@ -19,6 +19,7 @@ type SearchItem =
 })
 export class NavigationComponent implements OnDestroy {
   menuOpen = false;
+  adminQuickMenuOpen = false;
   showSearchDropdown = signal(false);
   showMobileSearch = signal(false);
   searchQuery = signal('');
@@ -108,6 +109,14 @@ export class NavigationComponent implements OnDestroy {
 
   toggleMenu(): void {
     this.menuOpen = !this.menuOpen; 
+  }
+
+  toggleAdminQuickMenu(): void {
+    this.adminQuickMenuOpen = !this.adminQuickMenuOpen;
+  }
+
+  closeAdminQuickMenu(): void {
+    this.adminQuickMenuOpen = false;
   }
 
   goToMyRankings(): void {

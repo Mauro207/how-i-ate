@@ -1,218 +1,211 @@
 <app-navigation></app-navigation>
 <div class="min-h-screen px-4 pt-6 pb-24 bg-gray-50 dark:bg-[#1C1B1F] sm:px-6 lg:px-8">
   <div class="max-w-2xl mx-auto">
-    <!-- Back Button -->
-    <div class="mb-6">
-      <a
-        routerLink="/restaurants"
-        class="inline-flex items-center transition duration-150 text-emerald-600 dark:text-gray-100 hover:text-emerald-800 dark:hover:text-emerald-300"
-      >
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-        </svg>
-        Torna indietro
-      </a>
-    </div>
+    <!-- Header Section -->
+    <div class="mb-8">
+      <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Suggerisci un luogo</h2>
+      <p class="mt-2 text-gray-600 dark:text-gray-300">Suggerisci un nuovo luogo. La tua proposta sarà revisionata dagli amministratori</p>
+    </div>    
 
     <!-- Form Card -->
-    <div class="p-8 bg-white dark:bg-[#2C2C2C] shadow-lg dark:shadow-lg rounded-xl">
-      <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Suggerisci un luogo</h1>
-        <p class="mt-2 text-gray-600 dark:text-gray-300">Suggerisci un nuovo luogo. La tua proposta sarà revisionata dagli amministratori.</p>
+    <div class="overflow-hidden bg-white dark:bg-[#2C2C2C] shadow-md dark:shadow-lg rounded-xl">
+      <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Informazioni luogo</h3>
       </div>
-
-      <!-- Success Message -->
-      @if (success()) {
-        <div class="px-4 py-6 mb-6 text-center border rounded-lg border-emerald-200 bg-emerald-50 dark:bg-emerald-900 dark:border-emerald-700">
-          <p class="text-lg font-semibold text-emerald-700 dark:text-emerald-200">Suggerimento inviato con successo!</p>
-          <p class="mt-1 text-sm text-emerald-600 dark:text-emerald-300">Il tuo suggerimento è stato ricevuto e sarà revisionato dagli amministratori.</p>
-          <a
-            routerLink="/restaurants"
-            class="inline-block px-6 py-2 mt-4 font-medium text-white transition duration-150 rounded-lg bg-emerald-600 hover:bg-emerald-700"
-          >
-            Torna alla home
-          </a>
-        </div>
-      }
-
-      <!-- Error Message -->
-      @if (error()) {
-        <div class="px-4 py-3 mb-6 text-red-700 border border-red-200 rounded-lg bg-red-50 dark:bg-red-900 dark:text-red-200 dark:border-red-700">
-          <p class="text-sm">{{ error() }}</p>
-        </div>
-      }
-
-      <!-- Form -->
-      @if (!success()) {
-        <form (ngSubmit)="onSubmit()" class="space-y-6">
-          <!-- Name Field -->
-          <div>
-            <label for="name" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-              Nome luogo <span class="text-red-500">*</span>
-            </label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              required
-              [(ngModel)]="name"
-              [disabled]="loading()"
-              class="w-full px-4 py-2 transition duration-150 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed bg-white dark:bg-[#3C3C3C] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-500"
-              placeholder="Inserisci nome luogo"
-            />
-          </div>
-
-          <!-- Cuisine Field -->
-          <div>
-            <label for="cuisine" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-              Tipo di luogo
-            </label>
-            <select
-              id="cuisine"
-              name="cuisine"
-              [(ngModel)]="cuisine"
-              [disabled]="loading()"
-              class="w-full px-4 py-2 transition duration-150 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed bg-white dark:bg-[#3C3C3C] text-gray-900 dark:text-white"
+      <div class="p-6 space-y-6">
+        <!-- Success Message -->
+        @if (success()) {
+          <div class="px-4 py-6 mb-6 text-center border rounded-lg border-emerald-200 bg-emerald-50 dark:bg-emerald-900 dark:border-emerald-700">
+            <p class="text-lg font-semibold text-emerald-700 dark:text-emerald-200">Suggerimento inviato con successo!</p>
+            <p class="mt-1 text-sm text-emerald-600 dark:text-emerald-300">Il tuo suggerimento è stato ricevuto e sarà revisionato dagli amministratori.</p>
+            <a
+              routerLink="/restaurants"
+              class="inline-block px-6 py-2 mt-4 font-medium text-white transition duration-150 rounded-lg bg-emerald-600 hover:bg-emerald-700"
             >
-              <option value="">Seleziona tipo di luogo</option>
-              <option *ngFor="let c of cuisineOptions" [value]="c">
-                {{ c }}
-              </option>
-            </select>
+              Torna alla home
+            </a>
           </div>
+        }
 
-          <!-- Address Field -->
-          <div>
-            <label for="address" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-              Indirizzo
-            </label>
-            <input
-              id="address"
-              name="address"
-              type="text"
-              [(ngModel)]="address"
-              [disabled]="loading()"
-              class="w-full px-4 py-2 transition duration-150 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed bg-white dark:bg-[#3C3C3C] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-500"
-              placeholder="Inserisci indirizzo luogo"
-            />
+        <!-- Error Message -->
+        @if (error()) {
+          <div class="px-4 py-3 mb-6 text-red-700 border border-red-200 rounded-lg bg-red-50 dark:bg-red-900 dark:text-red-200 dark:border-red-700">
+            <p class="text-sm">{{ error() }}</p>
           </div>
+        }
 
-          <!-- Description Field -->
-          <div>
-            <label for="description" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-              Descrizione
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              rows="4"
-              [(ngModel)]="description"
-              [disabled]="loading()"
-              class="w-full px-4 py-2 transition duration-150 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed bg-white dark:bg-[#3C3C3C] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-500"
-              placeholder="Descrivi il luogo"
-            ></textarea>
-          </div>
-
-          <!-- Review Fields (identico a restaurant-detail) -->
-          <div class="pt-2 pb-2 border-t border-gray-200 dark:border-gray-700">
-            <h2 class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">La tua recensione <span class="text-red-500">*</span></h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Servizio: {{ formatRating(serviceRating()) }} / {{ MAX_RATING }}.0
-                </label>
-                <input
-                  type="range"
-                  [min]="MIN_RATING"
-                  [max]="MAX_RATING"
-                  [step]="RATING_STEP"
-                  [(ngModel)]="serviceRating"
-                  name="serviceRating"
-                  [disabled]="loading()"
-                  title="Valutazione servizio"
-                  class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-emerald-600"
-                />
-              </div>
-              <div>
-                <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Prezzo: {{ formatRating(priceRating()) }} / {{ MAX_RATING }}.0
-                </label>
-                <input
-                  type="range"
-                  [min]="MIN_RATING"
-                  [max]="MAX_RATING"
-                  [step]="RATING_STEP"
-                  [(ngModel)]="priceRating"
-                  name="priceRating"
-                  [disabled]="loading()"
-                  title="Valutazione prezzo"
-                  class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-emerald-600"
-                />
-              </div>
-              <div>
-                <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Menu: {{ formatRating(menuRating()) }} / {{ MAX_RATING }}.0
-                </label>
-                <input
-                  type="range"
-                  [min]="MIN_RATING"
-                  [max]="MAX_RATING"
-                  [step]="RATING_STEP"
-                  [(ngModel)]="menuRating"
-                  name="menuRating"
-                  [disabled]="loading()"
-                  title="Valutazione menu"
-                  class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-emerald-600"
-                />
-              </div>
+        <!-- Form -->
+        @if (!success()) {
+          <form (ngSubmit)="onSubmit()" class="space-y-6">
+            <!-- Name Field -->
+            <div>
+              <label for="name" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                Nome luogo <span class="text-red-500">*</span>
+              </label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                required
+                [(ngModel)]="name"
+                [disabled]="loading()"
+                class="w-full px-4 py-2 transition duration-150 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed bg-white dark:bg-[#3C3C3C] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-500"
+                placeholder="Inserisci nome luogo"
+              />
             </div>
-            <div class="mt-4">
-              <label for="comment" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                Commento <span class="text-red-500">*</span>
+
+            <!-- Cuisine Field -->
+            <div>
+              <label for="cuisine" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                Tipo di luogo
+              </label>
+              <select
+                id="cuisine"
+                name="cuisine"
+                [(ngModel)]="cuisine"
+                [disabled]="loading()"
+                class="w-full px-4 py-2 transition duration-150 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed bg-white dark:bg-[#3C3C3C] text-gray-900 dark:text-white"
+              >
+                <option value="">Seleziona tipo di luogo</option>
+                <option *ngFor="let c of cuisineOptions" [value]="c">
+                  {{ c }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Address Field -->
+            <div>
+              <label for="address" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                Indirizzo
+              </label>
+              <input
+                id="address"
+                name="address"
+                type="text"
+                [(ngModel)]="address"
+                [disabled]="loading()"
+                class="w-full px-4 py-2 transition duration-150 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed bg-white dark:bg-[#3C3C3C] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-500"
+                placeholder="Inserisci indirizzo luogo"
+              />
+            </div>
+
+            <!-- Description Field -->
+            <div>
+              <label for="description" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                Descrizione
               </label>
               <textarea
-                id="comment"
-                name="comment"
+                id="description"
+                name="description"
                 rows="4"
-                required
-                [(ngModel)]="comment"
+                [(ngModel)]="description"
                 [disabled]="loading()"
-                class="w-full px-4 py-2 transition duration-150 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-[#3C3C3C] text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                placeholder="Condividi la tua esperienza..."
+                class="w-full px-4 py-2 transition duration-150 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed bg-white dark:bg-[#3C3C3C] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-500"
+                placeholder="Descrivi il luogo"
               ></textarea>
             </div>
-          </div>
 
-          <!-- Action Buttons -->
-          <div class="flex flex-col gap-4 pt-4 lg:space-x-4 lg:flex-row">
-            <button
-              type="submit"
-              [disabled]="loading()"
-              class="flex-1 px-6 py-3 font-medium text-white transition duration-150 bg-emerald-600 dark:bg-emerald-700 rounded-lg shadow-lg hover:bg-emerald-700 dark:hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-[#2C2C2C] focus:ring-emerald-500 disabled:bg-emerald-400 dark:disabled:bg-emerald-900 disabled:cursor-not-allowed hover:shadow-xl"
-            >
-              @if (loading()) {
-                <span class="flex items-center justify-center">
-                  <svg class="w-5 h-5 mr-3 -ml-1 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Invio in corso...
-                </span>
-              } @else {
-                <span>Invia suggerimento</span>
-              }
-            </button>
-            <button
-              type="button"
-              routerLink="/restaurants"
-              [disabled]="loading()"
-              class="px-6 py-3 font-medium text-gray-700 dark:text-gray-300 transition duration-150 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-[#3C3C3C] focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-[#2C2C2C] focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Annulla
-            </button>
-          </div>
-        </form>
-      }
+            <!-- Review Fields (identico a restaurant-detail) -->
+            <div class="pt-2 pb-2 border-t border-gray-200 dark:border-gray-700">
+              <h2 class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">La tua recensione <span class="text-red-500">*</span></h2>
+              <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div>
+                  <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Servizio: {{ formatRating(serviceRating()) }} / {{ MAX_RATING }}.0
+                  </label>
+                  <input
+                    type="range"
+                    [min]="MIN_RATING"
+                    [max]="MAX_RATING"
+                    [step]="RATING_STEP"
+                    [(ngModel)]="serviceRating"
+                    name="serviceRating"
+                    [disabled]="loading()"
+                    title="Valutazione servizio"
+                    class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-emerald-600"
+                  />
+                </div>
+                <div>
+                  <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Prezzo: {{ formatRating(priceRating()) }} / {{ MAX_RATING }}.0
+                  </label>
+                  <input
+                    type="range"
+                    [min]="MIN_RATING"
+                    [max]="MAX_RATING"
+                    [step]="RATING_STEP"
+                    [(ngModel)]="priceRating"
+                    name="priceRating"
+                    [disabled]="loading()"
+                    title="Valutazione prezzo"
+                    class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-emerald-600"
+                  />
+                </div>
+                <div>
+                  <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Menu: {{ formatRating(menuRating()) }} / {{ MAX_RATING }}.0
+                  </label>
+                  <input
+                    type="range"
+                    [min]="MIN_RATING"
+                    [max]="MAX_RATING"
+                    [step]="RATING_STEP"
+                    [(ngModel)]="menuRating"
+                    name="menuRating"
+                    [disabled]="loading()"
+                    title="Valutazione menu"
+                    class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-emerald-600"
+                  />
+                </div>
+              </div>
+              <div class="mt-4">
+                <label for="comment" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Commento <span class="text-red-500">*</span>
+                </label>
+                <textarea
+                  id="comment"
+                  name="comment"
+                  rows="4"
+                  required
+                  [(ngModel)]="comment"
+                  [disabled]="loading()"
+                  class="w-full px-4 py-2 transition duration-150 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-[#3C3C3C] text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
+                  placeholder="Condividi la tua esperienza..."
+                ></textarea>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col gap-4 pt-4 lg:space-x-4 lg:flex-row">
+              <button
+                type="submit"
+                [disabled]="loading()"
+                class="flex-1 px-6 py-3 font-medium text-white transition duration-150 bg-emerald-600 dark:bg-emerald-700 rounded-lg shadow-lg hover:bg-emerald-700 dark:hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-[#2C2C2C] focus:ring-emerald-500 disabled:bg-emerald-400 dark:disabled:bg-emerald-900 disabled:cursor-not-allowed hover:shadow-xl"
+              >
+                @if (loading()) {
+                  <span class="flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-3 -ml-1 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Invio in corso...
+                  </span>
+                } @else {
+                  <span>Invia suggerimento</span>
+                }
+              </button>
+              <button
+                type="button"
+                routerLink="/restaurants"
+                [disabled]="loading()"
+                class="px-6 py-3 font-medium text-gray-700 dark:text-gray-300 transition duration-150 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-[#3C3C3C] focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-[#2C2C2C] focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Annulla
+              </button>
+            </div>
+          </form>
+        }
+      </div>
     </div>
   </div>
 </div>
