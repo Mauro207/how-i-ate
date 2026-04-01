@@ -102,6 +102,10 @@ export class NavigationComponent implements OnDestroy {
     return this.router.url === url; 
   }
 
+  isRoutePrefixActive(prefix: string): boolean {
+    return this.router.url.startsWith(prefix);
+  }
+
   toggleMenu(): void {
     this.menuOpen = !this.menuOpen; 
   }

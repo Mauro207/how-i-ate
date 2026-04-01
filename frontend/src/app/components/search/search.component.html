@@ -1,71 +1,93 @@
 <div class="min-h-screen bg-gray-50 dark:bg-[#1C1B1F]">
-  <!-- Header/Navigation -->
   <app-navigation></app-navigation>
 
-  <!-- Main Content -->
-  <div class="px-4 pt-6 pb-16 mx-auto max-w-7xl sm:px-6 lg:px-8">
-    <!-- Header Section -->
-    <div class="flex items-center justify-between lg:mb-8">
-      <div class="lg:hidden">
-        <p class="text-lg font-semibold text-gray-900 dark:text-white">
-          Ciao <span class="text-2xl">{{ authService.currentUser()?.username || 'Utente' }} 👋</span>
-        </p>
+  <div class="max-w-5xl px-4 pt-6 pb-8 mx-auto sm:px-6 lg:px-8">
+    <div class="mb-6">
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Cerca</h1>
+      <p class="mt-2 text-gray-600 dark:text-gray-300">Trova luoghi e utenti in un'unica ricerca.</p>
+    </div>
+
+    <div class="sticky top-0 z-10 p-3 mb-6 bg-gray-50/95 dark:bg-[#1C1B1F]/95 backdrop-blur">
+      <div class="flex items-center px-4 py-3 bg-white border border-gray-200 shadow-sm dark:bg-[#2C2C2C] rounded-xl dark:border-gray-700">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" class="mr-3 text-gray-500 fill-current dark:text-gray-400">
+          <path d="M22.705 21.253l-4.399-4.374c1.181-1.561 1.81-3.679 1.859-6.329-.105-6.095-3.507-9.473-9.588-9.513C4.423 1.076 1 4.649 1 10.549c0 6.195 3.426 9.512 9.589 9.548 2.629-.016 4.739-.626 6.303-1.805l4.403 4.379c.518.492 1.131.291 1.414-.004.383-.398.388-1.025-.004-1.414zM3 10.567c.097-5.035 2.579-7.499 7.576-7.53 4.949.032 7.503 2.571 7.589 7.512-.094 5.12-2.505 7.518-7.576 7.548-5.077-.03-7.489-2.422-7.589-7.53z"/>
+        </svg>
+        <input
+          type="text"
+          [value]="query()"
+          (input)="onQueryChange($event)"
+          placeholder="Cerca luoghi o utenti..."
+          class="w-full text-base text-gray-800 bg-transparent outline-none dark:text-white placeholder:text-gray-500"
+        />
       </div>
-      <div class="hidden lg:block">
-        <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Ultimi luoghi</h2>
-        <p class="mt-2 text-gray-600 dark:text-gray-200">Recensisci gli ultimi luoghi creati</p>
-      </div>
-      <button
-        routerLink="/restaurants/create"
-        *ngIf="canCreateRestaurant()"
-        class="hidden fixed z-10 px-6 py-3 text-lg font-medium text-white transition duration-150 bg-indigo-600 dark:bg-white dark:text-[#121212] rounded-full shadow-lg right-4 bottom-[calc(8vh+1rem)] lg:static lg:bottom-auto hover:bg-indigo-700 hover:shadow-xl"
-      >
-        + Aggiungi luogo
-      </button>
-      <button
-        routerLink="/restaurants/suggest"
-        *ngIf="!canCreateRestaurant()"
-        class="hidden fixed z-10 px-6 py-3 text-lg font-medium text-white transition duration-150 rounded-full shadow-lg bg-emerald-600 dark:bg-emerald-500 right-4 bottom-[calc(8vh+1rem)] lg:static lg:bottom-auto hover:bg-emerald-700 hover:shadow-xl"
-      >
-        + Suggerisci luogo
-      </button>
     </div>
 
-    <!-- Loading State -->
-    <div *ngIf="loading()" class="flex items-center justify-center py-12">
-      <svg class="w-12 h-12 text-indigo-600 dark:text-indigo-400 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-      </svg>
-    </div>
-
-    <!-- Error State -->
-    <div *ngIf="error()" class="px-4 py-3 text-red-700 border border-red-200 rounded-lg bg-red-50 dark:bg-red-900 dark:text-red-200 dark:border-red-700">
-      <p>{{ error() }}</p>
-    </div>
-
-    <!-- Restaurant Cards Grid -->
-    @if (!loading() && !error()) {
-      @if (restaurants().length === 0) {
-        <div class="py-12 text-center bg-white dark:bg-[#2C2C2C] rounded-lg shadow">
-          <p class="text-lg text-gray-500 dark:text-gray-300">Nessun luogo trovato. Creane uno!</p>
+    @if (hasQuery()) {
+      <div class="overflow-hidden bg-white shadow-sm dark:bg-[#2C2C2C] rounded-xl dark:shadow-lg">
+        <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Risultati ricerca</h2>
         </div>
-      } @else {
-        <div class="flex flex-col-reverse gap-6 lg:grid lg:grid-cols-4">
-          <!-- Left column: Restaurants -->
-          <div class="block lg:col-span-3">
-            <div class="mb-4 lg:hidden">
-              <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Ultimi luoghi</h2>
-              <p class="mt-2 text-gray-600 dark:text-gray-200">Recensisci gli ultimi luoghi creati</p>
-            </div>
-            <ul class="overflow-hidden bg-white shadow-sm dark:bg-[#2C2C2C] rounded-xl dark:shadow-lg divide-y divide-gray-100 dark:divide-gray-700">
+
+        @if (loading()) {
+          <div class="py-12 text-center">
+            <svg class="w-8 h-8 mx-auto text-indigo-600 dark:text-indigo-400 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+          </div>
+        } @else if (searchResults().length === 0) {
+          <div class="py-10 text-center text-gray-500 dark:text-gray-400">Nessun risultato trovato.</div>
+        } @else {
+          <ul class="divide-y divide-gray-100 dark:divide-gray-700">
+            <li
+              *ngFor="let item of searchResults(); trackBy: trackBySearchItem"
+              class="px-5 py-4 transition cursor-pointer hover:bg-gray-50 dark:hover:bg-[#343434]"
+              (click)="openResult(item)"
+            >
+              <div class="flex items-center gap-3">
+                <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-900/30">
+                  @if (item.type === 'user') {
+                    <svg viewBox="0 0 24 24" class="w-5 h-5 text-indigo-600 dark:text-indigo-300" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M20 21a8 8 0 0 0-16 0"></path>
+                      <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                  } @else {
+                    <svg viewBox="0 0 24 24" class="w-5 h-5 text-emerald-600 dark:text-emerald-300" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 21s7-4.5 7-11a7 7 0 0 0-14 0c0 6.5 7 11 7 11z"></path>
+                      <circle cx="12" cy="10" r="2"></circle>
+                    </svg>
+                  }
+                </span>
+                <div class="min-w-0">
+                  <p class="font-medium text-gray-900 truncate dark:text-white">{{ item.title }}</p>
+                  @if (item.subtitle) {
+                    <p class="text-sm text-gray-500 truncate dark:text-gray-300">{{ item.subtitle }}</p>
+                  }
+                </div>
+              </div>
+            </li>
+          </ul>
+        }
+      </div>
+    } @else {
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <section class="overflow-hidden bg-white shadow-sm dark:bg-[#2C2C2C] rounded-xl dark:shadow-lg">
+          <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Luoghi suggeriti</h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400">4/5 suggerimenti casuali per iniziare.</p>
+          </div>
+
+          @if (randomRestaurants().length === 0) {
+            <div class="px-5 py-8 text-sm text-gray-500 dark:text-gray-400">Nessun luogo disponibile.</div>
+          } @else {
+            <ul class="divide-y divide-gray-100 dark:divide-gray-700">
               <li
-                *ngFor="let restaurant of recentRestaurants()"
+                *ngFor="let restaurant of randomRestaurants()"
                 class="px-5 py-4 transition cursor-pointer hover:bg-gray-50 dark:hover:bg-[#343434]"
-                (click)="viewRestaurant(restaurant._id)"
+                (click)="openRestaurant(restaurant._id)"
               >
                 <div class="flex items-start gap-3">
-                  <span class="inline-flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-full dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-200">
+                  <span class="inline-flex items-center justify-center w-10 h-10 text-indigo-700 bg-indigo-100 rounded-full dark:bg-indigo-900/30 dark:text-indigo-200">
                     <ng-container [ngSwitch]="getCuisineIcon(restaurant.cuisine)">
                       <svg *ngSwitchCase="'pizza'" viewBox="0 0 24 24" class="w-5 h-5 fill-current">
                         <path d="M23.2.8A2.716,2.716,0,0,0,20.3.176L3.155,6.929a4.976,4.976,0,0,0-3,5.824,15.855,15.855,0,0,0,11.094,11.1h0a4.983,4.983,0,0,0,5.825-3.009L23.832,3.672A2.71,2.71,0,0,0,23.2.8ZM11.746,21.911A13.8,13.8,0,0,1,2.09,12.254a2.949,2.949,0,0,1,1.265-3.18A11.987,11.987,0,0,0,14.924,20.646,2.947,2.947,0,0,1,11.746,21.911Zm4.027-3.227c-6.191-.1-10.355-4.265-10.456-10.457L21.01,2.047a.717.717,0,0,1,.771.17.7.7,0,0,1,.181.747L21.3,4.645c-5.758-1.98-8.942,6.209-3.413,8.668Zm2.847-7.232a2.654,2.654,0,0,1,1.943-4.935Z"></path>
@@ -91,7 +113,6 @@
                       </svg>
                     </ng-container>
                   </span>
-
                   <div class="min-w-0">
                     <p class="font-medium text-gray-900 truncate dark:text-white">{{ restaurant.name }}</p>
                     <p class="inline-flex items-center gap-1 text-sm text-gray-500 truncate dark:text-gray-300">
@@ -105,20 +126,21 @@
                 </div>
               </li>
             </ul>
+          }
+        </section>
+
+        <section class="overflow-hidden bg-white shadow-sm dark:bg-[#2C2C2C] rounded-xl dark:shadow-lg">
+          <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Numero di luoghi inseriti</h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Totale luoghi presenti in piattaforma.</p>
           </div>
 
-          <!-- Right column: Ranking Widget -->
-          <div class="block lg:col-span-1">
-            <div class="sticky top-4">
-              <app-ranking-widget></app-ranking-widget>
-            </div>
+          <div class="flex flex-col items-center justify-center px-5 py-10">
+            <span class="text-5xl font-extrabold text-indigo-600 dark:text-indigo-300">{{ totalRestaurants() }}</span>
+            <p class="mt-3 text-sm text-gray-500 dark:text-gray-300">luoghi inseriti</p>
           </div>
-
-          <div>
-            
-          </div>
-        </div>
-      }
+        </section>
+      </div>
     }
   </div>
 </div>

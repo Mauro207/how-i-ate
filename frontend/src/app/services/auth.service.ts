@@ -24,6 +24,7 @@ export interface UserSearchResult {
   username: string;
   displayName?: string;
   role: 'user' | 'admin' | 'superadmin';
+  createdAt?: string;
 }
 
 @Injectable({
@@ -93,6 +94,14 @@ export class AuthService {
     const params = new HttpParams().set('q', q);
     return this.http.get<{ count: number; users: UserSearchResult[] }>(
       `${environment.apiUrl}/auth/users/search`,
+      { params }
+    );
+  }
+
+  getLatestUsers(limit = 5): Observable<{ count: number; users: UserSearchResult[] }> {
+    const params = new HttpParams().set('limit', limit.toString());
+    return this.http.get<{ count: number; users: UserSearchResult[] }>(
+      `${environment.apiUrl}/auth/users/latest`,
       { params }
     );
   }

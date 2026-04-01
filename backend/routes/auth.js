@@ -601,4 +601,23 @@ const searchUsersHandler = async (req, res) => {
 
 router.get('/users/search', authenticate, searchUsersHandler);
 
+// Latest users for authenticated users
+router.get('/users/latest', authenticate, async (req, res) => {
+  try {
+    const parsedLimit = parseInt(req.query.limit, 10);
+    const limit = Number.isFinite(parsedLimit)
+      ? Math.min(Math.max(parsedLimit, 1), 20)
+      : 5;
+
+    const users = await User.find({})
+      .select('_id username displayName role createdAt')
+      .sort({ createdAt: -1 })
+      .limit(limit);
+
+    return res.json({ count: users.length, users });
+  } catch (error) {
+    return res.status(500).json({ message: 'Error fetching latest users', error: error.message });
+  }
+});
+
 module.exports = router;

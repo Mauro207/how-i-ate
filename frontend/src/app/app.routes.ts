@@ -10,6 +10,7 @@ import { UsersComponent } from './components/users/users.component';
 import { RankingsComponent } from './components/rankings/rankings.component';
 import { SuggestPlaceComponent } from './components/suggest-place/suggest-place.component';
 import { SuggestionsComponent } from './components/suggestions/suggestions.component';
+import { SearchComponent } from './components/search/search.component';
 import { authGuard } from './guards/auth.guard';
 import { superadminGuard } from './guards/superadmin.guard';
 import { adminGuard } from './guards/admin.guard';
@@ -24,6 +25,7 @@ export const routes: Routes = [
   { path: 'restaurants/suggest', component: SuggestPlaceComponent, canActivate: [authGuard] },
   { path: 'restaurants/:id', component: RestaurantDetailComponent, canActivate: [authGuard] },
   { path: 'rankings', component: RankingsComponent, canActivate: [authGuard] },
+  { path: 'search', component: SearchComponent, canActivate: [authGuard] },
   { path: 'settings', component: SettingsComponent, canActivate: [authGuard] },
 
   // Nuova rotta canonical (solo userId)

@@ -2,3 +2,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+	--mobile-bottom-bar-height: 8vh;
+	--mobile-bottom-safe-space: calc(var(--mobile-bottom-bar-height) + env(safe-area-inset-bottom, 0px) + 1rem);
+}
+
+@media (max-width: 1023px) {
+	app-navigation ~ * {
+		padding-bottom: var(--mobile-bottom-safe-space);
+	}
+}
