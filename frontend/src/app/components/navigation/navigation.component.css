@@ -11,8 +11,6 @@ button {
     z-index: 30;
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    border-top: 1px solid #e5e7eb;
-    background: #ffffff;
     box-shadow: 0 -6px 18px rgba(15, 23, 42, 0.1);
     height: calc(var(--mobile-bottom-bar-height) + env(safe-area-inset-bottom, 0px));
     padding-top: 0.35rem;
@@ -34,10 +32,6 @@ button {
     transition: color 0.2s ease-in-out;
   }
 
-  .mobile-bottom-nav__item--active {
-    color: #4f46e5;
-  }
-
   .mobile-bottom-nav__item svg {
     width: 1.2rem;
     height: 1.2rem;
@@ -55,10 +49,6 @@ button {
 
   :host-context(.dark) .mobile-bottom-nav__item {
     color: #d1d5db;
-  }
-
-  :host-context(.dark) .mobile-bottom-nav__item--active {
-    color: #818cf8;
   }
 
   @media (min-width: 1024px) {
