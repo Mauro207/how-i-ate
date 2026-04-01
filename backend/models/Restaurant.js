@@ -20,6 +20,11 @@ const restaurantSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  coverImageUrl: {
+    type: String,
+    trim: true,
+    maxlength: [2048, 'Cover image URL is too long']
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

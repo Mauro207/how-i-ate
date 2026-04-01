@@ -17,6 +17,7 @@ export class RestaurantDetailComponent implements OnInit {
   restaurant = signal<Restaurant | null>(null);
   reviews = signal<Review[]>([]);
   reviewAccordionOpen = signal<Record<string, boolean>>({});
+  coverImageLoadFailed = signal(false);
   loading = signal(true);
   error = signal('');
   
@@ -59,6 +60,7 @@ export class RestaurantDetailComponent implements OnInit {
     this.restaurantService.getRestaurant(id).subscribe({
       next: (response) => {
         this.restaurant.set(response.restaurant);
+        this.coverImageLoadFailed.set(false);
         this.loading.set(false);
       },
       error: (err) => {
@@ -66,6 +68,10 @@ export class RestaurantDetailComponent implements OnInit {
         this.loading.set(false);
       }
     });
+  }
+
+  onCoverImageError(): void {
+    this.coverImageLoadFailed.set(true);
   }
 
   loadReviews(id: string): void {

@@ -75,6 +75,25 @@
             />
           </div>
 
+          <!-- Cover Image Field -->
+          <div class="space-y-2">
+            <label for="coverImageUrl" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Link immagine di copertina
+            </label>
+            <input
+              id="coverImageUrl"
+              name="coverImageUrl"
+              type="url"
+              [(ngModel)]="coverImageUrl"
+              [disabled]="loading()"
+              class="w-full px-4 py-2 transition duration-150 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed bg-white dark:bg-[#3C3C3C] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-500"
+              placeholder="https://.../cover.jpg"
+            />
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              Questo link viene mostrato come copertina solo nella pagina dettaglio del luogo.
+            </p>
+          </div>
+
           <!-- Description Field -->
           <div>
             <label for="description" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">

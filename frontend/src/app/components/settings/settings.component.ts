@@ -73,6 +73,14 @@ export class SettingsComponent implements OnInit {
     this.authService.logout();
   }
 
+  goToSuggestions(): void {
+    this.router.navigate(['/suggestions']);
+  }
+
+  goToUsers(): void {
+    this.router.navigate(['/users']);
+  }
+
   canManageUsers(): boolean {
     const user = this.authService.currentUser();
     return user?.role === 'admin' || user?.role === 'superadmin';

@@ -10,6 +10,7 @@ export interface Restaurant {
   description?: string;
   address?: string;
   cuisine?: string;
+  coverImageUrl?: string;
   createdBy: string;
   createdAt: string;
   updatedAt: string;
@@ -109,6 +110,7 @@ export class RestaurantService {
     description?: string;
     address?: string;
     cuisine?: string;
+    coverImageUrl?: string;
   }): Observable<{ message: string; restaurant: Restaurant }> {
     return this.http.post<{ message: string; restaurant: Restaurant }>(
       `${this.apiUrl}/restaurants`,
@@ -177,6 +179,12 @@ export class RestaurantService {
     description?: string;
     address?: string;
     cuisine?: string;
+    review: {
+      serviceRating: number;
+      priceRating: number;
+      menuRating: number;
+      comment: string;
+    };
   }): Observable<{ message: string; suggestion: Suggestion }> {
     return this.http.post<{ message: string; suggestion: Suggestion }>(
       `${this.apiUrl}/suggestions`,

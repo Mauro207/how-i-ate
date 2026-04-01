@@ -17,6 +17,7 @@ export class RestaurantCreateComponent {
   description = signal('');
   address = signal('');
   cuisine = signal('');
+  coverImageUrl = signal('');
   error = signal('');
   loading = signal(false);
 
@@ -40,7 +41,8 @@ export class RestaurantCreateComponent {
       name: this.name(),
       description: this.description() || undefined,
       address: this.address() || undefined,
-      cuisine: this.cuisine() || undefined
+      cuisine: this.cuisine() || undefined,
+      coverImageUrl: this.coverImageUrl().trim() || undefined
     };
 
     this.restaurantService.createRestaurant(data).subscribe({

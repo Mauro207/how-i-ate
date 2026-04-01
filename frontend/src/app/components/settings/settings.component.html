@@ -10,6 +10,27 @@
       <p class="mt-2 text-gray-600 dark:text-gray-300">Gestisci le preferenze del tuo account</p>
     </div>
 
+    @if (canManageUsers()) {
+      <div class="grid gap-4 mb-8 sm:grid-cols-2">
+        <button
+          type="button"
+          (click)="goToSuggestions()"
+          class="flex items-center justify-center w-full px-6 py-4 font-medium text-white transition duration-150 bg-indigo-600 shadow-lg rounded-xl dark:bg-indigo-700 hover:bg-indigo-700 dark:hover:bg-indigo-600 hover:shadow-xl"
+        >
+          Valuta suggerimenti
+        </button>
+        @if (isSuperAdmin()) {
+          <button
+            type="button"
+            (click)="goToUsers()"
+            class="flex items-center justify-center w-full px-6 py-4 font-medium text-indigo-700 transition duration-150 border border-indigo-200 rounded-xl bg-indigo-50 dark:bg-[#2C2C2C] dark:text-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-[#3C3C3C]"
+          >
+            Gestisci utenti
+          </button>
+        }
+      </div>
+    }
+
     <!-- Settings Card -->
     <div class="overflow-hidden bg-white dark:bg-[#2C2C2C] shadow-md dark:shadow-lg rounded-xl">
       <div class="p-6 border-b border-gray-200 dark:border-gray-700">
