@@ -287,6 +287,20 @@ export class RestaurantDetailComponent implements OnInit {
     return isCreator || isAdminOrSuperadmin;
   }
 
+  canEditRestaurant(): boolean {
+    const user = this.authService.currentUser();
+    if (!user) return false;
+
+    return user.role === 'admin' || user.role === 'superadmin';
+  }
+
+  editRestaurant(): void {
+    const restaurant = this.restaurant();
+    if (!restaurant) return;
+
+    this.router.navigate(['/restaurants', restaurant._id, 'edit']);
+  }
+
   deleteRestaurant(): void {
     const restaurant = this.restaurant();
     if (!restaurant) return;

@@ -1,10 +1,10 @@
-<app-navigation></app-navigation>
+<app-navigation [backUrl]="isEditMode() ? getCancelRoute().join('/') : null"></app-navigation>
 <div class="min-h-screen px-4 pt-6 pb-24 bg-gray-50 dark:bg-[#1C1B1F] sm:px-6 lg:px-8">
   <div class="max-w-2xl mx-auto">
     <!-- Header Section -->
     <div class="mb-8">
-      <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Aggiungi luogo</h2>
-      <p class="mt-2 text-gray-600 dark:text-gray-300">Crea un nuovo luogo compilando il form.</p>
+      <h2 class="text-3xl font-bold text-gray-900 dark:text-white">{{ getTitle() }}</h2>
+      <p class="mt-2 text-gray-600 dark:text-gray-300">{{ getSubtitle() }}</p>
     </div>    
     
     <!-- Form Card -->
@@ -123,16 +123,16 @@
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Creazione in corso...
+                  {{ getLoadingLabel() }}
                 </span>
               } @else {
-                <span>Crea luogo</span>
+                <span>{{ getSubmitLabel() }}</span>
               }
             </button>
             
             <button
               type="button"
-              routerLink="/restaurants"
+              [routerLink]="getCancelRoute()"
               [disabled]="loading()"
               class="px-6 py-3 font-medium text-gray-700 dark:text-gray-300 transition duration-150 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-[#3C3C3C] focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-[#2C2C2C] focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >

@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnDestroy } from '@angular/core';
+import { Component, inject, signal, OnDestroy, Input, Output, EventEmitter } from '@angular/core';
 import { forkJoin, of, Subject } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, switchMap, takeUntil, tap } from 'rxjs/operators';
 import { RestaurantService, RestaurantSearchResult } from '../../services/restaurant.service';
@@ -20,6 +20,12 @@ type SearchItem =
 export class NavigationComponent implements OnDestroy {
   menuOpen = false;
   showSearchDropdown = signal(false);
+
+  @Input() backUrl: string | null = null;
+  @Input() showEditBtn = false;
+  @Input() showDeleteBtn = false;
+  @Output() editClicked = new EventEmitter<void>();
+  @Output() deleteClicked = new EventEmitter<void>();
   showMobileSearch = signal(false);
   searchQuery = signal('');
 
