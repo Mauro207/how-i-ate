@@ -1,1 +1,22 @@
 /* Restaurant list component styles */
+
+.wave-emoji {
+	display: inline-block;
+	transform-origin: 70% 70%;
+	animation: wave-on-load 1.2s ease-in-out 1;
+}
+
+@keyframes wave-on-load {
+	0% { transform: rotate(0deg); }
+	20% { transform: rotate(10deg); }
+	40% { transform: rotate(-7deg); }
+	60% { transform: rotate(8deg); }
+	80% { transform: rotate(-4deg); }
+	100% { transform: rotate(0deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.wave-emoji {
+		animation: none;
+	}
+}
