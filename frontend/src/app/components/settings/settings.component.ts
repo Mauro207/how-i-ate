@@ -81,6 +81,10 @@ export class SettingsComponent implements OnInit {
     this.router.navigate(['/users']);
   }
 
+  goToUpdates(): void {
+    this.router.navigate(['/updates']);
+  }
+
   canManageUsers(): boolean {
     const user = this.authService.currentUser();
     return user?.role === 'admin' || user?.role === 'superadmin';

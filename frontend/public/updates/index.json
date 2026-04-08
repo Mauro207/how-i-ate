@@ -1,0 +1,32 @@
+{
+  "files": [
+    {
+      "title": "v1.1.2 - Modifica un luogo",
+      "file": "v1.1.2.md"
+    },
+    {
+      "title": "v1.1.1 - Copertine e aggiornamenti minori",
+      "file": "v1.1.1.md"
+    },
+    {
+      "title": "v1.1.0 - Aggiornamento design webapp",
+      "file": "v1.1.0.md"
+    },
+    {
+      "title": "v1.0.3 - Disponibile la webapp",
+      "file": "v1.0.3.md"
+    },
+    {
+      "title": "v1.0.2 - Notifiche e aggiornamento recensioni",
+      "file": "v1.0.2.md"
+    },
+    {
+      "title": "v1.0.1 - Luoghi suggeriti e miglioramenti UI",
+      "file": "v1.0.1.md"
+    },
+    {
+      "title": "v1.0.0 - Prima release",
+      "file": "v1.0.0.md"
+    }
+  ]
+}

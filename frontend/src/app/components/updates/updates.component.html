@@ -1,0 +1,63 @@
+<div class="min-h-screen bg-gray-50 dark:bg-[#1C1B1F]">
+  <app-navigation [backUrl]="'/settings'"></app-navigation>
+
+  <div class="max-w-6xl px-4 pt-6 pb-24 mx-auto sm:px-6 lg:px-8">
+    <div class="mb-8">
+      <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Ultimi aggiornamenti</h2>
+      <p class="mt-2 text-gray-600 dark:text-gray-300">Qui trovi i changelog del progetto in formato markdown.</p>
+    </div>
+
+    @if (errorMessage()) {
+      <div class="px-4 py-3 mb-6 text-red-700 border border-red-200 rounded-lg bg-red-50 dark:bg-red-900 dark:text-red-200 dark:border-red-700">
+        {{ errorMessage() }}
+      </div>
+    }
+
+    <div class="grid gap-6 lg:grid-cols-12">
+      <aside class="lg:col-span-4 xl:col-span-3">
+        <div class="overflow-hidden bg-white shadow-md dark:bg-[#2C2C2C] dark:shadow-lg rounded-xl">
+          <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="font-semibold text-gray-900 dark:text-white">Versioni</h3>
+          </div>
+
+          @if (loadingIndex()) {
+            <p class="p-4 text-sm text-gray-500 dark:text-gray-300">Caricamento elenco...</p>
+          } @else if (files().length === 0) {
+            <p class="p-4 text-sm text-gray-500 dark:text-gray-300">Nessun file markdown disponibile.</p>
+          } @else {
+            <div class="p-2 space-y-1">
+              @for (file of files(); track file.file) {
+                <button
+                  type="button"
+                  (click)="selectUpdateFile(file)"
+                  class="text-gray-500 updates-file-btn dark:text-gray-400"
+                  [class.updates-file-btn--active]="selectedFile()?.file === file.file"
+                >
+                  {{ file.title }}
+                </button>
+              }
+            </div>
+          }
+        </div>
+      </aside>
+
+      <section class="lg:col-span-8 xl:col-span-9">
+        <article class="overflow-hidden bg-white shadow-md dark:bg-[#2C2C2C] dark:shadow-lg rounded-xl">
+          <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">{{ selectedFile()?.title || 'Changelog' }}</h3>
+          </div>
+
+          <div class="p-6">
+            @if (loadingMarkdown()) {
+              <p class="text-sm text-gray-500 dark:text-gray-300">Caricamento markdown...</p>
+            } @else if (!renderedHtml()) {
+              <p class="text-sm text-gray-500 dark:text-gray-300">Seleziona un file per visualizzare i dettagli.</p>
+            } @else {
+              <div class="text-gray-500 markdown-content dark:text-gray-300" [innerHTML]="renderedHtml()"></div>
+            }
+          </div>
+        </article>
+      </section>
+    </div>
+  </div>
+</div>
