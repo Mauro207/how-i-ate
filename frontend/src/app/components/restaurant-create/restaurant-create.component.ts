@@ -2,7 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { RestaurantService } from '../../services/restaurant.service';
+import { RestaurantService, RestaurantSearchResult } from '../../services/restaurant.service';
 import { NavigationComponent } from '../navigation/navigation.component';
 
 @Component({
@@ -22,6 +22,11 @@ export class RestaurantCreateComponent implements OnInit {
   editingRestaurantId = signal<string | null>(null);
   error = signal('');
   loading = signal(false);
+
+  // Duplicate check (creation mode only)
+  similarRestaurants = signal<RestaurantSearchResult[]>([]);
+  showDuplicateWarning = signal(false);
+  checkingDuplicate = signal(false);
 
   cuisineOptions = ['Pizzeria', 'Ristorante', 'Pub', 'Paninoteca', 'Bar', 'Braceria', 'Enoteca', 'Sushi']; 
   
@@ -55,12 +60,44 @@ export class RestaurantCreateComponent implements OnInit {
         this.cuisine.set(restaurant.cuisine || '');
         this.coverImageUrl.set(restaurant.coverImageUrl || '');
         this.loading.set(false);
+        this.similarRestaurants.set([]);
+        this.showDuplicateWarning.set(false);
       },
       error: (err) => {
         this.loading.set(false);
         this.error.set(err.error?.message || 'Caricamento del luogo fallito.');
       }
     });
+  }
+
+  onNameBlur(): void {
+    // Duplicate warning is requested only while creating a new restaurant.
+    if (this.isEditMode()) {
+      return;
+    }
+
+    const query = this.name().trim();
+    if (query.length < 2) {
+      this.similarRestaurants.set([]);
+      this.showDuplicateWarning.set(false);
+      return;
+    }
+
+    this.checkingDuplicate.set(true);
+    this.restaurantService.searchRestaurants(query).subscribe({
+      next: (response) => {
+        this.checkingDuplicate.set(false);
+        this.similarRestaurants.set(response.restaurants);
+        this.showDuplicateWarning.set(response.restaurants.length > 0);
+      },
+      error: () => {
+        this.checkingDuplicate.set(false);
+      }
+    });
+  }
+
+  dismissDuplicateWarning(): void {
+    this.showDuplicateWarning.set(false);
   }
 
   onSubmit(): void {

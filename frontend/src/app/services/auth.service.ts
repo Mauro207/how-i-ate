@@ -2,6 +2,7 @@ import { Injectable, signal, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { timeout } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { TokenStorageService } from './token-storage.service';
 
@@ -119,48 +120,68 @@ export class AuthService {
 
   private loadUserFromToken(): void {
     const token = this.getToken();
-    if (token) {
-      this.httpClient.get<{ user: User }>(`${this.apiUrl}/me`).subscribe({
+    if (!token) {
+      this.authInitialized$.next(true);
+      return;
+    }
+
+    // First paint must not wait on /auth/me (cold-start backend can be slow).
+    const userFromToken = this.decodeUserFromToken(token);
+    if (!userFromToken) {
+      this.tokenStorage.clearToken();
+      this.currentUser.set(null);
+      this.isAuthenticated.set(false);
+      this.authInitialized$.next(true);
+      return;
+    }
+
+    this.currentUser.set(userFromToken);
+    this.isAuthenticated.set(true);
+    this.authInitialized$.next(true);
+
+    // Keep server as source of truth, but validate in background with timeout.
+    this.httpClient
+      .get<{ user: User }>(`${this.apiUrl}/me`)
+      .pipe(timeout(4000))
+      .subscribe({
         next: (response) => {
           this.currentUser.set(response.user);
           this.isAuthenticated.set(true);
-          this.authInitialized$.next(true);
         },
         error: (err) => {
-          // Rimuovi il token SOLO se è esplicitamente non valido (401/403)
-          // Per errori di rete (0, 500, ecc.) mantieni il token e considera l'utente autenticato
+          // Only invalidate session when the backend explicitly rejects the token.
           if (err.status === 401 || err.status === 403) {
             this.tokenStorage.clearToken();
+            this.currentUser.set(null);
             this.isAuthenticated.set(false);
-          } else {
-            // Rete assente o backend freddo: decodifica il token localmente
-            try {
-              const payload = JSON.parse(atob(token.split('.')[1]));
-              const isExpired = payload.exp && payload.exp * 1000 < Date.now();
-              if (isExpired) {
-                this.tokenStorage.clearToken();
-                this.isAuthenticated.set(false);
-              } else {
-                // Token ancora valido per scadenza: considera l'utente autenticato
-                this.currentUser.set({
-                  id: payload.userId ?? payload.id,
-                  username: payload.username,
-                  displayName: payload.displayName,
-                  email: payload.email,
-                  role: payload.role
-                });
-                this.isAuthenticated.set(true);
-              }
-            } catch {
-              this.tokenStorage.clearToken();
-              this.isAuthenticated.set(false);
-            }
+            this.router.navigate(['/login']);
           }
-          this.authInitialized$.next(true);
         }
       });
-    } else {
-      this.authInitialized$.next(true);
+  }
+
+  private decodeUserFromToken(token: string): User | null {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const isExpired = payload.exp && payload.exp * 1000 < Date.now();
+
+      if (isExpired) {
+        return null;
+      }
+
+      if (!payload.role || (!payload.userId && !payload.id) || !payload.username || !payload.email) {
+        return null;
+      }
+
+      return {
+        id: payload.userId ?? payload.id,
+        username: payload.username,
+        displayName: payload.displayName,
+        email: payload.email,
+        role: payload.role
+      };
+    } catch {
+      return null;
     }
   }
 }

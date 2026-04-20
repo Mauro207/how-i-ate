@@ -35,9 +35,68 @@
               required
               [(ngModel)]="name"
               [disabled]="loading()"
+              (blur)="onNameBlur()"
               class="w-full px-4 py-2 transition duration-150 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed bg-white dark:bg-[#3C3C3C] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-500"
               placeholder="Inserisci nome luogo"
             />
+
+            @if (!isEditMode() && checkingDuplicate()) {
+              <div class="flex items-center gap-2 px-4 py-3 mt-2 text-sm text-gray-600 border border-gray-200 rounded-lg dark:border-gray-700 bg-gray-50 dark:bg-[#2C2C2C] dark:text-gray-400">
+                <svg class="w-4 h-4 text-indigo-500 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Verifico se il luogo esiste gia...
+              </div>
+            }
+
+            @if (!isEditMode() && showDuplicateWarning()) {
+              <div class="mt-2 border border-indigo-300 rounded-lg bg-indigo-50 dark:bg-indigo-950/30 dark:border-indigo-700">
+                <div class="flex items-start justify-between px-4 pt-4 pb-2">
+                  <div class="flex items-start gap-2">
+                    <svg class="w-5 h-5 mt-0.5 text-indigo-600 dark:text-indigo-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div>
+                      <p class="text-sm font-semibold text-indigo-800 dark:text-indigo-300">Possibili luoghi gia presenti</p>
+                      <p class="mt-0.5 text-xs text-indigo-700 dark:text-indigo-400">Abbiamo trovato {{ similarRestaurants().length }} risultato/i simile/i. Verifica prima di creare un duplicato.</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    (click)="dismissDuplicateWarning()"
+                    class="p-1 ml-2 text-indigo-600 rounded dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200 hover:bg-indigo-100 dark:hover:bg-indigo-900"
+                    title="Chiudi"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <ul class="px-4 pb-4 space-y-2">
+                  <li *ngFor="let r of similarRestaurants()">
+                    <a
+                      [routerLink]="['/restaurants', r._id]"
+                      class="flex items-center justify-between px-3 py-2 transition duration-150 border border-indigo-200 rounded-lg dark:border-indigo-800 bg-white dark:bg-[#2C2C2C] hover:bg-indigo-50 dark:hover:bg-indigo-900/40 group"
+                    >
+                      <div>
+                        <p class="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-indigo-700 dark:group-hover:text-indigo-300">{{ r.name }}</p>
+                        @if (r.cuisine || r.address) {
+                          <p class="text-xs text-gray-500 dark:text-gray-400">
+                            @if (r.cuisine) { <span>{{ r.cuisine }}</span> }
+                            @if (r.cuisine && r.address) { <span> · </span> }
+                            @if (r.address) { <span>{{ r.address }}</span> }
+                          </p>
+                        }
+                      </div>
+                      <svg class="w-4 h-4 ml-2 text-indigo-500 dark:text-indigo-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            }
           </div>
 
           <!-- Cuisine Field -->
