@@ -49,9 +49,69 @@
                 required
                 [(ngModel)]="name"
                 [disabled]="loading()"
+                (blur)="onNameBlur()"
                 class="w-full px-4 py-2 transition duration-150 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed bg-white dark:bg-[#3C3C3C] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-500"
                 placeholder="Inserisci nome luogo"
               />
+
+              <!-- Duplicate Warning Popup -->
+              @if (checkingDuplicate()) {
+                <div class="flex items-center gap-2 px-4 py-3 mt-2 text-sm text-gray-600 border border-gray-200 rounded-lg dark:border-gray-700 bg-gray-50 dark:bg-[#2C2C2C] dark:text-gray-400">
+                  <svg class="w-4 h-4 animate-spin text-emerald-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Verifico se il luogo esiste già...
+                </div>
+              }
+
+              @if (showDuplicateWarning()) {
+                <div class="mt-2 border rounded-lg border-amber-300 bg-amber-50 dark:bg-amber-950 dark:border-amber-700">
+                  <div class="flex items-start justify-between px-4 pt-4 pb-2">
+                    <div class="flex items-start gap-2">
+                      <svg class="w-5 h-5 mt-0.5 text-amber-600 dark:text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                      </svg>
+                      <div>
+                        <p class="text-sm font-semibold text-amber-800 dark:text-amber-300">Attenzione: forse è già presente?</p>
+                        <p class="mt-0.5 text-xs text-amber-700 dark:text-amber-400">Abbiamo trovato {{ similarRestaurants().length }} luogo/i simile/i già presente/i. Controlla prima di procedere.</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      (click)="dismissDuplicateWarning()"
+                      class="p-1 ml-2 rounded text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900"
+                      title="Chiudi"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                  <ul class="px-4 pb-4 space-y-2">
+                    <li *ngFor="let r of similarRestaurants()">
+                      <a
+                        [routerLink]="['/restaurants', r._id]"
+                        class="flex items-center justify-between px-3 py-2 transition duration-150 border border-amber-200 rounded-lg dark:border-amber-800 bg-white dark:bg-[#2C2C2C] hover:bg-amber-50 dark:hover:bg-amber-900 group"
+                      >
+                        <div>
+                          <p class="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-amber-700 dark:group-hover:text-amber-300">{{ r.name }}</p>
+                          @if (r.cuisine || r.address) {
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                              @if (r.cuisine) { <span>{{ r.cuisine }}</span> }
+                              @if (r.cuisine && r.address) { <span> · </span> }
+                              @if (r.address) { <span>{{ r.address }}</span> }
+                            </p>
+                          }
+                        </div>
+                        <svg class="w-4 h-4 ml-2 text-amber-500 dark:text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              }
             </div>
 
             <!-- Cuisine Field -->

@@ -2,7 +2,7 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { RestaurantService } from '../../services/restaurant.service';
+import { RestaurantService, RestaurantSearchResult } from '../../services/restaurant.service';
 import { NavigationComponent } from '../navigation/navigation.component';
 
 @Component({
@@ -20,6 +20,11 @@ export class SuggestPlaceComponent {
   error = signal('');
   loading = signal(false);
   success = signal(false);
+
+  // Duplicate check
+  similarRestaurants = signal<RestaurantSearchResult[]>([]);
+  showDuplicateWarning = signal(false);
+  checkingDuplicate = signal(false);
 
   // Review form constants (come restaurant-detail)
   private readonly DEFAULT_RATING = 5;
@@ -47,6 +52,30 @@ export class SuggestPlaceComponent {
     if (remainder === 0.25) return `${whole}+`;
     if (remainder === 0.75) return `${whole + 1}-`;
     return rounded.toFixed(1);
+  }
+
+  onNameBlur(): void {
+    const query = this.name().trim();
+    if (query.length < 2) {
+      this.similarRestaurants.set([]);
+      this.showDuplicateWarning.set(false);
+      return;
+    }
+    this.checkingDuplicate.set(true);
+    this.restaurantService.searchRestaurants(query).subscribe({
+      next: (response) => {
+        this.checkingDuplicate.set(false);
+        this.similarRestaurants.set(response.restaurants);
+        this.showDuplicateWarning.set(response.restaurants.length > 0);
+      },
+      error: () => {
+        this.checkingDuplicate.set(false);
+      }
+    });
+  }
+
+  dismissDuplicateWarning(): void {
+    this.showDuplicateWarning.set(false);
   }
 
   onSubmit(): void {
