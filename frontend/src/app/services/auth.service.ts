@@ -33,6 +33,7 @@ export interface UserSearchResult {
 })
 export class AuthService {
   private apiUrl = `${environment.apiUrl}/auth`;
+  private readonly userCacheKey = 'auth_user_profile';
   private http = inject(HttpClient);
   private tokenStorage = inject(TokenStorageService);
 
@@ -58,6 +59,7 @@ export class AuthService {
           this.tokenStorage.setToken(response.token);
           this.currentUser.set(response.user);
           this.isAuthenticated.set(true);
+          this.storeCachedUser(response.user);
         })
       );
   }
@@ -79,6 +81,7 @@ export class AuthService {
       .pipe(
         tap(response => {
           this.currentUser.set(response.user);
+          this.storeCachedUser(response.user);
         })
       );
   }
@@ -109,6 +112,7 @@ export class AuthService {
 
   logout(): void {
     this.tokenStorage.clearToken();
+    this.clearCachedUser();
     this.currentUser.set(null);
     this.isAuthenticated.set(false);
     this.router.navigate(['/login']);
@@ -125,33 +129,49 @@ export class AuthService {
       return;
     }
 
-    // First paint must not wait on /auth/me (cold-start backend can be slow).
-    const userFromToken = this.decodeUserFromToken(token);
-    if (!userFromToken) {
+    const payload = this.decodeTokenPayload(token);
+    if (!payload?.id) {
       this.tokenStorage.clearToken();
+      this.clearCachedUser();
       this.currentUser.set(null);
       this.isAuthenticated.set(false);
       this.authInitialized$.next(true);
       return;
     }
 
-    this.currentUser.set(userFromToken);
+    // First paint must not wait on /auth/me (cold-start backend can be slow).
+    const cachedUser = this.getCachedUser();
+    if (cachedUser && cachedUser.id === payload.id) {
+      this.currentUser.set(cachedUser);
+    } else {
+      // Backend JWT currently contains only userId. Keep session active and
+      // hydrate full profile from /auth/me in background.
+      this.currentUser.set({
+        id: payload.id,
+        username: 'Utente',
+        email: '',
+        role: 'user'
+      });
+    }
+
     this.isAuthenticated.set(true);
     this.authInitialized$.next(true);
 
     // Keep server as source of truth, but validate in background with timeout.
     this.httpClient
       .get<{ user: User }>(`${this.apiUrl}/me`)
-      .pipe(timeout(4000))
+      .pipe(timeout(5000))
       .subscribe({
         next: (response) => {
           this.currentUser.set(response.user);
           this.isAuthenticated.set(true);
+          this.storeCachedUser(response.user);
         },
         error: (err) => {
           // Only invalidate session when the backend explicitly rejects the token.
           if (err.status === 401 || err.status === 403) {
             this.tokenStorage.clearToken();
+            this.clearCachedUser();
             this.currentUser.set(null);
             this.isAuthenticated.set(false);
             this.router.navigate(['/login']);
@@ -160,7 +180,7 @@ export class AuthService {
       });
   }
 
-  private decodeUserFromToken(token: string): User | null {
+  private decodeTokenPayload(token: string): { id: string } | null {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
       const isExpired = payload.exp && payload.exp * 1000 < Date.now();
@@ -169,19 +189,54 @@ export class AuthService {
         return null;
       }
 
-      if (!payload.role || (!payload.userId && !payload.id) || !payload.username || !payload.email) {
+      const id = payload.userId ?? payload.id;
+      if (!id) {
+        return null;
+      }
+
+      return { id };
+    } catch {
+      return null;
+    }
+  }
+
+  private storeCachedUser(user: User): void {
+    try {
+      localStorage.setItem(this.userCacheKey, JSON.stringify(user));
+    } catch {
+      // Ignore cache failures.
+    }
+  }
+
+  private getCachedUser(): User | null {
+    try {
+      const raw = localStorage.getItem(this.userCacheKey);
+      if (!raw) {
+        return null;
+      }
+
+      const parsed = JSON.parse(raw) as Partial<User>;
+      if (!parsed.id || !parsed.username || !parsed.role) {
         return null;
       }
 
       return {
-        id: payload.userId ?? payload.id,
-        username: payload.username,
-        displayName: payload.displayName,
-        email: payload.email,
-        role: payload.role
+        id: parsed.id,
+        username: parsed.username,
+        displayName: parsed.displayName,
+        email: parsed.email ?? '',
+        role: parsed.role
       };
     } catch {
       return null;
+    }
+  }
+
+  private clearCachedUser(): void {
+    try {
+      localStorage.removeItem(this.userCacheKey);
+    } catch {
+      // Ignore cache cleanup failures.
     }
   }
 }
