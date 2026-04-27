@@ -25,9 +25,14 @@
         <button
           type="button"
           (click)="goToSuggestions()"
-          class="flex items-center justify-center w-full px-6 py-4 font-medium text-white transition duration-150 bg-indigo-600 shadow-lg rounded-xl dark:bg-indigo-700 hover:bg-indigo-700 dark:hover:bg-indigo-600 hover:shadow-xl"
+          class="relative flex items-center justify-center w-full px-6 py-4 font-medium text-white transition duration-150 bg-indigo-600 shadow-lg rounded-xl dark:bg-indigo-700 hover:bg-indigo-700 dark:hover:bg-indigo-600 hover:shadow-xl"
         >
           Valuta suggerimenti
+          @if (pendingSuggestionsCount() > 0) {
+            <span class="absolute inline-flex items-center justify-center min-w-6 px-1.5 py-1 text-xs font-semibold leading-none text-white -translate-y-1/2 bg-red-500 rounded-full right-3 top-1/2">
+              {{ pendingSuggestionsCount() }}
+            </span>
+          }
         </button>
         @if (isSuperAdmin()) {
           <button

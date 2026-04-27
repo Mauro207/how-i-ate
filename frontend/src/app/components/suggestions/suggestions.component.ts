@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { RestaurantService, Suggestion } from '../../services/restaurant.service';
 import { NavigationComponent } from '../navigation/navigation.component';
 import { Title } from '@angular/platform-browser';
+import { SuggestionsBadgeService } from '../../services/suggestions-badge.service';
 
 @Component({
   selector: 'app-suggestions',
@@ -20,12 +21,14 @@ export class SuggestionsComponent implements OnInit {
 
   constructor(
     private restaurantService: RestaurantService,
+    private suggestionsBadgeService: SuggestionsBadgeService,
     private router: Router,
     private title: Title
   ) {}
 
   ngOnInit(): void {
     this.title.setTitle('Suggerimenti - How I Ate');
+    this.suggestionsBadgeService.refreshPendingCount(true);
     this.loadSuggestions();
   }
 
@@ -35,6 +38,7 @@ export class SuggestionsComponent implements OnInit {
     this.restaurantService.getSuggestions().subscribe({
       next: (resp) => {
         this.suggestions.set(resp.suggestions);
+        this.suggestionsBadgeService.setPendingCount(resp.count || 0);
         this.loading.set(false);
       },
       error: (err) => {
@@ -49,6 +53,7 @@ export class SuggestionsComponent implements OnInit {
     this.restaurantService.approveSuggestion(id).subscribe({
       next: (resp) => {
         this.suggestions.set(this.suggestions().filter(s => s._id !== id));
+        this.suggestionsBadgeService.setPendingCount(this.suggestions().length);
         this.actionLoading.set(null);
         this.router.navigate(['/restaurants', resp.restaurant._id]);
       },
@@ -64,6 +69,7 @@ export class SuggestionsComponent implements OnInit {
     this.restaurantService.rejectSuggestion(id).subscribe({
       next: () => {
         this.suggestions.set(this.suggestions().filter(s => s._id !== id));
+        this.suggestionsBadgeService.setPendingCount(this.suggestions().length);
         this.actionLoading.set(null);
       },
       error: (err) => {

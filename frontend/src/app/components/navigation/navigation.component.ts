@@ -1,8 +1,9 @@
-import { Component, inject, signal, OnDestroy, Input, Output, EventEmitter } from '@angular/core';
+import { Component, inject, signal, OnDestroy, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { forkJoin, of, Subject } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, switchMap, takeUntil, tap } from 'rxjs/operators';
 import { RestaurantService, RestaurantSearchResult } from '../../services/restaurant.service';
 import { AuthService, UserSearchResult } from '../../services/auth.service';
+import { SuggestionsBadgeService } from '../../services/suggestions-badge.service';
 import { RouterLink, Router } from '@angular/router';
 import { CommonModule, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -17,7 +18,7 @@ type SearchItem =
   styleUrls: ['./navigation.component.css'],
   imports: [ RouterLink, CommonModule, FormsModule, NgIf ] 
 })
-export class NavigationComponent implements OnDestroy {
+export class NavigationComponent implements OnInit, OnDestroy {
   menuOpen = false;
   showSearchDropdown = signal(false);
 
@@ -35,6 +36,7 @@ export class NavigationComponent implements OnDestroy {
 
   private readonly restaurantService = inject(RestaurantService);
   public readonly authService = inject(AuthService);
+  public readonly suggestionsBadgeService = inject(SuggestionsBadgeService);
   private readonly router = inject(Router);
 
   private readonly destroy$ = new Subject<void>();
@@ -95,6 +97,10 @@ export class NavigationComponent implements OnDestroy {
       .subscribe(items => this.results.set(items));
   }
 
+  ngOnInit(): void {
+    this.suggestionsBadgeService.refreshPendingCount();
+  }
+
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
@@ -114,6 +120,9 @@ export class NavigationComponent implements OnDestroy {
 
   toggleMenu(): void {
     this.menuOpen = !this.menuOpen; 
+    if (this.menuOpen) {
+      this.suggestionsBadgeService.refreshPendingCount();
+    }
   }
 
   goToMyRankings(): void {
@@ -174,5 +183,9 @@ export class NavigationComponent implements OnDestroy {
   isAdminOrSuperAdmin(): boolean {
     const role = this.authService.currentUser()?.role;
     return role === 'admin' || role === 'superadmin';
+  }
+
+  pendingSuggestionsCount(): number {
+    return this.suggestionsBadgeService.pendingCount();
   }
 }

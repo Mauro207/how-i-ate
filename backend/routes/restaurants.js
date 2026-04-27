@@ -436,12 +436,23 @@ router.put('/:id', writeLimiter, authenticate, authorize('admin', 'superadmin'),
       return res.status(404).json({ message: 'Restaurant not found' });
     }
     
-    // Update fields if provided
-    if (name !== undefined) restaurant.name = name;
-    if (description !== undefined) restaurant.description = description;
-    if (address !== undefined) restaurant.address = address;
-    if (cuisine !== undefined) restaurant.cuisine = cuisine;
-    if (coverImageUrl !== undefined) restaurant.coverImageUrl = coverImageUrl;
+    // Update only fields explicitly present in request payload.
+    // This allows clearing optional values (e.g. description) during edit.
+    if (Object.prototype.hasOwnProperty.call(req.body, 'name')) {
+      restaurant.name = name;
+    }
+    if (Object.prototype.hasOwnProperty.call(req.body, 'description')) {
+      restaurant.description = description;
+    }
+    if (Object.prototype.hasOwnProperty.call(req.body, 'address')) {
+      restaurant.address = address;
+    }
+    if (Object.prototype.hasOwnProperty.call(req.body, 'cuisine')) {
+      restaurant.cuisine = cuisine;
+    }
+    if (Object.prototype.hasOwnProperty.call(req.body, 'coverImageUrl')) {
+      restaurant.coverImageUrl = coverImageUrl;
+    }
     
     await restaurant.save();
     

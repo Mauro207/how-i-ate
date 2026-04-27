@@ -109,12 +109,18 @@ export class RestaurantCreateComponent implements OnInit {
     this.loading.set(true);
     this.error.set('');
 
+    const trimmedName = this.name().trim();
+    const trimmedDescription = this.description().trim();
+    const trimmedAddress = this.address().trim();
+    const trimmedCuisine = this.cuisine().trim();
+    const trimmedCoverImageUrl = this.coverImageUrl().trim();
+
     const data = {
-      name: this.name().trim(),
-      description: this.description().trim() || undefined,
-      address: this.address().trim() || undefined,
-      cuisine: this.cuisine().trim() || undefined,
-      coverImageUrl: this.coverImageUrl().trim() || undefined
+      name: trimmedName,
+      description: this.isEditMode() ? trimmedDescription : (trimmedDescription || undefined),
+      address: this.isEditMode() ? trimmedAddress : (trimmedAddress || undefined),
+      cuisine: this.isEditMode() ? trimmedCuisine : (trimmedCuisine || undefined),
+      coverImageUrl: this.isEditMode() ? trimmedCoverImageUrl : (trimmedCoverImageUrl || undefined)
     };
 
     if (this.isEditMode()) {

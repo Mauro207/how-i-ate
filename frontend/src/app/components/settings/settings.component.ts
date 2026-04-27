@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { NavigationComponent } from '../navigation/navigation.component'; 
 import { NotificationService } from '../../services/notification.service';
+import { SuggestionsBadgeService } from '../../services/suggestions-badge.service';
 
 
 @Component({
@@ -37,6 +38,7 @@ export class SettingsComponent implements OnInit {
   constructor(
     public authService: AuthService,
     public notificationService: NotificationService,
+    public suggestionsBadgeService: SuggestionsBadgeService,
     private router: Router
   ) {}
 
@@ -48,6 +50,11 @@ export class SettingsComponent implements OnInit {
     }
     this.displayName = user.displayName || '';
     this.notificationService.syncStatus();
+    this.suggestionsBadgeService.refreshPendingCount();
+  }
+
+  pendingSuggestionsCount(): number {
+    return this.suggestionsBadgeService.pendingCount();
   }
 
   updateDisplayName(): void {
