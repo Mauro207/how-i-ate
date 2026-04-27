@@ -1,1 +1,131 @@
-/* Settings component styles */
+/* Improves scanability and tap comfort for settings sections, especially on mobile */
+:host {
+	display: block;
+}
+
+.quick-action-btn {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+	min-height: 4.8rem;
+	padding: 0.9rem 1rem;
+	border: 1px solid #d1d5db;
+	border-radius: 0.85rem;
+	background: #ffffff;
+	color: #111827;
+	text-align: left;
+	transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.quick-action-btn:hover {
+	border-color: #9ca3af;
+	background: #f9fafb;
+}
+
+.quick-action-btn__content {
+	display: flex;
+	flex-direction: column;
+	gap: 0.2rem;
+}
+
+.quick-action-btn__title-row {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+}
+
+.quick-action-btn__title {
+	font-size: 0.92rem;
+	font-weight: 600;
+	line-height: 1.2;
+}
+
+.quick-action-btn__subtitle {
+	font-size: 0.75rem;
+	color: #6b7280;
+	line-height: 1.25;
+}
+
+.quick-action-btn__icon {
+	width: 1.1rem;
+	height: 1.1rem;
+	color: #4b5563;
+	flex-shrink: 0;
+}
+
+.quick-action-btn__badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 1.35rem;
+	padding: 0.1rem 0.35rem;
+	border-radius: 9999px;
+	background: #ef4444;
+	color: #ffffff;
+	font-size: 0.66rem;
+	font-weight: 700;
+	line-height: 1;
+}
+
+.quick-action-btn--primary {
+	background: #4f46e5;
+	border-color: #4f46e5;
+	color: #ffffff;
+}
+
+.quick-action-btn--primary:hover {
+	background: #4338ca;
+	border-color: #4338ca;
+}
+
+.quick-action-btn--primary .quick-action-btn__subtitle {
+	color: #e0e7ff;
+}
+
+.quick-action-btn--primary .quick-action-btn__icon {
+	color: #ffffff;
+}
+
+:host-context(.dark) .quick-action-btn {
+	background: #2c2c2c;
+	border-color: #3f3f46;
+	color: #f3f4f6;
+}
+
+:host-context(.dark) .quick-action-btn:hover {
+	border-color: #52525b;
+	background: #333333;
+}
+
+:host-context(.dark) .quick-action-btn__subtitle {
+	color: #a1a1aa;
+}
+
+:host-context(.dark) .quick-action-btn__icon {
+	color: #d4d4d8;
+}
+
+:host-context(.dark) .quick-action-btn--primary {
+	background: #4f46e5;
+	border-color: #4f46e5;
+	color: #ffffff;
+}
+
+:host-context(.dark) .quick-action-btn--primary:hover {
+	background: #4338ca;
+	border-color: #4338ca;
+}
+
+:host-context(.dark) .quick-action-btn--primary .quick-action-btn__subtitle {
+	color: #e0e7ff;
+}
+
+@media (max-width: 640px) {
+	input,
+	button,
+	textarea,
+	select {
+		font-size: 16px;
+	}
+}

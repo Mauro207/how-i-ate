@@ -3,58 +3,119 @@
   <app-navigation></app-navigation>
 
   <!-- Main Content -->
-  <div class="max-w-5xl px-4 pt-6 pb-24 mx-auto sm:px-6 lg:px-8">
+  <div class="max-w-6xl px-4 pt-6 pb-24 mx-auto sm:px-6 lg:px-8">
     <!-- Header Section -->
-    <div class="mb-8">
-      <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Impostazioni</h2>
-      <p class="mt-2 text-gray-600 dark:text-gray-300">Gestisci le preferenze del tuo account</p>
+    <div class="mb-6">
+      <p class="text-xs font-semibold tracking-[0.14em] text-gray-500 uppercase dark:text-gray-400">Account</p>
+      <h2 class="mt-2 text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Impostazioni</h2>
+      <p class="mt-2 text-gray-600 dark:text-gray-300">Gestisci il profilo, le notifiche e gli strumenti di amministrazione.</p>
     </div>
 
-    <div class="mb-8">
+    <!-- Quick Actions -->
+    <div class="grid gap-3 mb-8 sm:grid-cols-2 lg:grid-cols-3">
       <button
         type="button"
         (click)="goToUpdates()"
-        class="flex items-center justify-center w-full gap-2 px-6 py-4 font-medium text-indigo-700 transition duration-150 border border-indigo-200 rounded-xl bg-indigo-50 dark:bg-[#2C2C2C] dark:text-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-[#3C3C3C]"
+        class="quick-action-btn"
       >
-        Ultimi aggiornamenti
+        <span class="quick-action-btn__content">
+          <span class="quick-action-btn__title">Ultimi aggiornamenti</span>
+          <span class="quick-action-btn__subtitle">Novita, fix e miglioramenti rilasciati</span>
+        </span>
+        <svg class="quick-action-btn__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
       </button>
-    </div>
 
-    @if (canManageUsers()) {
-      <div class="grid gap-4 mb-8 sm:grid-cols-2">
+      @if (canManageUsers()) {
         <button
           type="button"
           (click)="goToSuggestions()"
-          class="relative flex items-center justify-center w-full px-6 py-4 font-medium text-white transition duration-150 bg-indigo-600 shadow-lg rounded-xl dark:bg-indigo-700 hover:bg-indigo-700 dark:hover:bg-indigo-600 hover:shadow-xl"
+          class="quick-action-btn quick-action-btn--primary"
         >
-          Valuta suggerimenti
-          @if (pendingSuggestionsCount() > 0) {
-            <span class="absolute inline-flex items-center justify-center min-w-6 px-1.5 py-1 text-xs font-semibold leading-none text-white -translate-y-1/2 bg-red-500 rounded-full right-3 top-1/2">
-              {{ pendingSuggestionsCount() }}
+          <span class="quick-action-btn__content">
+            <span class="quick-action-btn__title-row">
+              <span class="quick-action-btn__title">Valuta suggerimenti</span>
+              @if (pendingSuggestionsCount() > 0) {
+                <span class="quick-action-btn__badge">
+                  {{ pendingSuggestionsCount() }}
+                </span>
+              }
             </span>
-          }
+            <span class="quick-action-btn__subtitle">Revisiona le proposte in attesa</span>
+          </span>
+          <svg class="quick-action-btn__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
         </button>
-        @if (isSuperAdmin()) {
-          <button
-            type="button"
-            (click)="goToUsers()"
-            class="flex items-center justify-center w-full px-6 py-4 font-medium text-indigo-700 transition duration-150 border border-indigo-200 rounded-xl bg-indigo-50 dark:bg-[#2C2C2C] dark:text-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-[#3C3C3C]"
-          >
-            Gestisci utenti
-          </button>
-        }
+      }
+
+      @if (isSuperAdmin()) {
+        <button
+          type="button"
+          (click)="goToUsers()"
+          class="quick-action-btn"
+        >
+          <span class="quick-action-btn__content">
+            <span class="quick-action-btn__title">Gestisci utenti</span>
+            <span class="quick-action-btn__subtitle">Crea account user e admin</span>
+          </span>
+          <svg class="quick-action-btn__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      }
+    </div>
+
+    <!-- Profile Overview -->
+    <section class="mb-6">
+      <div class="inline-flex w-full items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-3.5 py-3 shadow-sm dark:border-gray-700 dark:bg-[#2C2C2C] sm:w-auto sm:min-w-[22rem]">
+        <div class="flex items-center min-w-0 gap-3">
+          <div class="flex items-center justify-center text-sm font-bold text-white rounded-full shadow-sm h-9 w-9 bg-gradient-to-br from-indigo-500 to-blue-500">
+            {{ (authService.currentUser()?.displayName || authService.currentUser()?.username || '?').charAt(0) | uppercase }}
+          </div>
+          <div class="min-w-0">
+            <p class="text-sm font-semibold leading-tight text-gray-900 truncate dark:text-white">
+              {{ authService.currentUser()?.displayName || authService.currentUser()?.username }}
+            </p>
+            <p class="text-[11px] leading-tight text-gray-500 truncate dark:text-gray-400">@{{ authService.currentUser()?.username }}</p>
+          </div>
+        </div>
+        <div class="shrink-0">
+          <span class="inline-flex items-center rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-indigo-700 dark:border-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-200">
+            {{ authService.currentUser()?.role }}
+          </span>
+        </div>
       </div>
-    }
+    </section>
 
     <!-- Settings Card -->
-    <div class="overflow-hidden bg-white dark:bg-[#2C2C2C] shadow-md dark:shadow-lg rounded-xl">
-      <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-        <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Informazioni sul profilo</h3>
-      </div>
-      
+    <div class="overflow-hidden bg-white border border-gray-200 shadow-sm dark:bg-[#2C2C2C] dark:border-gray-700 rounded-2xl">
+      <button
+        type="button"
+        (click)="toggleAccountSection()"
+        [attr.aria-expanded]="accountSectionOpen()"
+        class="flex items-center justify-between w-full gap-4 p-6 text-left border-b border-gray-200 dark:border-gray-700"
+      >
+        <span>
+          <h3 class="text-[0.92rem] font-semibold leading-tight text-gray-900 dark:text-white">Informazioni account</h3>
+          <p class="mt-1 text-xs text-gray-600 dark:text-gray-400">Dati del profilo e nome visualizzato nell'app.</p>
+        </span>
+        <svg
+          class="w-5 h-5 text-gray-500 transition-transform duration-150 dark:text-gray-300"
+          [class.rotate-180]="accountSectionOpen()"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      @if (accountSectionOpen()) {
       <div class="p-6 space-y-6">
         <!-- Account Details (Read-only) -->
-        <div class="space-y-4">
+        <div class="grid gap-4 md:grid-cols-3">
           <div>
             <label class="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
               Username
@@ -63,7 +124,7 @@
               type="text"
               [value]="authService.currentUser()?.username"
               disabled
-                            title="Username"
+              title="Username"
               class="w-full px-4 py-2 text-gray-500 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-lg cursor-not-allowed bg-gray-50 dark:bg-[#3C3C3C]"
             />
             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Username non può essere cambiato</p>
@@ -76,7 +137,7 @@
             <input
               type="email"
               [value]="authService.currentUser()?.email"
-                            title="Email"
+              title="Email"
               disabled
               class="w-full px-4 py-2 text-gray-500 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-lg cursor-not-allowed bg-gray-50 dark:bg-[#3C3C3C]"
             />
@@ -90,7 +151,7 @@
             <input
               type="text"
               [value]="authService.currentUser()?.role"
-                            title="Ruolo"
+              title="Ruolo"
               disabled
               class="w-full px-4 py-2 text-gray-500 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-lg cursor-not-allowed bg-gray-50 dark:bg-[#3C3C3C]"
             />
@@ -98,7 +159,7 @@
         </div>
 
         <!-- Display Name Form -->
-        <form (ngSubmit)="updateDisplayName()" class="pt-4 space-y-4 border-t border-gray-200 dark:border-gray-700">
+        <form (ngSubmit)="updateDisplayName()" class="pt-6 space-y-4 border-t border-gray-200 dark:border-gray-700">
           <div>
             <label for="displayName" class="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
               Nome visibile
@@ -160,15 +221,34 @@
           </div>
         </form>
       </div>
+      }
     </div>
 
     <!-- Notifications Section: visibile su tutti i browser che supportano Notification API -->
     @if (notificationsUIVisible) {
-      <div class="mt-8 overflow-hidden bg-white dark:bg-[#2C2C2C] shadow-md dark:shadow-lg rounded-xl">
-        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Notifiche</h3>
-          <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Ricevi una notifica ogni volta che viene aggiunto un nuovo luogo</p>
-        </div>
+      <div class="mt-8 overflow-hidden bg-white border border-gray-200 shadow-sm dark:bg-[#2C2C2C] dark:border-gray-700 rounded-2xl">
+        <button
+          type="button"
+          (click)="toggleNotificationsSection()"
+          [attr.aria-expanded]="notificationsSectionOpen()"
+          class="flex items-center justify-between w-full gap-4 p-6 text-left border-b border-gray-200 dark:border-gray-700"
+        >
+          <span>
+            <h3 class="text-[0.92rem] font-semibold leading-tight text-gray-900 dark:text-white">Notifiche</h3>
+            <p class="mt-1 text-xs text-gray-600 dark:text-gray-300">Ricevi una notifica ogni volta che viene aggiunto un nuovo luogo</p>
+          </span>
+          <svg
+            class="w-5 h-5 text-gray-500 transition-transform duration-150 dark:text-gray-300"
+            [class.rotate-180]="notificationsSectionOpen()"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        @if (notificationsSectionOpen()) {
         <div class="p-6">
 
           <!-- Browser non supporta Push API (es. Safari < 16.4, iOS < 16.4) -->
@@ -246,28 +326,48 @@
           }
 
         </div>
+        }
       </div>
     }
 
     <!-- User Management Section (Admin/Superadmin only) -->
     @if (canManageUsers()) {
-      <div class="mt-8 overflow-hidden bg-white dark:bg-[#2C2C2C] shadow-md dark:shadow-lg rounded-xl">
-        <div class="flex flex-col items-start gap-4 p-6 border-b border-gray-200 dark:border-gray-700 lg:justify-between lg:items-center lg:flex-row">
-          <div>
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Gestione utenti</h3>
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Crea nuovi utenti o amministratori</p>
-          </div>
-          @if (!showUserForm()) {
-            <button
-              (click)="toggleUserForm()"
-              class="w-full px-6 py-3 font-medium text-white transition duration-150 bg-indigo-600 rounded-lg dark:bg-indigo-700 lg:w-max hover:bg-indigo-700 dark:hover:bg-indigo-600"
-            >
-              Crea utente
-            </button>
-          }
-        </div>
+      <div class="mt-8 overflow-hidden bg-white border border-gray-200 shadow-sm dark:bg-[#2C2C2C] dark:border-gray-700 rounded-2xl">
+        <button
+          type="button"
+          (click)="toggleUserManagementSection()"
+          [attr.aria-expanded]="userManagementSectionOpen()"
+          class="flex items-center justify-between w-full gap-4 p-6 text-left border-b border-gray-200 dark:border-gray-700"
+        >
+          <span>
+            <h3 class="text-[0.92rem] font-semibold leading-tight text-gray-900 dark:text-white">Gestione utenti</h3>
+            <p class="mt-1 text-xs text-gray-600 dark:text-gray-300">Crea nuovi utenti o amministratori</p>
+          </span>
+          <svg
+            class="w-5 h-5 text-gray-500 transition-transform duration-150 dark:text-gray-300"
+            [class.rotate-180]="userManagementSectionOpen()"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
 
-        @if (showUserForm()) {
+        @if (userManagementSectionOpen()) {
+          <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+            @if (!showUserForm()) {
+              <button
+                (click)="toggleUserForm()"
+                class="w-full px-6 py-3 font-medium text-white transition duration-150 bg-indigo-600 rounded-lg dark:bg-indigo-700 lg:w-max hover:bg-indigo-700 dark:hover:bg-indigo-600"
+              >
+                Crea utente
+              </button>
+            }
+          </div>
+        }
+
+        @if (showUserForm() && userManagementSectionOpen()) {
           <div class="p-6">
             <form (ngSubmit)="createNewUser()" class="space-y-4">
               <!-- Username -->

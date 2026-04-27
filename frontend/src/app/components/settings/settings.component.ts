@@ -21,6 +21,11 @@ export class SettingsComponent implements OnInit {
   successMessage = signal('');
   errorMessage = signal('');
 
+  // Collapsible sections
+  accountSectionOpen = signal(true);
+  notificationsSectionOpen = signal(false);
+  userManagementSectionOpen = signal(false);
+
     // Notifications
     notificationLoading = signal(false);
     notificationError = signal('');
@@ -174,5 +179,17 @@ export class SettingsComponent implements OnInit {
 
   isSuperAdmin(): boolean {
     return this.authService.currentUser()?.role === 'superadmin';
+  }
+
+  toggleAccountSection(): void {
+    this.accountSectionOpen.set(!this.accountSectionOpen());
+  }
+
+  toggleNotificationsSection(): void {
+    this.notificationsSectionOpen.set(!this.notificationsSectionOpen());
+  }
+
+  toggleUserManagementSection(): void {
+    this.userManagementSectionOpen.set(!this.userManagementSectionOpen());
   }
 }
