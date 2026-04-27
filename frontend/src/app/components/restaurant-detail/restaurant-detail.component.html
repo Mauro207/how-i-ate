@@ -123,7 +123,7 @@
       </div>
       <!-- Reviews Section -->
       <div class="px-6 py-8 bg-white dark:bg-[#2C2C2C] shadow-lg dark:shadow-lg rounded-xl">
-        @if (!showReviewForm() && !hasUserReviewed()) {
+        @if (!reviewsLoading() && !showReviewForm() && !hasUserReviewed()) {
           <div class="flex flex-col justify-between gap-3 mb-6 lg:flex-row lg:items-center">
             <button
               type="button"
@@ -249,7 +249,30 @@
         }
 
         <!-- Reviews List -->
-        @if (reviews().length === 0) {
+        @if (reviewsLoading()) {
+          <div class="space-y-6 animate-pulse" aria-live="polite" aria-label="Caricamento recensioni">
+            @for (_ of [1, 2, 3]; track $index) {
+              <div class="pb-6 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:pb-0">
+                <div class="flex items-start justify-between mb-4">
+                  <div class="space-y-2">
+                    <div class="w-28 h-4 bg-gray-200 rounded dark:bg-gray-700"></div>
+                    <div class="w-40 h-3 bg-gray-200 rounded dark:bg-gray-700"></div>
+                  </div>
+                  <div class="w-20 h-8 bg-indigo-100 rounded-full dark:bg-indigo-900/50"></div>
+                </div>
+                <div class="grid grid-cols-3 gap-3 mb-4">
+                  <div class="h-14 rounded-lg bg-blue-100/70 dark:bg-blue-900/40"></div>
+                  <div class="h-14 rounded-lg bg-green-100/70 dark:bg-green-900/40"></div>
+                  <div class="h-14 rounded-lg bg-purple-100/70 dark:bg-purple-900/40"></div>
+                </div>
+                <div class="space-y-2">
+                  <div class="w-full h-3 bg-gray-200 rounded dark:bg-gray-700"></div>
+                  <div class="w-5/6 h-3 bg-gray-200 rounded dark:bg-gray-700"></div>
+                </div>
+              </div>
+            }
+          </div>
+        } @else if (reviews().length === 0) {
           <div class="py-12 text-center text-gray-500 dark:text-gray-400">
             <p class="text-lg">Nessuna recensione presente. Lasciala per primo!</p>
           </div>
@@ -273,26 +296,67 @@
                       }
                     </p>
                   </div>
-                  <button 
-                    id="badge-value" 
-                    type="button"
-                    (click)="toggleReviewAccordion(review._id)"
-                    class="flex items-center px-3 py-1 bg-indigo-100 rounded-full dark:bg-indigo-900"
-                  >
-                    <svg class="w-5 h-5 mr-1 text-indigo-600 dark:text-indigo-300" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                    <span class="font-semibold text-indigo-900 dark:text-indigo-200">{{ formatRating(calculateAverageRating(review)) }}</span>
-                    <svg
-                      class="w-4 h-4 ml-2 text-gray-700 transition-transform duration-150 dark:text-indigo-200 md:hidden"
-                      [class.rotate-180]="isReviewAccordionOpen(review._id)"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                  <div class="relative flex items-center gap-2">
+                    <button 
+                      id="badge-value" 
+                      type="button"
+                      (click)="toggleReviewAccordion(review._id)"
+                      class="flex items-center px-3 py-1 bg-indigo-100 rounded-full dark:bg-indigo-900"
                     >
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
+                      <svg class="w-5 h-5 mr-1 text-indigo-600 dark:text-indigo-300" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                      <span class="font-semibold text-indigo-900 dark:text-indigo-200">{{ formatRating(calculateAverageRating(review)) }}</span>
+                      <svg
+                        class="w-4 h-4 ml-2 text-gray-700 transition-transform duration-150 dark:text-indigo-200 md:hidden"
+                        [class.rotate-180]="isReviewAccordionOpen(review._id)"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+
+                    @if (isAdminOrSuperadmin() && !isOwnReview(review) && (canEditReview(review) || canDeleteReview(review))) {
+                      <button
+                        type="button"
+                        class="inline-flex items-center justify-center w-8 h-8 text-gray-600 transition duration-150 bg-gray-100 rounded-full md:hidden dark:bg-[#3C3C3C] dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#4C4C4C]"
+                        (click)="toggleReviewActionsMenu(review._id)"
+                        title="Opzioni recensione"
+                        aria-label="Apri opzioni recensione"
+                      >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5h.01M12 12h.01M12 19h.01" />
+                        </svg>
+                      </button>
+
+                      @if (isReviewActionsMenuOpen(review._id)) {
+                        <div class="absolute right-0 z-20 w-40 p-1 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg top-full dark:bg-[#2C2C2C] dark:border-gray-700 md:hidden">
+                          @if (canEditReview(review)) {
+                            <button
+                              type="button"
+                              (click)="editReview(review)"
+                              [disabled]="deletingReviewId() === review._id || submittingReview()"
+                              class="w-full px-3 py-2 text-sm font-medium text-left text-indigo-600 transition duration-150 rounded-md dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              Modifica
+                            </button>
+                          }
+                          @if (canDeleteReview(review)) {
+                            <button
+                              type="button"
+                              (click)="deleteReview(review._id)"
+                              [disabled]="deletingReviewId() === review._id || submittingReview()"
+                              class="w-full px-3 py-2 text-sm font-medium text-left text-red-600 transition duration-150 rounded-md dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              Elimina
+                            </button>
+                          }
+                        </div>
+                      }
+                    }
+                  </div>
                 </div>
 
                 <!-- Mobile: accordion (mostra/nascondi) -->
@@ -340,7 +404,7 @@
                 <p class="mb-4 text-gray-700 dark:text-gray-300">{{ review.comment }}</p>
 
                 <!-- Edit/Delete Buttons -->
-                @if (canEditReview(review) || canDeleteReview(review)) {
+                @if ((canEditReview(review) || canDeleteReview(review)) && (!isAdminOrSuperadmin() || isOwnReview(review))) {
                   <div class="flex flex-row gap-4 mt-4 lg:gap-2">
                     @if (canEditReview(review)) {
                       <button
@@ -371,6 +435,39 @@
                             <path d="M10,18a1,1,0,0,0,1-1V11a1,1,0,0,0-2,0v6A1,1,0,0,0,10,18Z"/>
                             <path d="M14,18a1,1,0,0,0,1-1V11a1,1,0,0,0-2,0v6A1,1,0,0,0,14,18Z"/>
                           </svg>
+                        }
+                      </button>
+                    }
+                  </div>
+                }
+
+                @if ((canEditReview(review) || canDeleteReview(review)) && isAdminOrSuperadmin() && !isOwnReview(review)) {
+                  <div class="flex-row hidden gap-4 mt-4 lg:gap-2 md:flex">
+                    @if (canEditReview(review)) {
+                      <button
+                        (click)="editReview(review)"
+                        [disabled]="deletingReviewId() === review._id || submittingReview()"
+                        class="px-4 py-2 font-medium text-indigo-600 transition duration-150 rounded-lg dark:text-indigo-300 lg:text-sm bg-indigo-50 dark:bg-indigo-900 hover:bg-indigo-100 dark:hover:bg-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Modifica
+                      </button>
+                    }
+                    @if (canDeleteReview(review)) {
+                      <button
+                        (click)="deleteReview(review._id)"
+                        [disabled]="deletingReviewId() === review._id || submittingReview()"
+                        class="px-4 py-2 font-medium text-red-600 transition duration-150 rounded-lg dark:text-red-300 lg:text-sm bg-red-50 dark:bg-red-900 hover:bg-red-100 dark:hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        @if (deletingReviewId() === review._id) {
+                          <span class="flex items-center">
+                            <svg class="w-4 h-4 mr-2 -ml-1 text-red-600 dark:text-red-300 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Eliminazione...
+                          </span>
+                        } @else {
+                          Elimina
                         }
                       </button>
                     }

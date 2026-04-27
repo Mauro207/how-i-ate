@@ -16,7 +16,9 @@ import { NavigationComponent } from '../navigation/navigation.component';
 export class RestaurantDetailComponent implements OnInit {
   restaurant = signal<Restaurant | null>(null);
   reviews = signal<Review[]>([]);
+  reviewsLoading = signal(true);
   reviewAccordionOpen = signal<Record<string, boolean>>({});
+  reviewActionsMenuOpen = signal<Record<string, boolean>>({});
   coverImageLoadFailed = signal(false);
   loading = signal(true);
   error = signal('');
@@ -75,12 +77,15 @@ export class RestaurantDetailComponent implements OnInit {
   }
 
   loadReviews(id: string): void {
+    this.reviewsLoading.set(true);
     this.restaurantService.getRestaurantReviews(id).subscribe({
       next: (response) => {
         this.reviews.set(response.reviews);
+        this.reviewsLoading.set(false);
       },
       error: (err) => {
         console.error('Caricamento del luogo fallito.', err);
+        this.reviewsLoading.set(false);
       }
     });
   }
@@ -102,6 +107,28 @@ export class RestaurantDetailComponent implements OnInit {
 
   isReviewAccordionOpen(reviewId: string): boolean {
     return !!this.reviewAccordionOpen()[reviewId];
+  }
+
+  toggleReviewActionsMenu(reviewId: string): void {
+    const current = this.reviewActionsMenuOpen();
+    this.reviewActionsMenuOpen.set({
+      ...current,
+      [reviewId]: !current[reviewId]
+    });
+  }
+
+  isReviewActionsMenuOpen(reviewId: string): boolean {
+    return !!this.reviewActionsMenuOpen()[reviewId];
+  }
+
+  isAdminOrSuperadmin(): boolean {
+    const user = this.authService.currentUser();
+    return !!user && (user.role === 'admin' || user.role === 'superadmin');
+  }
+
+  isOwnReview(review: Review): boolean {
+    const user = this.authService.currentUser();
+    return !!user && review.user._id === user.id;
   }
 
   submitReview(): void {
@@ -185,6 +212,10 @@ export class RestaurantDetailComponent implements OnInit {
   }
 
   editReview(review: Review): void {
+    this.reviewActionsMenuOpen.set({
+      ...this.reviewActionsMenuOpen(),
+      [review._id]: false
+    });
     this.editingReviewId.set(review._id);
     this.serviceRating.set(review.serviceRating);
     this.priceRating.set(review.priceRating);
@@ -245,6 +276,11 @@ export class RestaurantDetailComponent implements OnInit {
   }
 
   deleteReview(reviewId: string): void {
+    this.reviewActionsMenuOpen.set({
+      ...this.reviewActionsMenuOpen(),
+      [reviewId]: false
+    });
+
     if (!confirm('Confermi di voler cancellare questa recensione?')) {
       return;
     }

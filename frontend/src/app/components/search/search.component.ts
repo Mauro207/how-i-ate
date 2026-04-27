@@ -115,15 +115,15 @@ export class SearchComponent implements OnInit {
   openRestaurant(id: string): void {
     this.router.navigate(['/restaurants', id]);
   }
-
+  
   getCuisineIcon(cuisine?: string): string {
     const value = (cuisine || '').toLowerCase();
-    if (value.includes('pizza') || value.includes('pizzeria')) return 'pizza';
-    if (value.includes('vino') || value.includes('wine') || value.includes('enoteca')) return 'wine';
-    if (value.includes('sushi') || value.includes('giappon')) return 'sushi';
-    if (value.includes('burger') || value.includes('hamburger')) return 'burger';
-    if (value.includes('bar') || value.includes('caffe')) return 'coffee';
-    if (value.includes('dolci') || value.includes('bakery') || value.includes('pastic')) return 'dessert';
+    if (value.includes('pizzeria')) return 'pizza';
+    if (value.includes('enoteca')) return 'wine';
+    if (value.includes('sushi')) return 'sushi';
+    if (value.includes('paninoteca')) return 'burger';
+    if (value.includes('bar')) return 'coffee';
+    if (value.includes('pasticceria') || value.includes('gelateria')) return 'dessert';
     return 'generic';
   }
 

@@ -28,7 +28,7 @@ export class RestaurantCreateComponent implements OnInit {
   showDuplicateWarning = signal(false);
   checkingDuplicate = signal(false);
 
-  cuisineOptions = ['Pizzeria', 'Ristorante', 'Pub', 'Paninoteca', 'Bar', 'Braceria', 'Enoteca', 'Sushi']; 
+  cuisineOptions = ['Pizzeria', 'Ristorante', 'Pub', 'Paninoteca', 'Bar', 'Braceria', 'Enoteca', 'Sushi', 'Pasticceria', 'Gelateria']; 
   
   constructor(
     private route: ActivatedRoute,
