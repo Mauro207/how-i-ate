@@ -22,6 +22,9 @@ export class RestaurantDetailComponent implements OnInit {
   coverImageLoadFailed = signal(false);
   loading = signal(true);
   error = signal('');
+  feedbackSummary = signal('');
+  feedbackSummaryError = signal('');
+  feedbackSummaryLoading = signal(false);
   
   // Review form constants
   private readonly DEFAULT_RATING = 5;
@@ -86,6 +89,29 @@ export class RestaurantDetailComponent implements OnInit {
       error: (err) => {
         console.error('Caricamento del luogo fallito.', err);
         this.reviewsLoading.set(false);
+      }
+    });
+  }
+
+  summarizeFeedback(): void {
+    const restaurantId = this.restaurant()?._id;
+    if (!restaurantId) {
+      return;
+    }
+
+    this.feedbackSummaryLoading.set(true);
+    this.feedbackSummaryError.set('');
+
+    this.restaurantService.summarizeRestaurantFeedback(restaurantId).subscribe({
+      next: (response) => {
+        this.feedbackSummary.set(response.summary);
+        this.feedbackSummaryLoading.set(false);
+      },
+      error: (err) => {
+        this.feedbackSummaryLoading.set(false);
+        this.feedbackSummaryError.set(
+          err?.error?.message || 'Riassunto feedback non disponibile al momento.'
+        );
       }
     });
   }

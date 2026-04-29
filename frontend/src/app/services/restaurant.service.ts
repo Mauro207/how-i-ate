@@ -80,6 +80,14 @@ export interface Suggestion {
   updatedAt: string;
 }
 
+export interface FeedbackSummaryResponse {
+  model: string;
+  restaurantId: string;
+  reviewCount: number;
+  summary: string;
+  generatedAt: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -132,6 +140,13 @@ export class RestaurantService {
   getRestaurantReviews(restaurantId: string): Observable<{ count: number; reviews: Review[] }> {
     return this.http.get<{ count: number; reviews: Review[] }>(
       `${this.apiUrl}/reviews/restaurant/${restaurantId}`
+    );
+  }
+
+  summarizeRestaurantFeedback(restaurantId: string): Observable<FeedbackSummaryResponse> {
+    return this.http.post<FeedbackSummaryResponse>(
+      `${this.apiUrl}/restaurants/${restaurantId}/feedback-summary`,
+      {}
     );
   }
 

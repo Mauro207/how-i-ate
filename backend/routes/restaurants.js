@@ -1,5 +1,6 @@
 const express = require('express');
 const Restaurant = require('../models/Restaurant');
+const Review = require('../models/Review');
 const { authenticate, authorize } = require('../middleware/auth');
 const { writeLimiter } = require('../middleware/rateLimiter');
 const PushSubscription = require('../models/PushSubscription');
@@ -119,6 +120,158 @@ router.get('/search', authenticate, async (req, res) => {
     res.status(500).json({
       message: 'Error searching restaurants',
       error: error.message
+    });
+  }
+});
+
+// Summarize restaurant feedback with Gemini
+router.post('/:id/feedback-summary', writeLimiter, authenticate, async (req, res) => {
+  try {
+    const geminiApiKey = process.env.GEMINI_API_KEY;
+    if (!geminiApiKey) {
+      return res.status(500).json({
+        message: 'GEMINI_API_KEY non configurata sul backend'
+      });
+    }
+
+    const restaurant = await Restaurant.findById(req.params.id).select('_id name cuisine address');
+    if (!restaurant) {
+      return res.status(404).json({ message: 'Restaurant not found' });
+    }
+
+    const reviews = await Review.find({ restaurant: restaurant._id })
+      .populate('user', 'username displayName')
+      .sort({ createdAt: -1 });
+
+    if (!reviews.length) {
+      return res.status(400).json({
+        message: 'Nessuna recensione disponibile per generare il riassunto'
+      });
+    }
+
+    const compactReviews = reviews.map((review) => {
+      const user = review.user || {};
+      const author = user.displayName || user.username || 'Utente';
+      return {
+        autore: author,
+        servizio: review.serviceRating,
+        prezzo: review.priceRating,
+        menu: review.menuRating,
+        commento: review.comment,
+        data: review.createdAt
+      };
+    });
+
+    const prompt = [
+      'Riassumi le recensioni in italiano con tono informale e simpatico, senza battute.',
+      'Rispondi con massimo 2 frasi semplici e chiare.',
+      'Dai un feedback generico sul locale basato solo sui dati forniti.',
+      'Non usare elenco puntato, non usare markdown, non inventare informazioni.',
+      '',
+      `Ristorante: ${restaurant.name}${restaurant.cuisine ? ` (${restaurant.cuisine})` : ''}${restaurant.address ? ` - ${restaurant.address}` : ''}`,
+      `Recensioni analizzate: ${compactReviews.length}`,
+      '',
+      'Recensioni (JSON):',
+      JSON.stringify(compactReviews)
+    ].join('\n');
+
+    const requestBody = JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: 0.3,
+        maxOutputTokens: 220
+      }
+    });
+
+    let geminiResponse;
+    let lastErrorStatus = 0;
+    let lastErrorText = '';
+
+    // Retry a few times on temporary overload from Gemini (503)
+    for (let attempt = 1; attempt <= 3; attempt += 1) {
+      geminiResponse = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${geminiApiKey}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: requestBody
+        }
+      );
+
+      if (geminiResponse.ok) {
+        break;
+      }
+
+      lastErrorStatus = geminiResponse.status;
+      lastErrorText = await geminiResponse.text();
+
+      if (lastErrorStatus !== 503 || attempt === 3) {
+        break;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 900 * attempt));
+    }
+
+    if (!geminiResponse?.ok) {
+      if (lastErrorStatus === 429) {
+        return res.status(429).json({
+          message: 'Hai raggiunto il limite richieste AI del momento. Riprova tra qualche minuto.'
+        });
+      }
+
+      if (lastErrorStatus === 503) {
+        return res.status(503).json({
+          message: 'Gemini è temporaneamente molto occupato. Riprova tra poco.',
+          error: process.env.NODE_ENV === 'development' ? lastErrorText : undefined
+        });
+      }
+
+      return res.status(502).json({
+        message: 'Il servizio AI non è disponibile al momento. Riprova più tardi.',
+        error: process.env.NODE_ENV === 'development' ? lastErrorText : undefined
+      });
+    }
+
+    const data = await geminiResponse.json();
+    const rawSummary = data?.candidates?.[0]?.content?.parts
+      ?.map((part) => part?.text || '')
+      .join('\n')
+      .trim();
+
+    const summary = (() => {
+      if (!rawSummary) return '';
+      const normalized = rawSummary.replace(/\s+/g, ' ').trim();
+      const sentences = normalized.match(/[^.!?]+[.!?]+/g) || [];
+      if (sentences.length >= 2) {
+        return `${sentences[0].trim()} ${sentences[1].trim()}`;
+      }
+      if (sentences.length === 1) {
+        return sentences[0].trim();
+      }
+      const chunks = normalized.split('.').map((s) => s.trim()).filter(Boolean);
+      return chunks.slice(0, 2).join('. ') + (chunks.length ? '.' : '');
+    })();
+
+    if (!summary) {
+      return res.status(502).json({
+        message: 'Risposta Gemini non valida'
+      });
+    }
+
+    res.json({
+      model: 'gemini-2.5-flash-lite',
+      restaurantId: restaurant._id,
+      reviewCount: compactReviews.length,
+      summary,
+      generatedAt: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('[feedback-summary] Error:', error.message);
+    res.status(500).json({
+      message: 'Non riusciamo a generare il riassunto al momento. Riprova tra poco!',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
