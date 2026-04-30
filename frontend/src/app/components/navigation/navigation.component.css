@@ -12,7 +12,7 @@ button {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
     box-shadow: 0 -6px 18px rgba(15, 23, 42, 0.1);
-    height: calc(var(--mobile-bottom-bar-height) + env(safe-area-inset-bottom, 0px) + 5px);
+    height: calc(var(--mobile-bottom-bar-height) + 5px);
     padding-top: 0.35rem;
     padding-bottom: env(safe-area-inset-bottom, 0px);
     align-content: start;
