@@ -1,10 +1,10 @@
-<nav class="relative z-20 pointer-events-none" style="padding-top: env(safe-area-inset-top, 0px)">
+<nav class="relative" style="padding-top: env(safe-area-inset-top, 0px)">
   <div class="px-3 mx-auto max-w-7xl sm:px-4 lg:px-8">
     <div class="relative flex items-center justify-between md:h-16"
-         [ngClass]="(!backUrl && !showEditBtn && !showDeleteBtn) ? 'h-0 overflow-hidden' : 'h-12'">
+         [ngClass]="(!backUrl && !showEditBtn && !showDeleteBtn) ? 'h-0 overflow-hidden pointer-events-none' : 'h-12'">
 
       <!-- Left: Back button (floating, visible only when backUrl is set) -->
-      <div class="flex items-center pointer-events-auto">
+      <div class="flex items-center">
         <a
           *ngIf="backUrl"
           [routerLink]="backUrl"
@@ -18,12 +18,12 @@
       </div>
 
       <!-- Logo: desktop only -->
-      <h1 class="hidden md:block absolute left-1/2 -translate-x-1/2 text-2xl font-bold text-[#6750a4] dark:text-[#d0bcff] select-none pointer-events-auto">
+      <h1 class="hidden md:block absolute left-1/2 -translate-x-1/2 text-2xl font-bold text-[#6750a4] dark:text-[#d0bcff] select-none">
         How I Ate
       </h1>
 
       <!-- Right: contextual actions + desktop nav floating card -->
-      <div class="relative z-10 flex flex-row items-center gap-2 pointer-events-auto">
+      <div class="relative z-10 flex flex-row items-center gap-2">
 
         <!-- Edit button (floating) -->
         <button
@@ -171,7 +171,7 @@
 
   </div>
 
-  <div class="mobile-bottom-nav lg:hidden rounded-t-3xl bg-white dark:bg-[#121212] dark:border-gray-700">
+  <div class="mobile-bottom-nav z-10 lg:hidden rounded-t-3xl bg-white dark:bg-[#121212] dark:border-gray-700">
     <button
       routerLink="/restaurants"
       class="mobile-bottom-nav__item"

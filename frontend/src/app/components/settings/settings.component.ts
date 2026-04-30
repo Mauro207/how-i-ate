@@ -29,6 +29,9 @@ export class SettingsComponent implements OnInit {
     // Notifications
     notificationLoading = signal(false);
     notificationError = signal('');
+    testNotificationLoading = signal(false);
+    testNotificationResult = signal('');
+    testNotificationError = signal('');
   
   // User creation form
   showUserForm = signal(false);
@@ -174,6 +177,22 @@ export class SettingsComponent implements OnInit {
       this.notificationError.set(err.message || 'Errore nella gestione delle notifiche.');
     } finally {
       this.notificationLoading.set(false);
+    }
+  }
+
+  async sendTestNotification(): Promise<void> {
+    this.testNotificationLoading.set(true);
+    this.testNotificationResult.set('');
+    this.testNotificationError.set('');
+    try {
+      await this.notificationService.sendTestNotification();
+      this.testNotificationResult.set('Notifica di prova inviata! Controlla le notifiche del dispositivo.');
+      setTimeout(() => this.testNotificationResult.set(''), 5000);
+    } catch (err: any) {
+      this.testNotificationError.set(err?.error?.message || 'Errore durante l\'invio della notifica di prova.');
+      setTimeout(() => this.testNotificationError.set(''), 5000);
+    } finally {
+      this.testNotificationLoading.set(false);
     }
   }
 

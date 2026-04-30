@@ -89,6 +89,11 @@ export class NotificationService {
     localStorage.setItem(this.LOCAL_KEY, String(active));
   }
 
+  /** Invia una notifica di prova solo all'utente corrente */
+  sendTestNotification(): Promise<void> {
+    return this.http.post<void>(`${this.apiUrl}/test`, {}).toPromise().then(() => undefined);
+  }
+
   private async getVapidPublicKey(): Promise<string> {
     const res = await this.http.get<{ publicKey: string }>(`${this.apiUrl}/vapid-public-key`).toPromise();
     if (!res?.publicKey) throw new Error('Chiave VAPID non disponibile.');

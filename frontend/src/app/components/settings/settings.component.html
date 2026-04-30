@@ -322,6 +322,47 @@
                 ></span>
               </button>
             </div>
+
+            <!-- Test notification -->
+            @if (notificationService.notificationsEnabled()) {
+              <div class="pt-4 mt-4 border-t border-gray-100 dark:border-white/5">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p class="text-sm font-medium text-gray-900 dark:text-white">Notifica di prova</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Invia una notifica solo a te per verificare che funzionino correttamente</p>
+                  </div>
+                  <button
+                    type="button"
+                    (click)="sendTestNotification()"
+                    [disabled]="testNotificationLoading()"
+                    class="inline-flex shrink-0 items-center justify-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl border border-[#6750a4]/30 text-[#6750a4] dark:text-[#d0bcff] hover:bg-[#f3eeff] dark:hover:bg-[#6750a4]/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    @if (testNotificationLoading()) {
+                      <svg class="w-4 h-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Invio...
+                    } @else {
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                      </svg>
+                      Invia prova
+                    }
+                  </button>
+                </div>
+                @if (testNotificationResult()) {
+                  <div class="px-3 py-2 mt-3 border text-emerald-700 border-emerald-200 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800/60">
+                    <p class="text-xs">{{ testNotificationResult() }}</p>
+                  </div>
+                }
+                @if (testNotificationError()) {
+                  <div class="px-3 py-2 mt-3 text-red-700 border border-red-200 rounded-xl bg-red-50 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800/60">
+                    <p class="text-xs">{{ testNotificationError() }}</p>
+                  </div>
+                }
+              </div>
+            }
           }
 
         </div>
@@ -509,5 +550,21 @@
         }
       </div>
     }
+    <!-- Logout -->
+    <div class="mt-4">
+      <button
+        type="button"
+        (click)="logout()"
+        class="flex items-center gap-3 w-full px-5 py-3.5 rounded-2xl border border-red-200 dark:border-red-500/30 bg-white dark:bg-[#2b2930] text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors shadow-sm"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="18" height="18" class="fill-current shrink-0">
+          <g>
+            <path d="M487.06,195.669l-82.752-82.752c-8.475-8.185-21.98-7.95-30.165,0.525c-7.985,8.267-7.985,21.374,0,29.641l82.752,82.752   c2.459,2.507,4.607,5.301,6.4,8.32c-0.32,0-0.576-0.171-0.896-0.171l0,0l-334.592,0.683c-11.782,0-21.333,9.551-21.333,21.333   c0,11.782,9.551,21.333,21.333,21.333l0,0l334.464-0.683c0.597,0,1.088-0.299,1.664-0.341c-1.892,3.609-4.292,6.928-7.125,9.856   l-82.752,82.752c-8.475,8.185-8.71,21.69-0.525,30.165c8.185,8.475,21.69,8.71,30.165,0.525c0.178-0.172,0.353-0.347,0.525-0.525   l82.752-82.752c33.313-33.323,33.313-87.339,0-120.661L487.06,195.669z"/>
+            <path d="M149.374,469.333h-42.667c-35.346,0-64-28.654-64-64V106.667c0-35.346,28.654-64,64-64h42.667   c11.782,0,21.333-9.551,21.333-21.333S161.157,0,149.374,0h-42.667C47.827,0.071,0.112,47.786,0.041,106.667v298.667   C0.112,464.214,47.827,511.93,106.708,512h42.667c11.782,0,21.333-9.551,21.333-21.333   C170.708,478.885,161.157,469.333,149.374,469.333z"/>
+          </g>
+        </svg>
+        <span class="text-sm font-semibold">Esci dall'account</span>
+      </button>
+    </div>
   </div>
 </div>

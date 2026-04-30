@@ -40,6 +40,40 @@ router.post('/subscribe', authenticate, async (req, res) => {
   }
 });
 
+// POST /api/notifications/test — send a test push notification only to the current user
+router.post('/test', authenticate, async (req, res) => {
+  try {
+    const { pushConfigured } = getPushConfig();
+    if (!pushConfigured) {
+      return res.status(503).json({ message: 'Push notifications not configured' });
+    }
+
+    const subscriptions = await PushSubscription.find({ user: req.user.userId });
+    if (!subscriptions.length) {
+      return res.status(404).json({ message: 'Nessuna sottoscrizione attiva trovata per questo utente' });
+    }
+
+    const payload = JSON.stringify({
+      title: 'How I Ate — Notifica di prova',
+      body: 'Le notifiche funzionano correttamente! 🎉',
+      url: '/'
+    });
+
+    const results = await Promise.allSettled(
+      subscriptions.map(doc => webpush.sendNotification(doc.subscription, payload))
+    );
+
+    const failed = results.filter(r => r.status === 'rejected');
+    if (failed.length === subscriptions.length) {
+      return res.status(500).json({ message: 'Invio notifica di prova fallito' });
+    }
+
+    res.json({ message: 'Notifica di prova inviata' });
+  } catch (error) {
+    res.status(500).json({ message: 'Errore durante l\'invio della notifica di prova', error: error.message });
+  }
+});
+
 // DELETE /api/notifications/unsubscribe — remove push subscription for authenticated user
 router.delete('/unsubscribe', authenticate, async (req, res) => {
   try {
