@@ -65,14 +65,14 @@
 }
 
 .quick-action-btn--primary {
-	background: #4f46e5;
-	border-color: #4f46e5;
+	background: #6750a4;
+	border-color: #6750a4;
 	color: #ffffff;
 }
 
 .quick-action-btn--primary:hover {
-	background: #4338ca;
-	border-color: #4338ca;
+	background: #5a4494;
+	border-color: #5a4494;
 }
 
 .quick-action-btn--primary .quick-action-btn__subtitle {
@@ -84,14 +84,14 @@
 }
 
 :host-context(.dark) .quick-action-btn {
-	background: #2c2c2c;
-	border-color: #3f3f46;
+	background: #2b2930;
+	border-color: rgba(255, 255, 255, 0.05);
 	color: #f3f4f6;
 }
 
 :host-context(.dark) .quick-action-btn:hover {
-	border-color: #52525b;
-	background: #333333;
+	border-color: rgba(255, 255, 255, 0.1);
+	background: rgba(255, 255, 255, 0.04);
 }
 
 :host-context(.dark) .quick-action-btn__subtitle {

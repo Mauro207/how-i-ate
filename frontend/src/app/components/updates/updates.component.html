@@ -1,36 +1,67 @@
-<div class="min-h-screen bg-gray-50 dark:bg-[#1C1B1F]">
+<div class="min-h-screen bg-gradient-to-br from-[#f3eeff] to-[#faf5ff] dark:from-[#1e1a2b] dark:to-[#1C1B1F]">
   <app-navigation [backUrl]="'/settings'"></app-navigation>
 
-  <div class="max-w-6xl px-4 pt-6 pb-24 mx-auto sm:px-6 lg:px-8">
-    <div class="mb-8">
-      <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Ultimi aggiornamenti</h2>
-      <p class="mt-2 text-gray-600 dark:text-gray-300">Qui trovi i changelog del progetto in formato markdown.</p>
+  <!-- Hero surface -->
+  <div class="px-4 pt-6 pb-8 sm:px-6 lg:px-8">
+    <div class="max-w-6xl mx-auto">
+      <p class="text-[0.7rem] font-bold uppercase tracking-[0.15em] text-[#6750a4] dark:text-[#d0bcff] mb-1">How I Ate</p>
+      <h2 class="text-3xl font-bold text-gray-900 dark:text-white leading-tight">Ultimi aggiornamenti</h2>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Changelog e novità del progetto</p>
     </div>
+  </div>
+
+  <div class="max-w-6xl px-4 pb-28 mx-auto sm:px-6 lg:px-8">
 
     @if (errorMessage()) {
-      <div class="px-4 py-3 mb-6 text-red-700 border border-red-200 rounded-lg bg-red-50 dark:bg-red-900 dark:text-red-200 dark:border-red-700">
+      <div class="px-4 py-3 mb-4 text-red-700 border border-red-200 rounded-xl bg-red-50 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800/60">
         {{ errorMessage() }}
       </div>
     }
 
-    <div class="grid gap-6 lg:grid-cols-12">
-      <aside class="lg:col-span-4 xl:col-span-3">
-        <div class="overflow-hidden bg-white shadow-md dark:bg-[#2C2C2C] dark:shadow-lg rounded-xl">
-          <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-            <h3 class="font-semibold text-gray-900 dark:text-white">Versioni</h3>
-          </div>
+    <!-- Mobile: chip selector orizzontale (nascosto su desktop) -->
+    <div class="mobile-chips-scroll flex gap-2 overflow-x-auto pb-1 mb-5 lg:hidden">
+      @if (loadingIndex()) {
+        <div class="h-9 w-24 rounded-full bg-white/60 dark:bg-white/10 animate-pulse flex-shrink-0"></div>
+        <div class="h-9 w-20 rounded-full bg-white/60 dark:bg-white/10 animate-pulse flex-shrink-0"></div>
+        <div class="h-9 w-16 rounded-full bg-white/60 dark:bg-white/10 animate-pulse flex-shrink-0"></div>
+      } @else {
+        @for (file of files(); track file.file) {
+          <button
+            type="button"
+            (click)="selectUpdateFile(file)"
+            class="version-chip flex-shrink-0"
+            [class.version-chip--active]="selectedFile()?.file === file.file"
+          >
+            {{ file.title }}
+          </button>
+        }
+      }
+    </div>
 
+    <!-- Grid layout -->
+    <div class="grid gap-5 lg:grid-cols-12">
+
+      <!-- Sidebar versioni (solo desktop) -->
+      <aside class="hidden lg:block lg:col-span-4 xl:col-span-3">
+        <div class="bg-white dark:bg-[#2b2930] rounded-2xl overflow-hidden border border-gray-100 dark:border-white/5 shadow-sm">
+          <div class="px-4 py-3 border-b border-gray-100 dark:border-white/5">
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Versioni</h3>
+          </div>
           @if (loadingIndex()) {
-            <p class="p-4 text-sm text-gray-500 dark:text-gray-300">Caricamento elenco...</p>
+            <div class="p-3 space-y-2">
+              <div class="h-9 rounded-xl bg-gray-100 dark:bg-white/5 animate-pulse"></div>
+              <div class="h-9 rounded-xl bg-gray-100 dark:bg-white/5 animate-pulse"></div>
+              <div class="h-9 rounded-xl bg-gray-100 dark:bg-white/5 animate-pulse"></div>
+            </div>
           } @else if (files().length === 0) {
-            <p class="p-4 text-sm text-gray-500 dark:text-gray-300">Nessun file markdown disponibile.</p>
+            <p class="p-4 text-sm text-gray-500 dark:text-gray-400">Nessun aggiornamento disponibile.</p>
           } @else {
             <div class="p-2 space-y-1">
               @for (file of files(); track file.file) {
                 <button
                   type="button"
                   (click)="selectUpdateFile(file)"
-                  class="text-gray-500 updates-file-btn dark:text-gray-400"
+                  class="updates-file-btn"
                   [class.updates-file-btn--active]="selectedFile()?.file === file.file"
                 >
                   {{ file.title }}
@@ -41,23 +72,31 @@
         </div>
       </aside>
 
+      <!-- Contenuto markdown -->
       <section class="lg:col-span-8 xl:col-span-9">
-        <article class="overflow-hidden bg-white shadow-md dark:bg-[#2C2C2C] dark:shadow-lg rounded-xl">
-          <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">{{ selectedFile()?.title || 'Changelog' }}</h3>
+        <article class="bg-white dark:bg-[#2b2930] rounded-2xl overflow-hidden border border-gray-100 dark:border-white/5 shadow-sm">
+          <div class="px-5 py-4 border-b border-gray-100 dark:border-white/5 flex items-center gap-3">
+            <span class="w-2 h-2 rounded-full bg-[#6750a4] dark:bg-[#d0bcff] flex-shrink-0"></span>
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ selectedFile()?.title || 'Changelog' }}</h3>
           </div>
-
-          <div class="p-6">
+          <div class="p-5 sm:p-6">
             @if (loadingMarkdown()) {
-              <p class="text-sm text-gray-500 dark:text-gray-300">Caricamento markdown...</p>
+              <div class="space-y-3">
+                <div class="h-5 bg-gray-100 dark:bg-white/5 rounded-full animate-pulse w-2/5"></div>
+                <div class="h-3.5 bg-gray-100 dark:bg-white/5 rounded-full animate-pulse w-full"></div>
+                <div class="h-3.5 bg-gray-100 dark:bg-white/5 rounded-full animate-pulse w-5/6"></div>
+                <div class="h-3.5 bg-gray-100 dark:bg-white/5 rounded-full animate-pulse w-full"></div>
+                <div class="h-3.5 bg-gray-100 dark:bg-white/5 rounded-full animate-pulse w-4/6"></div>
+              </div>
             } @else if (!renderedHtml()) {
-              <p class="text-sm text-gray-500 dark:text-gray-300">Seleziona un file per visualizzare i dettagli.</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Seleziona una versione per visualizzare i dettagli.</p>
             } @else {
-              <div class="text-gray-500 markdown-content dark:text-gray-300" [innerHTML]="renderedHtml()"></div>
+              <div class="markdown-content" [innerHTML]="renderedHtml()"></div>
             }
           </div>
         </article>
       </section>
+
     </div>
   </div>
 </div>

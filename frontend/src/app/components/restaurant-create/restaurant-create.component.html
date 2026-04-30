@@ -1,22 +1,23 @@
 <app-navigation [backUrl]="isEditMode() ? getCancelRoute().join('/') : null"></app-navigation>
-<div class="min-h-screen px-4 pt-6 pb-24 bg-gray-50 dark:bg-[#1C1B1F] sm:px-6 lg:px-8">
+<div class="min-h-screen px-4 pt-6 pb-28 bg-gradient-to-b from-[#f3eeff] to-[#faf5ff] dark:from-[#1e1a2b] dark:to-[#1C1B1F] sm:px-6 lg:px-8">
   <div class="max-w-2xl mx-auto">
     <!-- Header Section -->
     <div class="mb-8">
+      <p class="text-xs font-semibold tracking-widest uppercase text-[#6750a4] dark:text-[#d0bcff] mb-1">Luoghi</p>
       <h2 class="text-3xl font-bold text-gray-900 dark:text-white">{{ getTitle() }}</h2>
       <p class="mt-2 text-gray-600 dark:text-gray-300">{{ getSubtitle() }}</p>
     </div>    
     
     <!-- Form Card -->
-    <div class="overflow-hidden bg-white dark:bg-[#2C2C2C] shadow-md dark:shadow-lg rounded-xl">
-      <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+    <div class="overflow-hidden bg-white dark:bg-[#2b2930] shadow-sm border border-gray-100 dark:border-white/5 rounded-2xl">
+      <div class="p-6 border-b border-gray-100 dark:border-white/5">
         <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Informazioni luogo</h3>
       </div>
 
       <div class="p-6 space-y-6">
         <!-- Error Message -->
         @if (error()) {
-          <div class="px-4 py-3 mb-6 text-red-700 border border-red-200 rounded-lg bg-red-50 dark:bg-red-900 dark:text-red-200 dark:border-red-700">
+          <div class="px-4 py-3 mb-6 text-red-700 border border-red-200 rounded-xl bg-red-50 dark:bg-red-500/20 dark:text-red-300 dark:border-red-500/40">
             <p class="text-sm">{{ error() }}</p>
           </div>
         }
@@ -36,13 +37,13 @@
               [(ngModel)]="name"
               [disabled]="loading()"
               (blur)="onNameBlur()"
-              class="w-full px-4 py-2 transition duration-150 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed bg-white dark:bg-[#3C3C3C] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-500"
+              class="w-full px-4 py-2.5 transition duration-150 border border-gray-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-[#6750a4]/40 focus:border-[#6750a4] dark:focus:border-[#d0bcff] focus:outline-none disabled:bg-gray-100 dark:disabled:bg-white/5 disabled:cursor-not-allowed bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
               placeholder="Inserisci nome luogo"
             />
 
             @if (!isEditMode() && checkingDuplicate()) {
-              <div class="flex items-center gap-2 px-4 py-3 mt-2 text-sm text-gray-600 border border-gray-200 rounded-lg dark:border-gray-700 bg-gray-50 dark:bg-[#2C2C2C] dark:text-gray-400">
-                <svg class="w-4 h-4 text-indigo-500 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <div class="flex items-center gap-2 px-4 py-3 mt-2 text-sm text-gray-600 border border-gray-200 dark:border-white/10 rounded-xl bg-gray-50 dark:bg-white/5 dark:text-gray-400">
+                <svg class="w-4 h-4 text-[#6750a4] dark:text-[#d0bcff] animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
@@ -51,21 +52,21 @@
             }
 
             @if (!isEditMode() && showDuplicateWarning()) {
-              <div class="mt-2 border border-indigo-300 rounded-lg bg-indigo-50 dark:bg-indigo-950/30 dark:border-indigo-700">
+              <div class="mt-2 border border-[#6750a4]/30 rounded-xl bg-[#f3eeff] dark:bg-[#6750a4]/10 dark:border-[#6750a4]/40">
                 <div class="flex items-start justify-between px-4 pt-4 pb-2">
                   <div class="flex items-start gap-2">
-                    <svg class="w-5 h-5 mt-0.5 text-indigo-600 dark:text-indigo-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 mt-0.5 text-[#6750a4] dark:text-[#d0bcff] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <div>
-                      <p class="text-sm font-semibold text-indigo-800 dark:text-indigo-300">Possibili luoghi gia presenti</p>
-                      <p class="mt-0.5 text-xs text-indigo-700 dark:text-indigo-400">Abbiamo trovato {{ similarRestaurants().length }} risultato/i simile/i. Verifica prima di creare un duplicato.</p>
+                      <p class="text-sm font-semibold text-[#4a3880] dark:text-[#d0bcff]">Possibili luoghi gia presenti</p>
+                      <p class="mt-0.5 text-xs text-[#6750a4]/80 dark:text-[#d0bcff]/70">Abbiamo trovato {{ similarRestaurants().length }} risultato/i simile/i. Verifica prima di creare un duplicato.</p>
                     </div>
                   </div>
                   <button
                     type="button"
                     (click)="dismissDuplicateWarning()"
-                    class="p-1 ml-2 text-indigo-600 rounded dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200 hover:bg-indigo-100 dark:hover:bg-indigo-900"
+                    class="p-1 ml-2 text-[#6750a4] rounded-lg dark:text-[#d0bcff] hover:text-[#4a3880] dark:hover:text-white hover:bg-[#6750a4]/10 dark:hover:bg-[#6750a4]/20 transition-colors"
                     title="Chiudi"
                   >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -77,10 +78,10 @@
                   <li *ngFor="let r of similarRestaurants()">
                     <a
                       [routerLink]="['/restaurants', r._id]"
-                      class="flex items-center justify-between px-3 py-2 transition duration-150 border border-indigo-200 rounded-lg dark:border-indigo-800 bg-white dark:bg-[#2C2C2C] hover:bg-indigo-50 dark:hover:bg-indigo-900/40 group"
+                      class="flex items-center justify-between px-3 py-2 transition duration-150 border border-[#6750a4]/20 rounded-xl dark:border-[#6750a4]/30 bg-white dark:bg-[#2b2930] hover:bg-[#f3eeff] dark:hover:bg-[#6750a4]/20 group"
                     >
                       <div>
-                        <p class="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-indigo-700 dark:group-hover:text-indigo-300">{{ r.name }}</p>
+                        <p class="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-[#6750a4] dark:group-hover:text-[#d0bcff]">{{ r.name }}</p>
                         @if (r.cuisine || r.address) {
                           <p class="text-xs text-gray-500 dark:text-gray-400">
                             @if (r.cuisine) { <span>{{ r.cuisine }}</span> }
@@ -89,7 +90,7 @@
                           </p>
                         }
                       </div>
-                      <svg class="w-4 h-4 ml-2 text-indigo-500 dark:text-indigo-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg class="w-4 h-4 ml-2 text-[#6750a4] dark:text-[#d0bcff] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                       </svg>
                     </a>
@@ -109,7 +110,7 @@
               name="cuisine"
               [(ngModel)]="cuisine"
               [disabled]="loading()"
-              class="w-full px-4 py-2 transition duration-150 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed bg-white dark:bg-[#3C3C3C] text-gray-900 dark:text-white"
+              class="w-full px-4 py-2.5 transition duration-150 border border-gray-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-[#6750a4]/40 focus:border-[#6750a4] dark:focus:border-[#d0bcff] focus:outline-none disabled:bg-gray-100 dark:disabled:bg-white/5 disabled:cursor-not-allowed bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white"
             >
               <option value="">Seleziona tipo di luogo</option>
               <option *ngFor="let c of cuisineOptions" [value]="c">
@@ -129,7 +130,7 @@
               type="text"
               [(ngModel)]="address"
               [disabled]="loading()"
-              class="w-full px-4 py-2 transition duration-150 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed bg-white dark:bg-[#3C3C3C] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-500"
+              class="w-full px-4 py-2.5 transition duration-150 border border-gray-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-[#6750a4]/40 focus:border-[#6750a4] dark:focus:border-[#d0bcff] focus:outline-none disabled:bg-gray-100 dark:disabled:bg-white/5 disabled:cursor-not-allowed bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
               placeholder="Inserisci indirizzo luogo"
             />
           </div>
@@ -145,7 +146,7 @@
               type="url"
               [(ngModel)]="coverImageUrl"
               [disabled]="loading()"
-              class="w-full px-4 py-2 transition duration-150 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed bg-white dark:bg-[#3C3C3C] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-500"
+              class="w-full px-4 py-2.5 transition duration-150 border border-gray-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-[#6750a4]/40 focus:border-[#6750a4] dark:focus:border-[#d0bcff] focus:outline-none disabled:bg-gray-100 dark:disabled:bg-white/5 disabled:cursor-not-allowed bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
               placeholder="https://.../cover.jpg"
             />
             <p class="text-xs text-gray-500 dark:text-gray-400">
@@ -164,7 +165,7 @@
               rows="4"
               [(ngModel)]="description"
               [disabled]="loading()"
-              class="w-full px-4 py-2 transition duration-150 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed bg-white dark:bg-[#3C3C3C] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-500"
+              class="w-full px-4 py-2.5 transition duration-150 border border-gray-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-[#6750a4]/40 focus:border-[#6750a4] dark:focus:border-[#d0bcff] focus:outline-none disabled:bg-gray-100 dark:disabled:bg-white/5 disabled:cursor-not-allowed bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
               placeholder="Descrivi il luogo"
             ></textarea>
           </div>
@@ -174,7 +175,7 @@
             <button
               type="submit"
               [disabled]="loading()"
-              class="flex-1 px-6 py-3 font-medium text-white transition duration-150 bg-indigo-600 dark:bg-indigo-700 rounded-lg shadow-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-[#2C2C2C] focus:ring-indigo-500 disabled:bg-indigo-400 dark:disabled:bg-indigo-900 disabled:cursor-not-allowed hover:shadow-xl"
+              class="flex-1 px-6 py-3 font-semibold text-white transition duration-150 bg-[#6750a4] rounded-xl shadow-sm hover:bg-[#5a4494] focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-[#2b2930] focus:ring-[#6750a4]/50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               @if (loading()) {
                 <span class="flex items-center justify-center">
@@ -193,7 +194,7 @@
               type="button"
               [routerLink]="getCancelRoute()"
               [disabled]="loading()"
-              class="px-6 py-3 font-medium text-gray-700 dark:text-gray-300 transition duration-150 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-[#3C3C3C] focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-[#2C2C2C] focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="px-6 py-3 font-semibold text-gray-700 dark:text-gray-300 transition duration-150 border border-gray-200 dark:border-white/10 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-[#2b2930] focus:ring-[#6750a4]/40 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Annulla
             </button>
