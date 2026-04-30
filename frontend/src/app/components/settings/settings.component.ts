@@ -22,7 +22,7 @@ export class SettingsComponent implements OnInit {
   errorMessage = signal('');
 
   // Collapsible sections
-  accountSectionOpen = signal(true);
+  accountSectionOpen = signal(false);
   notificationsSectionOpen = signal(false);
   userManagementSectionOpen = signal(false);
 
@@ -175,6 +175,20 @@ export class SettingsComponent implements OnInit {
       }
     } catch (err: any) {
       this.notificationError.set(err.message || 'Errore nella gestione delle notifiche.');
+    } finally {
+      this.notificationLoading.set(false);
+    }
+  }
+
+  async repairNotifications(): Promise<void> {
+    this.notificationLoading.set(true);
+    this.notificationError.set('');
+    try {
+      // Force-cleanup any existing subscription before re-enabling
+      await this.notificationService.disable().catch(() => {});
+      await this.notificationService.enable();
+    } catch (err: any) {
+      this.notificationError.set(err.message || 'Riparazione fallita. Prova a ricaricare la pagina.');
     } finally {
       this.notificationLoading.set(false);
     }
