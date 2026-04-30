@@ -4,7 +4,7 @@ button {
   }
 
   nav {
-    padding-top: env(safe-area-inset-top, 0px);
+    /* topbar trasparente, padding per safe area gestita inline */
   }
 
   .mobile-bottom-nav {
@@ -77,18 +77,18 @@ button {
   }
 
   :host-context(.dark) .mobile-bottom-nav {
-    background: #121212;
-    border-top-color: #2c2c2c;
+    background: #1C1B1F;
+    border-top-color: rgba(255,255,255,0.08);
     box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.35);
   }
 
   :host-context(.dark) .mobile-bottom-nav__item {
-    color: #d1d5db;
+    color: #9ca3af;
   }
 
   :host-context(.dark) .mobile-admin-quick-menu {
-    background: #1c1c1c;
-    border-color: #2c2c2c;
+    background: #2b2930;
+    border-color: rgba(255,255,255,0.08);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.45);
   }
 
@@ -97,8 +97,8 @@ button {
   }
 
   :host-context(.dark) .mobile-admin-quick-menu__link:hover {
-    background: #312e81;
-    color: #ffffff;
+    background: rgba(103,80,164,0.25);
+    color: #d0bcff;
   }
 
   @media (min-width: 1024px) {

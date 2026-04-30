@@ -1,12 +1,14 @@
-<nav class="bg-white border-b border-gray-200 shadow-sm dark:bg-[#121212] dark:border-black">
-  <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
-    <div class="relative flex items-center justify-between h-12 md:h-16">
-      <!-- Left: Back button -->
-      <div class="flex items-center flex-shrink-0 min-w-[2.5rem]">
+<nav class="relative z-20 pointer-events-none" style="padding-top: env(safe-area-inset-top, 0px)">
+  <div class="px-3 mx-auto max-w-7xl sm:px-4 lg:px-8">
+    <div class="relative flex items-center justify-between md:h-16"
+         [ngClass]="(!backUrl && !showEditBtn && !showDeleteBtn) ? 'h-0 overflow-hidden' : 'h-12'">
+
+      <!-- Left: Back button (floating, visible only when backUrl is set) -->
+      <div class="flex items-center pointer-events-auto">
         <a
           *ngIf="backUrl"
           [routerLink]="backUrl"
-          class="p-2 -ml-1 text-gray-700 rounded-lg dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          class="flex items-center justify-center w-9 h-9 rounded-xl bg-white/80 dark:bg-[#2b2930]/80 backdrop-blur-md shadow-sm border border-black/5 dark:border-white/10 text-gray-700 dark:text-gray-200 hover:bg-[#f3eeff] dark:hover:bg-[#6750a4]/20 transition-colors"
           aria-label="Torna indietro"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -15,19 +17,20 @@
         </a>
       </div>
 
-      <!-- Logo: absolute on mobile for true centering, static on desktop -->
-      <h1 class="absolute inset-x-0 text-xl font-bold text-center text-indigo-600 pointer-events-none md:static md:text-2xl md:text-left md:pointer-events-auto dark:text-white">
+      <!-- Logo: desktop only -->
+      <h1 class="hidden md:block absolute left-1/2 -translate-x-1/2 text-2xl font-bold text-[#6750a4] dark:text-[#d0bcff] select-none pointer-events-auto">
         How I Ate
       </h1>
 
-      <!-- Right: contextual actions + desktop nav buttons -->
-      <div class="relative z-10 flex flex-row items-center gap-3">
-        <!-- Contextual: edit icon (shown when showEditBtn=true) -->
+      <!-- Right: contextual actions + desktop nav floating card -->
+      <div class="relative z-10 flex flex-row items-center gap-2 pointer-events-auto">
+
+        <!-- Edit button (floating) -->
         <button
           *ngIf="showEditBtn"
           type="button"
           (click)="editClicked.emit()"
-          class="flex items-center justify-center p-2 text-indigo-600 rounded-lg dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          class="flex items-center justify-center w-9 h-9 rounded-xl bg-white/80 dark:bg-[#2b2930]/80 backdrop-blur-md shadow-sm border border-black/5 dark:border-white/10 text-[#6750a4] dark:text-[#d0bcff] hover:bg-[#f3eeff] dark:hover:bg-[#6750a4]/20 transition-colors"
           aria-label="Modifica luogo"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -35,12 +38,12 @@
           </svg>
         </button>
 
-        <!-- Contextual: delete icon (shown when showDeleteBtn=true) -->
+        <!-- Delete button (floating) -->
         <button
           *ngIf="showDeleteBtn"
           type="button"
           (click)="deleteClicked.emit()"
-          class="flex items-center justify-center p-2 text-red-600 rounded-lg dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 focus:outline-none focus:ring-2 focus:ring-red-500"
+          class="flex items-center justify-center w-9 h-9 rounded-xl bg-white/80 dark:bg-[#2b2930]/80 backdrop-blur-md shadow-sm border border-black/5 dark:border-white/10 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/20 transition-colors"
           aria-label="Elimina luogo"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -48,85 +51,63 @@
           </svg>
         </button>
 
-        <button
-          routerLink="/search"
-          class="items-center justify-center hidden gap-2 p-2 text-gray-700 rounded-md lg:inline-flex dark:text-white dark:hover:text-indigo-400 hover:text-indigo-600 hover:fill-indigo-500 dark:fill-white dark:hover:fill-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          [class.text-indigo-600]="isRoutePrefixActive('/search')"
-          aria-label="Cerca"
-        >
-          <svg class="fill-current" width="20" height="20" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12.027 9.92L16 13.95 14 16l-4.075-3.976A6.465 6.465 0 0 1 6.5 13C2.91 13 0 10.083 0 6.5 0 2.91 2.917 0 6.5 0 10.09 0 13 2.917 13 6.5a6.463 6.463 0 0 1-.973 3.42zM1.997 6.452c0 2.48 2.014 4.5 4.5 4.5 2.48 0 4.5-2.015 4.5-4.5 0-2.48-2.015-4.5-4.5-4.5-2.48 0-4.5 2.014-4.5 4.5z" fill-rule="evenodd"/>
-          </svg>
-          <span class="font-medium">Cerca</span>
-        </button>
-
-        <button
-          routerLink="/restaurants"
-          class="items-center justify-center hidden gap-2 p-2 text-gray-700 rounded-md lg:inline-flex dark:text-white dark:hover:text-indigo-400 hover:text-indigo-600 hover:fill-indigo-500 dark:fill-white dark:hover:fill-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        >
-          <svg width="18" height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0 19.8V6.6L8.8 0L17.6 6.6V19.8H11V12.1H6.6V19.8H0V19.8" class="fill-current"/>
-          </svg>
-          <span class="hidden font-medium lg:block">
-            Home
-          </span>
-        </button>
-        
-        <!-- Mobile Search Icon -->
-        <button
-          routerLink="/search"
-          class="hidden"
-          aria-label="Cerca"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" id="Layer_1" data-name="Layer 1" viewBox="0 0 24 24" width="20" height="20" class="fill-current">
-            <path d="M22.705,21.253l-4.399-4.374c1.181-1.561,1.81-3.679,1.859-6.329-.105-6.095-3.507-9.473-9.588-9.513C4.423,1.076,1,4.649,1,10.549c0,6.195,3.426,9.512,9.589,9.548,2.629-.016,4.739-.626,6.303-1.805l4.403,4.379c.518,.492,1.131,.291,1.414-.004,.383-.398,.388-1.025-.004-1.414ZM3,10.567c.097-5.035,2.579-7.499,7.576-7.53,4.949,.032,7.503,2.571,7.589,7.512-.094,5.12-2.505,7.518-7.576,7.548-5.077-.03-7.489-2.422-7.589-7.53Z"/>
-          </svg>
-        </button>        
-        
-        <button
-          (click)="goToMyRankings()"
-          class="items-center justify-center hidden gap-2 p-2 text-gray-700 rounded-md lg:inline-flex dark:text-white dark:hover:text-indigo-400 hover:text-indigo-600 hover:fill-indigo-500 dark:fill-white dark:hover:fill-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        >
-          <svg width="20" height="18" viewBox="0 0 20 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M2 16H6V8H2V16ZM8 16H12V2H8V16ZM14 16H18V10H14V16ZM0 18V6H6V0H14V8H20V18H0Z" class="fill-current"/>
-          </svg>
-          <span class="hidden font-medium lg:block">
-            I miei voti
-          </span>
-        </button>
-        <button
-          (click)="toggleMenu()"
-          class="items-center justify-center hidden p-2 text-gray-700 rounded-md lg:inline-flex dark:text-white dark:hover:text-indigo-400 hover:text-indigo-600 hover:fill-indigo-500 dark:fill-white dark:hover:fill-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          aria-label="Apri menu"
-        >
-          <svg
-            class="w-6 h-6"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            aria-hidden="true"
+        <!-- Desktop nav: floating card -->
+        <div class="hidden lg:flex items-center gap-0.5 px-2 py-1.5 rounded-2xl bg-white/80 dark:bg-[#2b2930]/80 backdrop-blur-md shadow-sm border border-black/5 dark:border-white/10">
+          <button
+            routerLink="/search"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-xl text-gray-600 dark:text-gray-300 hover:bg-[#f3eeff] hover:text-[#6750a4] dark:hover:bg-[#6750a4]/20 dark:hover:text-[#d0bcff] transition-colors fill-current"
+            [ngClass]="isRoutePrefixActive('/search') ? ['text-[#6750a4]', 'dark:text-[#d0bcff]', 'bg-[#f3eeff]', 'dark:bg-[#6750a4]/20'] : []"
+            aria-label="Cerca"
           >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-          </svg>
-        </button>
+            <svg class="fill-current" width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12.027 9.92L16 13.95 14 16l-4.075-3.976A6.465 6.465 0 0 1 6.5 13C2.91 13 0 10.083 0 6.5 0 2.91 2.917 0 6.5 0 10.09 0 13 2.917 13 6.5a6.463 6.463 0 0 1-.973 3.42zM1.997 6.452c0 2.48 2.014 4.5 4.5 4.5 2.48 0 4.5-2.015 4.5-4.5 0-2.48-2.015-4.5-4.5-4.5-2.48 0-4.5 2.014-4.5 4.5z" fill-rule="evenodd"/>
+            </svg>
+            <span>Cerca</span>
+          </button>
+
+          <button
+            routerLink="/restaurants"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-xl text-gray-600 dark:text-gray-300 hover:bg-[#f3eeff] hover:text-[#6750a4] dark:hover:bg-[#6750a4]/20 dark:hover:text-[#d0bcff] transition-colors fill-current"
+            [ngClass]="(isRoutePrefixActive('/restaurants') && !isRoutePrefixActive('/restaurants/create') && !isRoutePrefixActive('/restaurants/suggest')) ? ['text-[#6750a4]', 'dark:text-[#d0bcff]', 'bg-[#f3eeff]', 'dark:bg-[#6750a4]/20'] : []"
+          >
+            <svg width="16" height="18" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0 19.8V6.6L8.8 0L17.6 6.6V19.8H11V12.1H6.6V19.8H0V19.8" class="fill-current"/>
+            </svg>
+            <span>Home</span>
+          </button>
+
+          <button
+            (click)="goToMyRankings()"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-xl text-gray-600 dark:text-gray-300 hover:bg-[#f3eeff] hover:text-[#6750a4] dark:hover:bg-[#6750a4]/20 dark:hover:text-[#d0bcff] transition-colors fill-current"
+          >
+            <svg width="18" height="16" viewBox="0 0 20 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M2 16H6V8H2V16ZM8 16H12V2H8V16ZM14 16H18V10H14V16ZM0 18V6H6V0H14V8H20V18H0Z" class="fill-current"/>
+            </svg>
+            <span>I miei voti</span>
+          </button>
+
+          <button
+            (click)="toggleMenu()"
+            class="inline-flex items-center justify-center w-9 h-9 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-[#f3eeff] hover:text-[#6750a4] dark:hover:bg-[#6750a4]/20 dark:hover:text-[#d0bcff] transition-colors"
+            aria-label="Apri menu"
+          >
+            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+          </button>
+        </div>
 
         <!-- Dropdown Menu -->
         <div
           *ngIf="menuOpen"
-          class="absolute right-0 z-20 w-48 py-2 mt-2 bg-white dark:bg-[#49454F] rounded-md shadow-lg top-8 ring-1 ring-black ring-opacity-5"
+          class="absolute right-0 top-12 z-20 w-52 py-1.5 rounded-2xl bg-white dark:bg-[#2b2930] border border-gray-100 dark:border-white/10 shadow-xl"
         >
           <a
             *ngIf="isSuperAdmin()"
             routerLink="/users"
-            class="flex flex-row items-center gap-4 px-4 py-2 text-sm text-gray-700 dark:text-white dark:fill-white hover:bg-indigo-100 hover:text-indigo-600"
+            class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 fill-current hover:bg-[#f3eeff] hover:text-[#6750a4] dark:hover:bg-[#6750a4]/20 dark:hover:text-[#d0bcff] transition-colors"
           >
-            <svg id="Layer_1"  viewBox="0 0 24 24"  xmlns="http://www.w3.org/2000/svg" data-name="Layer 1" width="16" height="16" class="inline w-4 h-4 mr-2 fill-current">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="16" height="16" class="fill-current shrink-0">
               <path d="m7.5 13a4.5 4.5 0 1 1 4.5-4.5 4.505 4.505 0 0 1 -4.5 4.5zm0-6a1.5 1.5 0 1 0 1.5 1.5 1.5 1.5 0 0 0 -1.5-1.5zm7.5 15.5a7.5 7.5 0 0 0 -15 0 1.5 1.5 0 0 0 3 0 4.5 4.5 0 0 1 9 0 1.5 1.5 0 0 0 3 0zm9-4.5a7 7 0 0 0 -11.455-5.4 1.5 1.5 0 1 0 1.91 2.314 3.951 3.951 0 0 1 2.545-.914 4 4 0 0 1 4 4 1.5 1.5 0 0 0 3 0zm-6.5-9a4.5 4.5 0 1 1 4.5-4.5 4.505 4.505 0 0 1 -4.5 4.5zm0-6a1.5 1.5 0 1 0 1.5 1.5 1.5 1.5 0 0 0 -1.5-1.5z"/>
             </svg>
             Utenti
@@ -134,9 +115,9 @@
           <a
             *ngIf="isAdminOrSuperAdmin()"
             routerLink="/suggestions"
-            class="relative flex flex-row items-center gap-4 px-4 py-2 pr-12 text-sm text-gray-700 dark:text-white dark:fill-white hover:bg-indigo-100 hover:text-indigo-600"
+            class="relative flex items-center gap-3 px-4 py-2.5 pr-12 text-sm font-medium text-gray-700 dark:text-gray-200 fill-current hover:bg-[#f3eeff] hover:text-[#6750a4] dark:hover:bg-[#6750a4]/20 dark:hover:text-[#d0bcff] transition-colors"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" class="inline w-4 h-4 mr-2 fill-current">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" class="fill-current shrink-0">
               <path d="M12,0A12,12,0,1,0,24,12,12.013,12.013,0,0,0,12,0Zm0,22A10,10,0,1,1,22,12,10.011,10.011,0,0,1,12,22Zm1-7h-2V6h2Zm0,4h-2V17h2Z"/>
             </svg>
             Suggerimenti
@@ -148,9 +129,9 @@
           </a>
           <a
             routerLink="/settings"
-            class="relative flex flex-row items-center gap-4 px-4 py-2 pr-12 text-sm text-gray-700 dark:text-white dark:fill-white hover:bg-indigo-100 hover:text-indigo-600"
+            class="relative flex items-center gap-3 px-4 py-2.5 pr-12 text-sm font-medium text-gray-700 dark:text-gray-200 fill-current hover:bg-[#f3eeff] hover:text-[#6750a4] dark:hover:bg-[#6750a4]/20 dark:hover:text-[#d0bcff] transition-colors"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" id="Layer_1" data-name="Layer 1" viewBox="0 0 24 24" width="16" height="16" class="inline w-4 h-4 mr-2 fill-current">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" class="fill-current shrink-0">
               <path d="M12.208,8.328c-.916-.077-1.788,.326-2.67,1.209-1.634,1.635-1.634,3.292,0,4.925,.481,.482,1.239,1.142,2.254,1.21,.966,.064,1.854-.392,2.67-1.21,1.634-1.634,1.633-3.292,0-4.925-.481-.482-1.239-1.132-2.254-1.21Zm.84,4.721s0,0,0,0c-.302,.302-.767,.655-1.102,.629-.262-.02-.596-.232-.993-.629-.787-.787-.897-1.2,0-2.098,.291-.291,.706-.63,1.061-.63,.014,0,.028,0,.041,.001,.262,.02,.596,.232,.993,.629,.787,.787,.897,1.2,0,2.098Z"/>
               <path d="M22.994,11.954c.006-1.206-.452-2.662-2.571-3.05-.11-.21-.231-.421-.364-.633,1.068-1.479,.986-2.851-.248-4.085-1.235-1.236-2.607-1.317-4.087-.245-.209-.132-.418-.252-.627-.36-.382-2.112-1.824-2.58-3.027-2.58-1.69,0-2.771,.891-3.086,2.624-.208,.109-.418,.23-.629,.362-1.473-1.064-2.846-.973-4.093,.272-1.243,1.244-1.333,2.618-.272,4.091-.133,.212-.255,.423-.366,.633-1.729,.316-2.609,1.345-2.618,3.063-.006,1.206,.452,2.662,2.571,3.05,.11,.21,.231,.421,.365,.633-1.069,1.479-.987,2.851,.247,4.085,1.235,1.236,2.608,1.317,4.087,.245,.209,.132,.418,.252,.627,.36,.382,2.112,1.824,2.58,3.027,2.58,1.721,0,2.771-.891,3.086-2.624,.208-.109,.418-.23,.629-.362,1.471,1.061,2.84,.968,4.092-.272s1.334-2.618,.273-4.092c.133-.212,.255-.423,.366-.632,1.729-.316,2.609-1.345,2.618-3.063Zm-3.369,1.147c-.364,.031-.682,.259-.829,.593-.201,.456-.483,.934-.839,1.419-.282,.385-.252,.917,.071,1.269,1.073,1.166,.713,1.527,.295,1.945-.435,.436-.78,.78-1.943-.296-.352-.324-.883-.354-1.27-.072-.483,.354-.959,.635-1.416,.834-.335,.147-.563,.465-.595,.831-.118,1.37-.6,1.373-1.157,1.375-.565,0-1.018,.006-1.122-1.326-.029-.371-.261-.695-.603-.841-.454-.195-.927-.472-1.405-.825-.177-.131-.386-.195-.594-.195-.244,0-.487,.089-.678,.265-1.179,1.087-1.532,.732-1.939,.324-.409-.409-.762-.763,.322-1.94,.325-.353,.354-.886,.068-1.272-.356-.481-.635-.955-.83-1.407-.146-.341-.47-.573-.839-.602-1.325-.106-1.323-.555-1.32-1.123,.003-.581,.005-1.04,1.369-1.158,.364-.031,.682-.259,.829-.593,.202-.457,.484-.935,.839-1.42,.282-.385,.252-.917-.071-1.269-1.073-1.165-.712-1.526-.295-1.944,.435-.435,.78-.779,1.943,.295,.352,.325,.883,.354,1.269,.072,.484-.354,.96-.634,1.417-.834,.335-.147,.563-.465,.595-.831,.118-1.37,.6-1.373,1.157-1.375,.573,.004,1.018-.006,1.122,1.326,.029,.371,.261,.695,.603,.841,.454,.195,.927,.472,1.405,.825,.385,.284,.919,.255,1.271-.069,1.179-1.087,1.531-.732,1.939-.324,.409,.409,.763,.763-.322,1.94-.325,.353-.354,.887-.069,1.272,.356,.481,.635,.955,.83,1.407,.146,.341,.47,.573,.839,.602,1.325,.106,1.323,.555,1.32,1.123-.003,.581-.005,1.04-1.369,1.158Z"/>
             </svg>
@@ -164,18 +145,19 @@
           <a
             *ngIf="!isAdminOrSuperAdmin()"
             routerLink="/restaurants/suggest"
-            class="flex flex-row items-center gap-4 px-4 py-2 text-sm text-gray-700 dark:text-white dark:fill-white hover:bg-indigo-100 hover:text-indigo-600"
+            class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 fill-current hover:bg-[#f3eeff] hover:text-[#6750a4] dark:hover:bg-[#6750a4]/20 dark:hover:text-[#d0bcff] transition-colors"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" class="inline w-4 h-4 mr-2 fill-current">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" class="fill-current shrink-0">
               <path d="M12 2a1 1 0 0 1 1 1v8h8a1 1 0 1 1 0 2h-8v8a1 1 0 1 1-2 0v-8H3a1 1 0 0 1 0-2h8V3a1 1 0 0 1 1-1z"/>
             </svg>
             Suggerisci luogo
           </a>
+          <div class="h-px mx-3 my-1 bg-gray-100 dark:bg-white/10"></div>
           <button
             (click)="logout()"
-            class="flex flex-row items-center w-full gap-4 px-4 py-2 text-sm text-left text-gray-700 dark:text-white dark:fill-white hover:bg-indigo-100 hover:text-indigo-600"
+            class="flex items-center w-full gap-3 px-4 py-2.5 text-sm font-medium text-left text-gray-700 dark:text-gray-200 fill-current hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/20 dark:hover:text-red-400 transition-colors"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Capa_1" x="0px" y="0px" viewBox="0 0 512 512" xml:space="preserve" width="16" height="16" class="inline w-4 h-4 mr-2 fill-current">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="16" height="16" class="fill-current shrink-0">
               <g>
                 <path d="M487.06,195.669l-82.752-82.752c-8.475-8.185-21.98-7.95-30.165,0.525c-7.985,8.267-7.985,21.374,0,29.641l82.752,82.752   c2.459,2.507,4.607,5.301,6.4,8.32c-0.32,0-0.576-0.171-0.896-0.171l0,0l-334.592,0.683c-11.782,0-21.333,9.551-21.333,21.333   c0,11.782,9.551,21.333,21.333,21.333l0,0l334.464-0.683c0.597,0,1.088-0.299,1.664-0.341c-1.892,3.609-4.292,6.928-7.125,9.856   l-82.752,82.752c-8.475,8.185-8.71,21.69-0.525,30.165c8.185,8.475,21.69,8.71,30.165,0.525c0.178-0.172,0.353-0.347,0.525-0.525   l82.752-82.752c33.313-33.323,33.313-87.339,0-120.661L487.06,195.669z"/>
                 <path d="M149.374,469.333h-42.667c-35.346,0-64-28.654-64-64V106.667c0-35.346,28.654-64,64-64h42.667   c11.782,0,21.333-9.551,21.333-21.333S161.157,0,149.374,0h-42.667C47.827,0.071,0.112,47.786,0.041,106.667v298.667   C0.112,464.214,47.827,511.93,106.708,512h42.667c11.782,0,21.333-9.551,21.333-21.333   C170.708,478.885,161.157,469.333,149.374,469.333z"/>
