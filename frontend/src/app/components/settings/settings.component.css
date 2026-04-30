@@ -16,11 +16,6 @@
 	transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
-.quick-action-btn:hover {
-	border-color: #9ca3af;
-	background: #f9fafb;
-}
-
 .quick-action-btn__content {
 	display: flex;
 	flex-direction: column;
