@@ -1,10 +1,10 @@
-<div class="min-h-screen bg-gradient-to-br from-[#f3eeff] to-[#faf5ff] dark:from-[#1e1a2b] dark:to-[#1C1B1F]">
+<div class="min-h-screen bg-gradient-to-b from-[#f3eeff] to-[#faf5ff] dark:from-[#1e1a2b] dark:to-[#1C1B1F]">
   <app-navigation></app-navigation>
 
   <!-- Hero surface -->
   <div class="px-4 pt-6 pb-8 sm:px-6 lg:px-8">
     <div class="max-w-5xl mx-auto">
-      <p class="text-[0.7rem] font-bold uppercase tracking-[0.15em] text-[#6750a4] dark:text-[#d0bcff] mb-1">Amministrazione</p>
+      <p class="text-xs font-semibold uppercase tracking-[0.15em] text-[#6750a4] dark:text-[#d0bcff] mb-1">Amministrazione</p>
       <h2 class="text-3xl font-bold leading-tight text-gray-900 dark:text-white">Suggerimenti</h2>
       <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Gestisci i luoghi suggeriti dagli utenti</p>
     </div>
@@ -14,7 +14,7 @@
 
     <!-- Error State -->
     @if (error()) {
-      <div class="px-4 py-3 mb-4 text-red-700 border border-red-200 rounded-xl bg-red-50 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800/60">
+      <div class="px-4 py-3 mb-4 text-red-700 border border-red-200 rounded-xl bg-red-50 dark:bg-red-500/20 dark:text-red-300 dark:border-red-500/40">
         <p>{{ error() }}</p>
       </div>
     }
@@ -93,7 +93,7 @@
                         (click)="approve(suggestion._id)"
                         [disabled]="actionLoading() === suggestion._id"
                         title="Approva"
-                        class="inline-flex items-center justify-center transition-colors rounded-full w-9 h-9 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-800/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        class="inline-flex items-center justify-center transition-colors rounded-xl w-9 h-9 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-800/50 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         @if (actionLoading() === suggestion._id) {
                           <svg class="w-4 h-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -110,7 +110,7 @@
                         (click)="reject(suggestion._id)"
                         [disabled]="actionLoading() === suggestion._id"
                         title="Rifiuta"
-                        class="inline-flex items-center justify-center text-red-600 transition-colors bg-red-100 rounded-full w-9 h-9 dark:bg-red-900/40 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-800/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        class="inline-flex items-center justify-center text-red-600 transition-colors bg-red-100 rounded-xl w-9 h-9 dark:bg-red-900/40 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-800/50 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none">
                           <path d="M20.7457 3.32851C20.3552 2.93798 19.722 2.93798 19.3315 3.32851L12.0371 10.6229L4.74275 3.32851C4.35223 2.93798 3.71906 2.93798 3.32854 3.32851C2.93801 3.71903 2.93801 4.3522 3.32854 4.74272L10.6229 12.0371L3.32856 19.3314C2.93803 19.722 2.93803 20.3551 3.32856 20.7457C3.71908 21.1362 4.35225 21.1362 4.74277 20.7457L12.0371 13.4513L19.3315 20.7457C19.722 21.1362 20.3552 21.1362 20.7457 20.7457C21.1362 20.3551 21.1362 19.722 20.7457 19.3315L13.4513 12.0371L20.7457 4.74272C21.1362 4.3522 21.1362 3.71903 20.7457 3.32851Z" fill="currentColor"/>

@@ -1,13 +1,14 @@
-<div class="min-h-screen bg-gray-50 dark:bg-[#1C1B1F]">
+<div class="min-h-screen bg-gradient-to-b from-[#f3eeff] to-[#faf5ff] dark:from-[#1e1a2b] dark:to-[#1C1B1F]">
   <!-- Header/Navigation -->
   <app-navigation></app-navigation>
 
   <!-- Main Content -->
-  <div class="px-4 pt-6 pb-24 mx-auto max-w-7xl sm:px-6 lg:px-8">
+  <div class="px-4 pt-6 mx-auto pb-28 max-w-7xl sm:px-6 lg:px-8">
     <!-- Header Section -->
     <div class="mb-8">
       <div class="flex items-center justify-between">
         <div>
+          <p class="mb-1 text-xs font-semibold tracking-widest uppercase text-[#6750a4] dark:text-[#d0bcff]">Classifiche</p>
           <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Classifica di {{ username() }}</h2>
           <p class="mt-2 text-gray-600 dark:text-gray-300">Luoghi recensiti dall'utente</p>
         </div>
@@ -15,7 +16,7 @@
           <button
             type="button"
             (click)="toggleFilters()"
-            class="p-2 text-gray-600 transition rounded-lg dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+            class="p-2 text-gray-600 transition rounded-xl border border-gray-100 dark:border-white/10 bg-white/90 dark:bg-[#2b2930] dark:text-gray-300 hover:bg-[#f3eeff] dark:hover:bg-white/10"
             [title]="showFilters() ? 'Nascondi filtri' : 'Mostra filtri'"
             [attr.aria-label]="showFilters() ? 'Nascondi filtri' : 'Mostra filtri'"
           >
@@ -29,7 +30,7 @@
 
       <!-- Filters Accordion -->
       @if (showFilters()) {
-        <div class="p-4 mt-4 border border-gray-200 rounded-lg bg-white dark:bg-[#2C2C2C] dark:border-gray-700">
+        <div class="p-4 mt-4 border border-gray-100 rounded-2xl bg-white dark:bg-[#2b2930] dark:border-white/5 shadow-sm">
           <p class="mb-3 text-xs font-semibold text-gray-700 uppercase dark:text-gray-300">
             Filtra per categoria:
             @if (includedCuisines().size === 0) {
@@ -43,8 +44,8 @@
                 (click)="toggleCuisine(cuisine)"
                 class="px-3 py-1 text-sm font-medium transition rounded-full"
                 [ngClass]="{
-                  'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-200 ring-2 ring-indigo-500 dark:ring-indigo-400': isCuisineIncluded(cuisine),
-                  'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600': !isCuisineIncluded(cuisine)
+                  'bg-[#f3eeff] dark:bg-[#6750a4]/20 text-[#6750a4] dark:text-[#d0bcff] ring-2 ring-[#6750a4]/40 dark:ring-[#d0bcff]/40': isCuisineIncluded(cuisine),
+                  'bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/15': !isCuisineIncluded(cuisine)
                 }"
               >
                 {{ cuisine }}
@@ -58,7 +59,7 @@
     <!-- Loading State -->
     @if (loading()) {
       <div class="flex items-center justify-center py-12">
-        <svg class="w-12 h-12 text-indigo-600 dark:text-indigo-400 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <svg class="w-12 h-12 text-[#6750a4] dark:text-[#d0bcff] animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
@@ -67,7 +68,7 @@
 
     <!-- Error State -->
     @if (error()) {
-      <div class="px-4 py-3 text-red-700 border border-red-200 rounded-lg bg-red-50 dark:bg-red-900 dark:text-red-200 dark:border-red-700">
+      <div class="px-4 py-3 text-red-700 border border-red-200 rounded-xl bg-red-50 dark:bg-red-500/20 dark:text-red-300 dark:border-red-500/40">
         <p>{{ error() }}</p>
       </div>
     }
@@ -75,7 +76,7 @@
     <!-- Rankings List -->
     @if (!loading() && !error()) {
       @if (rankings().length === 0) {
-        <div class="py-12 text-center bg-white dark:bg-[#2C2C2C] rounded-lg shadow dark:shadow-lg">
+        <div class="py-12 text-center bg-white dark:bg-[#2b2930] rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm">
           <p class="text-lg text-gray-500 dark:text-gray-300">
             @if (includedCuisines().size > 0) {
               Questo utente non ha recensioni per le categorie selezionate.
@@ -88,7 +89,7 @@
         <div class="space-y-4">
           @for (rank of rankings(); track rank.restaurantId; let i = $index) {
             <div class="relative pl-8">
-              <span class="absolute top-[15px] left-[5px] z-20 flex items-center justify-center w-8 h-8 font-bold rounded-full shadow-gray-800/50 shadow-md"
+              <span class="absolute top-[15px] left-[5px] z-20 flex items-center justify-center w-8 h-8 font-bold rounded-full shadow-gray-800/30 shadow-sm"
                 [ngClass]="{
                   'bg-yellow-500': i === 0,
                   'bg-gray-400': i === 1,
@@ -103,7 +104,7 @@
                 }">
                 {{ i + 1 }}
               </span>
-              <div class="relative transition-shadow duration-300 bg-white dark:bg-[#131313] shadow-md dark:shadow-lg cursor-pointer rounded-xl hover:shadow-xl dark:hover:shadow-indigo-900/30"
+              <div class="relative transition-shadow duration-300 bg-white dark:bg-[#2b2930] border border-gray-100 dark:border-white/5 shadow-sm cursor-pointer rounded-2xl hover:shadow-md dark:hover:shadow-black/20"
               (click)="viewRestaurant(rank.restaurantId)">
                   <div class="p-4">
                     <div class="flex items-start justify-between">
@@ -113,11 +114,11 @@
                         </div>
                       </div>
                       <div class="flex items-center ml-4 space-x-2">
-                        <div class="flex items-center px-3 py-1 bg-indigo-100 rounded-full dark:bg-gray-600">
-                          <svg class="w-5 h-5 mr-1 text-indigo-600 dark:text-gray-100" fill="currentColor" viewBox="0 0 20 20">
+                        <div class="flex items-center px-3 py-1 bg-[#f3eeff] rounded-full dark:bg-[#6750a4]/20">
+                          <svg class="w-5 h-5 mr-1 text-[#6750a4] dark:text-[#d0bcff]" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                           </svg>
-                          <span class="text-sm font-semibold text-indigo-900 dark:text-gray-100">{{ formatRating(rank.averageRating) }}</span>
+                          <span class="text-sm font-semibold text-[#4a3880] dark:text-[#d0bcff]">{{ formatRating(rank.averageRating) }}</span>
                         </div>
                       </div>
                     </div>

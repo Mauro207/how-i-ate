@@ -1,3 +1,7 @@
 :host {
   display: block;
 }
+
+.search-sticky-bar {
+  top: calc(env(safe-area-inset-top, 0px) + 0.25rem);
+}
