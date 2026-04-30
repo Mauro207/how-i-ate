@@ -3,6 +3,10 @@ button {
     transition: color 0.2s ease-in-out;
   }
 
+  nav {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
   .mobile-bottom-nav {
     position: fixed;
     bottom: 0;
