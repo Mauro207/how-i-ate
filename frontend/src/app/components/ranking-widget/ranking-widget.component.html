@@ -1,4 +1,4 @@
-<div class="bg-white dark:bg-[#2C2C2C] rounded-lg shadow-md dark:shadow-lg">
+<div class="bg-white dark:bg-[#2C2C2C] rounded-3xl shadow-md dark:shadow-lg">
   <div class="p-6 border-b border-gray-200 dark:border-gray-700">
     <div class="flex items-center justify-between">
       <div>
@@ -13,6 +13,7 @@
           [title]="showFilters() ? 'Nascondi filtri' : 'Mostra filtri'"
           [attr.aria-label]="showFilters() ? 'Nascondi filtri' : 'Mostra filtri'"
         >
+          <span class="sr-only">{{ showFilters() ? 'Nascondi filtri' : 'Mostra filtri' }}</span>
           <svg xmlns="http://www.w3.org/2000/svg" id="Outline" viewBox="0 0 24 24" width="20" height="20" class="fill-current">
             <path d="M1,4.75H3.736a3.728,3.728,0,0,0,7.195,0H23a1,1,0,0,0,0-2H10.931a3.728,3.728,0,0,0-7.195,0H1a1,1,0,0,0,0,2ZM7.333,2a1.75,1.75,0,1,1-1.75,1.75A1.752,1.752,0,0,1,7.333,2Z"/><path d="M23,11H20.264a3.727,3.727,0,0,0-7.194,0H1a1,1,0,0,0,0,2H13.07a3.727,3.727,0,0,0,7.194,0H23a1,1,0,0,0,0-2Zm-6.333,2.75A1.75,1.75,0,1,1,18.417,12,1.752,1.752,0,0,1,16.667,13.75Z"/><path d="M23,19.25H10.931a3.728,3.728,0,0,0-7.195,0H1a1,1,0,0,0,0,2H3.736a3.728,3.728,0,0,0,7.195,0H23a1,1,0,0,0,0-2ZM7.333,22a1.75,1.75,0,1,1,1.75-1.75A1.753,1.753,0,0,1,7.333,22Z"/>
           </svg>
@@ -114,7 +115,7 @@
           </div>
         }
       </div>
-      <div class="px-4 py-3 text-center border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#1C1B1F]">
+      <div class="px-4 py-3 text-center rounded-b-3xl border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#1C1B1F]">
         <button
           routerLink="/rankings"
           class="inline-flex flex-row items-center gap-2 px-3 py-2 text-sm font-semibold text-indigo-600 transition rounded-full dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 hover:bg-indigo-50 dark:hover:bg-indigo-900/40"

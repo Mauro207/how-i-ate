@@ -8,6 +8,17 @@
 	--mobile-bottom-safe-space: calc(var(--mobile-bottom-bar-height) + env(safe-area-inset-bottom, 0px) + 1rem);
 }
 
+html,
+body {
+	touch-action: manipulation;
+}
+
+a,
+button,
+[role="button"] {
+	touch-action: manipulation;
+}
+
 @media (max-width: 1023px) {
 	app-navigation ~ * {
 		padding-bottom: var(--mobile-bottom-safe-space);
