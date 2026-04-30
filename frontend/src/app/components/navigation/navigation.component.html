@@ -1,7 +1,7 @@
 <nav class="relative" style="padding-top: env(safe-area-inset-top, 0px)">
   <div class="px-3 mx-auto max-w-7xl sm:px-4 lg:px-8">
     <div class="relative flex items-center justify-between md:h-16"
-         [ngClass]="(!backUrl && !showEditBtn && !showDeleteBtn) ? 'h-0 overflow-hidden pointer-events-none' : 'h-12'">
+         [ngClass]="(!backUrl && !showEditBtn && !showDeleteBtn) ? 'h-0 overflow-hidden pointer-events-none lg:h-16 lg:overflow-visible lg:pointer-events-auto' : 'h-12'">
 
       <!-- Left: Back button (floating, visible only when backUrl is set) -->
       <div class="flex items-center">
