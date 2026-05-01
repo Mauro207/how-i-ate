@@ -12,7 +12,7 @@ const { writeLimiter } = require('../middleware/rateLimiter');
 const router = express.Router();
 
 // Submit a suggestion (all authenticated users)
-router.post('/', writeLimiter, authenticate, async (req, res) => {
+router.post('/', authenticate, writeLimiter, async (req, res) => {
   try {
     const { name, description, address, cuisine, review } = req.body;
 
@@ -104,7 +104,7 @@ router.get('/', authenticate, authorize('admin', 'superadmin'), async (req, res)
 });
 
 // Approve a suggestion (admin/superadmin only) - creates a restaurant from it
-router.put('/:id/approve', writeLimiter, authenticate, authorize('admin', 'superadmin'), async (req, res) => {
+router.put('/:id/approve', authenticate, writeLimiter, authorize('admin', 'superadmin'), async (req, res) => {
   try {
     const suggestion = await Suggestion.findById(req.params.id);
 
@@ -193,7 +193,7 @@ router.put('/:id/approve', writeLimiter, authenticate, authorize('admin', 'super
 });
 
 // Reject a suggestion (admin/superadmin only) - deletes it
-router.delete('/:id', writeLimiter, authenticate, authorize('admin', 'superadmin'), async (req, res) => {
+router.delete('/:id', authenticate, writeLimiter, authorize('admin', 'superadmin'), async (req, res) => {
   try {
     // Cancella la recensione associata (restaurant = suggestion._id)
     await Review.deleteMany({ restaurant: req.params.id });

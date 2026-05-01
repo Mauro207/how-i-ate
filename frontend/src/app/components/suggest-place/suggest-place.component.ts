@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
 import { RestaurantService, RestaurantSearchResult } from '../../services/restaurant.service';
 import { NavigationComponent } from '../navigation/navigation.component';
@@ -44,6 +45,22 @@ export class SuggestPlaceComponent {
     private restaurantService: RestaurantService,
     private router: Router
   ) {}
+
+  private getSubmitErrorMessage(err: HttpErrorResponse): string {
+    if (typeof err.error === 'string' && err.error.trim()) {
+      return err.error;
+    }
+
+    if (err.error?.message) {
+      return err.error.message;
+    }
+
+    if (err.status === 0) {
+      return 'Connessione al server non disponibile. Verifica la rete e riprova.';
+    }
+
+    return 'Invio del suggerimento fallito. Per favore riprova.';
+  }
 
   formatRating(rating: number): string {
     const rounded = Math.round(rating * 4) / 4;
@@ -114,9 +131,9 @@ export class SuggestPlaceComponent {
         this.loading.set(false);
         this.success.set(true);
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => {
         this.loading.set(false);
-        this.error.set(err.error?.message || 'Invio del suggerimento fallito. Per favore riprova.');
+        this.error.set(this.getSubmitErrorMessage(err));
       }
     });
   }

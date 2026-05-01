@@ -1,10 +1,20 @@
 const rateLimit = require('express-rate-limit');
 
+const jsonRateLimitHandler = (req, res, _next, options) => {
+  const rawMessage = options?.message;
+  const message = typeof rawMessage === 'string'
+    ? rawMessage
+    : rawMessage?.message || 'Too many requests, please try again later.';
+
+  res.status(options.statusCode).json({ message });
+};
+
 // General API rate limiter
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // Limit each IP to 100 requests per windowMs
   message: 'Too many requests from this IP, please try again later.',
+  handler: jsonRateLimitHandler,
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
@@ -14,6 +24,7 @@ const authLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 5, // Allow up to 5 attempts per minute; block on the 6th
   message: 'Too many authentication attempts, please try again in 1 minute.',
+  handler: jsonRateLimitHandler,
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -23,6 +34,8 @@ const writeLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 30, // Limit each IP to 30 write requests per windowMs
   message: 'Too many write requests, please try again later.',
+  keyGenerator: (req, _res) => req.user?.userId?.toString() || rateLimit.ipKeyGenerator(req.ip),
+  handler: jsonRateLimitHandler,
   standardHeaders: true,
   legacyHeaders: false,
 });
