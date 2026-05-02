@@ -25,6 +25,63 @@ const restaurantSchema = new mongoose.Schema({
     trim: true,
     maxlength: [2048, 'Cover image URL is too long']
   },
+  googleMapsUrl: {
+    type: String,
+    trim: true,
+    maxlength: [2048, 'Google Maps URL is too long'],
+    validate: {
+      validator: function (value) {
+        if (!value) return true;
+
+        try {
+          const parsed = new URL(value);
+          const protocol = parsed.protocol.toLowerCase();
+          const host = parsed.hostname.toLowerCase();
+          const isGoogleDomain = /^([a-z0-9-]+\.)*google\.[a-z.]+$/.test(host);
+
+          if (protocol !== 'http:' && protocol !== 'https:') {
+            return false;
+          }
+
+          return (
+            (isGoogleDomain && (host.startsWith('maps.') || host === 'google.com' || host.startsWith('www.google.'))) ||
+            host === 'goo.gl' ||
+            host === 'maps.app.goo.gl' ||
+            host.endsWith('.goo.gl')
+          );
+        } catch {
+          return false;
+        }
+      },
+      message: 'Google Maps URL is not valid'
+    }
+  },
+  instagramUrl: {
+    type: String,
+    trim: true,
+    maxlength: [2048, 'Instagram URL is too long'],
+    validate: {
+      validator: function (value) {
+        if (!value) return true;
+
+        try {
+          const parsed = new URL(value);
+          const protocol = parsed.protocol.toLowerCase();
+          const host = parsed.hostname.toLowerCase();
+          const isInstagramDomain =
+            host === 'instagram.com' ||
+            host === 'www.instagram.com' ||
+            host === 'instagr.am' ||
+            host.endsWith('.instagram.com');
+
+          return (protocol === 'http:' || protocol === 'https:') && isInstagramDomain;
+        } catch {
+          return false;
+        }
+      },
+      message: 'Instagram URL is not valid'
+    }
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

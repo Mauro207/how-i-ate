@@ -136,6 +136,44 @@
             />
           </div>
 
+          <!-- Google Maps Field -->
+          <div class="space-y-2">
+            <label for="googleMapsUrl" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Link Google Maps
+            </label>
+            <input
+              id="googleMapsUrl"
+              name="googleMapsUrl"
+              type="url"
+              [(ngModel)]="googleMapsUrl"
+              [disabled]="loading()"
+              class="w-full px-4 py-2.5 transition duration-150 border border-gray-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-[#6750a4]/40 focus:border-[#6750a4] dark:focus:border-[#d0bcff] focus:outline-none disabled:bg-gray-100 dark:disabled:bg-white/5 disabled:cursor-not-allowed bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+              placeholder="https://maps.google.com/..."
+            />
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              Se impostato, nella pagina dettaglio comparirà il bottone per raggiungere il luogo.
+            </p>
+          </div>
+
+          <!-- Instagram Field -->
+          <div class="space-y-2">
+            <label for="instagramUrl" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Profilo Instagram
+            </label>
+            <input
+              id="instagramUrl"
+              name="instagramUrl"
+              type="url"
+              [(ngModel)]="instagramUrl"
+              [disabled]="loading()"
+              class="w-full px-4 py-2.5 transition duration-150 border border-gray-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-[#6750a4]/40 focus:border-[#6750a4] dark:focus:border-[#d0bcff] focus:outline-none disabled:bg-gray-100 dark:disabled:bg-white/5 disabled:cursor-not-allowed bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+              placeholder="https://www.instagram.com/nomeprofilo/"
+            />
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              Se presente, in dettaglio verrà mostrato il link al profilo Instagram del luogo.
+            </p>
+          </div>
+
           <!-- Cover Image Field -->
           <div class="space-y-2">
             <label for="coverImageUrl" class="block text-sm font-medium text-gray-700 dark:text-gray-300">

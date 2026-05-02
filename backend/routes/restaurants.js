@@ -364,7 +364,7 @@ router.get('/:id', authenticate, async (req, res) => {
 // Create restaurant (admin and superadmin only) - Apply write rate limiting
 router.post('/', writeLimiter, authenticate, authorize('admin', 'superadmin'), async (req, res) => {
   try {
-    const { name, description, address, cuisine, coverImageUrl } = req.body;
+    const { name, description, address, cuisine, coverImageUrl, googleMapsUrl, instagramUrl } = req.body;
     
     // Validate input
     if (!name) {
@@ -377,6 +377,8 @@ router.post('/', writeLimiter, authenticate, authorize('admin', 'superadmin'), a
       address,
       cuisine,
       coverImageUrl,
+      googleMapsUrl,
+      instagramUrl,
       createdBy: req.user.userId
     });
     
@@ -430,6 +432,12 @@ router.post('/', writeLimiter, authenticate, authorize('admin', 'superadmin'), a
       restaurant
     });
   } catch (error) {
+    if (error.name === 'ValidationError') {
+      const firstError = Object.values(error.errors || {})[0];
+      return res.status(400).json({
+        message: firstError?.message || 'Invalid restaurant data'
+      });
+    }
     res.status(500).json({ 
       message: 'Error creating restaurant', 
       error: error.message 
@@ -508,6 +516,8 @@ router.post('/batch', writeLimiter, authenticate, authorize('admin', 'superadmin
           address: restData.address,
           cuisine: restData.cuisine,
           coverImageUrl: restData.coverImageUrl,
+          googleMapsUrl: restData.googleMapsUrl,
+          instagramUrl: restData.instagramUrl,
           createdBy: req.user.userId
         });
         
@@ -581,7 +591,7 @@ router.post('/batch', writeLimiter, authenticate, authorize('admin', 'superadmin
 // Update restaurant (admin and superadmin only) - Apply write rate limiting
 router.put('/:id', writeLimiter, authenticate, authorize('admin', 'superadmin'), async (req, res) => {
   try {
-    const { name, description, address, cuisine, coverImageUrl } = req.body;
+    const { name, description, address, cuisine, coverImageUrl, googleMapsUrl, instagramUrl } = req.body;
     
     const restaurant = await Restaurant.findById(req.params.id);
     
@@ -606,6 +616,12 @@ router.put('/:id', writeLimiter, authenticate, authorize('admin', 'superadmin'),
     if (Object.prototype.hasOwnProperty.call(req.body, 'coverImageUrl')) {
       restaurant.coverImageUrl = coverImageUrl;
     }
+    if (Object.prototype.hasOwnProperty.call(req.body, 'googleMapsUrl')) {
+      restaurant.googleMapsUrl = googleMapsUrl;
+    }
+    if (Object.prototype.hasOwnProperty.call(req.body, 'instagramUrl')) {
+      restaurant.instagramUrl = instagramUrl;
+    }
     
     await restaurant.save();
     
@@ -618,6 +634,12 @@ router.put('/:id', writeLimiter, authenticate, authorize('admin', 'superadmin'),
   } catch (error) {
     if (error.kind === 'ObjectId') {
       return res.status(404).json({ message: 'Restaurant not found' });
+    }
+    if (error.name === 'ValidationError') {
+      const firstError = Object.values(error.errors || {})[0];
+      return res.status(400).json({
+        message: firstError?.message || 'Invalid restaurant data'
+      });
     }
     res.status(500).json({ 
       message: 'Error updating restaurant', 

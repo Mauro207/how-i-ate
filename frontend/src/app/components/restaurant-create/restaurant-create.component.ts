@@ -18,6 +18,8 @@ export class RestaurantCreateComponent implements OnInit {
   address = signal('');
   cuisine = signal('');
   coverImageUrl = signal('');
+  googleMapsUrl = signal('');
+  instagramUrl = signal('');
   isEditMode = signal(false);
   editingRestaurantId = signal<string | null>(null);
   error = signal('');
@@ -59,6 +61,8 @@ export class RestaurantCreateComponent implements OnInit {
         this.address.set(restaurant.address || '');
         this.cuisine.set(restaurant.cuisine || '');
         this.coverImageUrl.set(restaurant.coverImageUrl || '');
+        this.googleMapsUrl.set(restaurant.googleMapsUrl || '');
+        this.instagramUrl.set(restaurant.instagramUrl || '');
         this.loading.set(false);
         this.similarRestaurants.set([]);
         this.showDuplicateWarning.set(false);
@@ -114,13 +118,17 @@ export class RestaurantCreateComponent implements OnInit {
     const trimmedAddress = this.address().trim();
     const trimmedCuisine = this.cuisine().trim();
     const trimmedCoverImageUrl = this.coverImageUrl().trim();
+    const trimmedGoogleMapsUrl = this.googleMapsUrl().trim();
+    const trimmedInstagramUrl = this.instagramUrl().trim();
 
     const data = {
       name: trimmedName,
       description: this.isEditMode() ? trimmedDescription : (trimmedDescription || undefined),
       address: this.isEditMode() ? trimmedAddress : (trimmedAddress || undefined),
       cuisine: this.isEditMode() ? trimmedCuisine : (trimmedCuisine || undefined),
-      coverImageUrl: this.isEditMode() ? trimmedCoverImageUrl : (trimmedCoverImageUrl || undefined)
+      coverImageUrl: this.isEditMode() ? trimmedCoverImageUrl : (trimmedCoverImageUrl || undefined),
+      googleMapsUrl: this.isEditMode() ? trimmedGoogleMapsUrl : (trimmedGoogleMapsUrl || undefined),
+      instagramUrl: this.isEditMode() ? trimmedInstagramUrl : (trimmedInstagramUrl || undefined)
     };
 
     if (this.isEditMode()) {

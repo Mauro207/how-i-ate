@@ -62,13 +62,54 @@
 
             <h1 class="mb-3 text-4xl font-bold text-white">{{ restaurant()!.name }}</h1>
 
-            @if (restaurant()!.address) {
-              <div class="flex items-center mb-3 text-white/90">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                <span>{{ restaurant()!.address }}</span>
+            @if (restaurant()!.address || restaurant()!.googleMapsUrl) {
+              <div class="flex flex-wrap items-center gap-3 mb-3 text-white/90">
+                @if (restaurant()!.address) {
+                  <div class="inline-flex items-center min-w-0">
+                    <svg class="w-5 h-5 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span class="truncate">{{ restaurant()!.address }}</span>
+                  </div>
+                }
+
+                <div class="flex flex-row w-full gap-4 sm:w-max">
+                  @if (restaurant()!.googleMapsUrl) {
+                    <a
+                      [href]="restaurant()!.googleMapsUrl"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="inline-flex items-center justify-center w-1/2 gap-2 px-3 py-2 text-sm font-semibold text-gray-900 transition duration-150 bg-white border sm:w-max border-white/70 rounded-xl hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-white/70"
+                    >
+                      <svg class="w-4 h-4" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M2 11.9556C2 8.47078 2 6.7284 2.67818 5.39739C3.27473 4.22661 4.22661 3.27473 5.39739 2.67818C6.7284 2 8.47078 2 11.9556 2H20.0444C23.5292 2 25.2716 2 26.6026 2.67818C27.7734 3.27473 28.7253 4.22661 29.3218 5.39739C30 6.7284 30 8.47078 30 11.9556V20.0444C30 23.5292 30 25.2716 29.3218 26.6026C28.7253 27.7734 27.7734 28.7253 26.6026 29.3218C25.2716 30 23.5292 30 20.0444 30H11.9556C8.47078 30 6.7284 30 5.39739 29.3218C4.22661 28.7253 3.27473 27.7734 2.67818 26.6026C2 25.2716 2 23.5292 2 20.0444V11.9556Z" fill="white"/>
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M24 12.8116L23.9999 12.8541C23.9998 12.872 23.9996 12.8899 23.9994 12.9078C23.9998 12.9287 24 12.9498 24 12.971C24 16.3073 21.4007 19.2604 19.6614 21.2367C19.1567 21.8101 18.7244 22.3013 18.449 22.6957C17.4694 24.0986 16.9524 25.6184 16.8163 26.2029C16.8163 26.6431 16.4509 27 16 27C15.5491 27 15.1837 26.6431 15.1837 26.2029C15.0476 25.6184 14.5306 24.0986 13.551 22.6957C13.2756 22.3013 12.8433 21.8101 12.3386 21.2367C10.5993 19.2604 8 16.3073 8 12.971C8 12.9498 8.0002 12.9287 8.0006 12.9078C8.0002 12.8758 8 12.8437 8 12.8116C8 8.49736 11.5817 5 16 5C20.4183 5 24 8.49736 24 12.8116ZM16 15.6812C17.7132 15.6812 19.102 14.325 19.102 12.6522C19.102 10.9793 17.7132 9.62319 16 9.62319C14.2868 9.62319 12.898 10.9793 12.898 12.6522C12.898 14.325 14.2868 15.6812 16 15.6812Z" fill="#34A851"/>
+                        <path d="M23.1054 9.21856C22.1258 7.37546 20.4161 5.96177 18.3504 5.34277L13.7559 10.5615C14.3208 9.98352 15.1174 9.62346 16.0002 9.62346C17.7134 9.62346 19.1022 10.9796 19.1022 12.6524C19.1022 13.3349 18.8711 13.9646 18.4811 14.4711L23.1054 9.21856Z" fill="#4285F5"/>
+                        <path d="M12.4311 21.3425C12.4004 21.3076 12.3695 21.2725 12.3383 21.2371C11.1918 19.9344 9.67162 18.2073 8.76855 16.2257L13.5439 10.8018C13.1387 11.3136 12.8976 11.9556 12.8976 12.6526C12.8976 14.3254 14.2865 15.6816 15.9997 15.6816C16.8675 15.6816 17.6521 15.3336 18.2151 14.7727L12.4311 21.3425Z" fill="#F9BB0E"/>
+                        <path d="M9.89288 7.76562C8.71207 9.12685 8 10.8881 8 12.8117C8 12.8438 8.0002 12.8759 8.0006 12.9079C8.0002 12.9288 8 12.9499 8 12.9711C8 14.1082 8.30196 15.2009 8.76889 16.2254L13.5362 10.8106L9.89288 7.76562Z" fill="#E74335"/>
+                        <path d="M18.3499 5.34254C17.6068 5.11988 16.8176 5 15.9997 5C13.5514 5 11.36 6.07387 9.89258 7.76553L13.5359 10.8105L13.5438 10.8015C13.6101 10.7178 13.6807 10.6375 13.7554 10.5611L18.3499 5.34254Z" fill="#1A73E6"/>
+                      </svg>
+                      Google Maps
+                    </a>
+                  }
+
+                  @if (restaurant()!.instagramUrl) {                    
+                    <a
+                      [href]="restaurant()!.instagramUrl"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="inline-flex w-1/2 sm:w-max items-center justify-center gap-2 px-3 py-2 text-sm font-semibold text-white transition duration-150 rounded-xl bg-[#E1306C] hover:bg-[#c92d61] focus:outline-none focus:ring-2 focus:ring-[#E1306C]/40"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <rect x="3" y="3" width="18" height="18" rx="5" ry="5" stroke-width="2"/>
+                        <circle cx="12" cy="12" r="4" stroke-width="2"/>
+                        <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+                      </svg>
+                      Instagram
+                    </a>                    
+                  }
+                </div>                
               </div>
             }
 
@@ -105,13 +146,50 @@
               <p class="mb-4 text-lg text-gray-700 dark:text-gray-300">{{ restaurant()!.description }}</p>
             }
 
-            @if (restaurant()!.address) {
-              <div class="flex items-center text-gray-600 dark:text-gray-400">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                <span>{{ restaurant()!.address }}</span>
+            @if (restaurant()!.address || restaurant()!.googleMapsUrl) {
+              <div class="flex flex-wrap items-center gap-3 text-gray-600 dark:text-gray-400">
+                @if (restaurant()!.address) {
+                  <div class="inline-flex items-center min-w-0">
+                    <svg class="w-5 h-5 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span class="truncate">{{ restaurant()!.address }}</span>
+                  </div>
+                }
+
+                @if (restaurant()!.googleMapsUrl) {
+                  <a
+                    [href]="restaurant()!.googleMapsUrl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-semibold text-gray-800 transition duration-150 bg-white border border-gray-200 rounded-xl dark:bg-[#24232a] dark:border-white/10 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-[#6750a4]/40"
+                  >
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M12 21s7-4.5 7-11a7 7 0 0 0-14 0c0 6.5 7 11 7 11z" fill="#EA4335"/>
+                      <circle cx="12" cy="10" r="2.8" fill="#4285F4"/>
+                    </svg>
+                    Apri in Google Maps
+                  </a>
+                }
+              </div>
+            }
+
+            @if (restaurant()!.instagramUrl) {
+              <div class="mt-4">
+                <a
+                  [href]="restaurant()!.instagramUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white transition duration-150 rounded-xl bg-[#E1306C] hover:bg-[#c92d61] focus:outline-none focus:ring-2 focus:ring-[#E1306C]/40"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <rect x="3" y="3" width="18" height="18" rx="5" ry="5" stroke-width="2"/>
+                    <circle cx="12" cy="12" r="4" stroke-width="2"/>
+                    <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+                  </svg>
+                  Profilo Instagram
+                </a>
               </div>
             }
           </div>
@@ -340,9 +418,9 @@
                       {{ review.user.username }}
                     </h4>
                     <p class="text-sm text-gray-500 dark:text-gray-400">
-                      {{ review.createdAt | date: 'dd MMMM yyyy, HH:mm' }}
+                      {{ review.createdAt | date: 'dd MMMM yyyy, HH:mm' }}<br>
                       @if (review.updatedAt !== review.createdAt) {
-                        <span class="text-xs italic">(modificata il {{ review.updatedAt | date: 'dd MMMM yyyy, HH:mm' }})</span>
+                        <span class="text-xs italic">(Mod. il {{ review.updatedAt | date: 'dd MMMM yyyy, HH:mm' }})</span>
                       }
                     </p>
                   </div>

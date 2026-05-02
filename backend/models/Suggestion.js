@@ -20,6 +20,32 @@ const suggestionSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  instagramUrl: {
+    type: String,
+    trim: true,
+    maxlength: [2048, 'Instagram URL is too long'],
+    validate: {
+      validator: function (value) {
+        if (!value) return true;
+
+        try {
+          const parsed = new URL(value);
+          const protocol = parsed.protocol.toLowerCase();
+          const host = parsed.hostname.toLowerCase();
+          const isInstagramDomain =
+            host === 'instagram.com' ||
+            host === 'www.instagram.com' ||
+            host === 'instagr.am' ||
+            host.endsWith('.instagram.com');
+
+          return (protocol === 'http:' || protocol === 'https:') && isInstagramDomain;
+        } catch {
+          return false;
+        }
+      },
+      message: 'Instagram URL is not valid'
+    }
+  },
   status: {
     type: String,
     enum: ['pending'],

@@ -82,6 +82,14 @@ const options = {
               type: 'string',
               description: 'Cuisine type'
             },
+            googleMapsUrl: {
+              type: 'string',
+              description: 'Google Maps URL for route navigation'
+            },
+            instagramUrl: {
+              type: 'string',
+              description: 'Instagram profile URL for the place'
+            },
             createdBy: {
               type: 'string',
               description: 'User ID of creator'

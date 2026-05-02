@@ -11,6 +11,8 @@ export interface Restaurant {
   address?: string;
   cuisine?: string;
   coverImageUrl?: string;
+  googleMapsUrl?: string;
+  instagramUrl?: string;
   createdBy: string;
   createdAt: string;
   updatedAt: string;
@@ -69,6 +71,7 @@ export interface Suggestion {
   description?: string;
   address?: string;
   cuisine?: string;
+  instagramUrl?: string;
   status: 'pending';
   suggestedBy: {
     _id: string;
@@ -119,6 +122,8 @@ export class RestaurantService {
     address?: string;
     cuisine?: string;
     coverImageUrl?: string;
+    googleMapsUrl?: string;
+    instagramUrl?: string;
   }): Observable<{ message: string; restaurant: Restaurant }> {
     return this.http.post<{ message: string; restaurant: Restaurant }>(
       `${this.apiUrl}/restaurants`,
@@ -194,6 +199,7 @@ export class RestaurantService {
     description?: string;
     address?: string;
     cuisine?: string;
+    instagramUrl?: string;
     review: {
       serviceRating: number;
       priceRating: number;

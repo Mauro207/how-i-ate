@@ -14,7 +14,7 @@ const router = express.Router();
 // Submit a suggestion (all authenticated users)
 router.post('/', authenticate, writeLimiter, async (req, res) => {
   try {
-    const { name, description, address, cuisine, review } = req.body;
+    const { name, description, address, cuisine, instagramUrl, review } = req.body;
 
     if (!name) {
       return res.status(400).json({ message: 'Restaurant name is required' });
@@ -37,6 +37,7 @@ router.post('/', authenticate, writeLimiter, async (req, res) => {
       description,
       address,
       cuisine,
+      instagramUrl,
       suggestedBy: req.user.userId
     });
     await suggestion.save();
@@ -77,6 +78,12 @@ router.post('/', authenticate, writeLimiter, async (req, res) => {
       review: reviewDoc
     });
   } catch (error) {
+    if (error.name === 'ValidationError') {
+      const firstError = Object.values(error.errors || {})[0];
+      return res.status(400).json({
+        message: firstError?.message || 'Invalid suggestion data'
+      });
+    }
     res.status(500).json({
       message: 'Error submitting suggestion and review',
       error: error.message
@@ -125,6 +132,7 @@ router.put('/:id/approve', authenticate, writeLimiter, authorize('admin', 'super
       description: suggestion.description,
       address: suggestion.address,
       cuisine: suggestion.cuisine,
+      instagramUrl: suggestion.instagramUrl,
       createdBy: req.user.userId
     });
 
@@ -184,6 +192,12 @@ router.put('/:id/approve', authenticate, writeLimiter, authorize('admin', 'super
   } catch (error) {
     if (error.kind === 'ObjectId') {
       return res.status(404).json({ message: 'Suggestion not found' });
+    }
+    if (error.name === 'ValidationError') {
+      const firstError = Object.values(error.errors || {})[0];
+      return res.status(400).json({
+        message: firstError?.message || 'Invalid suggestion data'
+      });
     }
     res.status(500).json({
       message: 'Error approving suggestion',

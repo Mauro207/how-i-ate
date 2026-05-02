@@ -18,6 +18,7 @@ export class SuggestPlaceComponent {
   description = signal('');
   address = signal('');
   cuisine = signal('');
+  instagramUrl = signal('');
   error = signal('');
   loading = signal(false);
   success = signal(false);
@@ -118,6 +119,7 @@ export class SuggestPlaceComponent {
       description: this.description() || undefined,
       address: this.address() || undefined,
       cuisine: this.cuisine() || undefined,
+      instagramUrl: this.instagramUrl().trim() || undefined,
       review: {
         serviceRating: this.serviceRating(),
         priceRating: this.priceRating(),
