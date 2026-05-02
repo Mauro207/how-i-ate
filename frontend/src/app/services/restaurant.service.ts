@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { map, tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 export interface Restaurant {
@@ -98,6 +98,23 @@ export class RestaurantService {
   private apiUrl = environment.apiUrl;
   private http = inject(HttpClient);
 
+  // Cache in-memory per il dettaglio ristorante (invalidata su update/delete)
+  private restaurantCache = new Map<string, Restaurant>();
+
+  /** Rimuove le voci correlate a un ristorante dalla CacheStorage del Service Worker. */
+  private async invalidateSwCache(id: string): Promise<void> {
+    if (!('caches' in window)) return;
+    try {
+      const cache = await caches.open('hia-api-v1');
+      await Promise.all([
+        cache.delete(`${this.apiUrl}/restaurants/${id}`),
+        cache.delete(`${this.apiUrl}/reviews/restaurant/${id}`),
+      ]);
+    } catch {
+      // Fallback silenzioso: il SW aggiornerà la cache alla prossima revalidazione
+    }
+  }
+
   getRestaurants(): Observable<Restaurant[]> {
     return this.http
       .get<{ count: number; restaurants: Restaurant[] }>(`${this.apiUrl}/restaurants`)
@@ -113,7 +130,13 @@ export class RestaurantService {
   }
 
   getRestaurant(id: string): Observable<{ restaurant: Restaurant }> {
-    return this.http.get<{ restaurant: Restaurant }>(`${this.apiUrl}/restaurants/${id}`);
+    const cached = this.restaurantCache.get(id);
+    if (cached) {
+      return of({ restaurant: cached });
+    }
+    return this.http
+      .get<{ restaurant: Restaurant }>(`${this.apiUrl}/restaurants/${id}`)
+      .pipe(tap((res) => this.restaurantCache.set(id, res.restaurant)));
   }
 
   createRestaurant(data: {
@@ -132,14 +155,21 @@ export class RestaurantService {
   }
 
   updateRestaurant(id: string, data: Partial<Restaurant>): Observable<{ message: string; restaurant: Restaurant }> {
-    return this.http.put<{ message: string; restaurant: Restaurant }>(
-      `${this.apiUrl}/restaurants/${id}`,
-      data
-    );
+    return this.http
+      .put<{ message: string; restaurant: Restaurant }>(`${this.apiUrl}/restaurants/${id}`, data)
+      .pipe(tap((res) => {
+        this.restaurantCache.set(id, res.restaurant);
+        this.invalidateSwCache(id);
+      }));
   }
 
   deleteRestaurant(id: string): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(`${this.apiUrl}/restaurants/${id}`);
+    return this.http
+      .delete<{ message: string }>(`${this.apiUrl}/restaurants/${id}`)
+      .pipe(tap(() => {
+        this.restaurantCache.delete(id);
+        this.invalidateSwCache(id);
+      }));
   }
 
   getRestaurantReviews(restaurantId: string): Observable<{ count: number; reviews: Review[] }> {
