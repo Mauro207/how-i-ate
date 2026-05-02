@@ -44,7 +44,7 @@ self.addEventListener('notificationclick', (event) => {
 });
 
 // ─── Cache per le API dei ristoranti ────────────────────────────────────────
-const API_CACHE = 'hia-api-v1';
+const API_CACHE = 'hia-api-v2';
 
 // Pattern di URL da memorizzare (solo GET)
 const CACHEABLE_PATTERNS = [
@@ -58,31 +58,23 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   if (!CACHEABLE_PATTERNS.some((p) => p.test(url.pathname))) return;
 
-  // Strategia stale-while-revalidate:
-  // 1. Serve subito la risposta dalla cache (se disponibile)
-  // 2. Aggiorna la cache in background con la risposta di rete
+  // Strategia network-first con fallback sulla cache:
+  // - Se la rete è disponibile → dati sempre freschi, cache aggiornata
+  // - Se la rete fallisce (offline) → fallback sulla cache
   event.respondWith(
     caches.open(API_CACHE).then(async (cache) => {
-      const cached = await cache.match(event.request.url);
-
-      const networkPromise = fetch(event.request)
-        .then((res) => {
-          if (res.ok) cache.put(event.request.url, res.clone());
-          return res;
-        })
-        .catch(() => null);
-
-      if (cached) {
-        // Cache hit: servi subito e aggiorna in background
-        event.waitUntil(networkPromise);
-        return cached;
+      try {
+        const res = await fetch(event.request);
+        if (res.ok) cache.put(event.request.url, res.clone());
+        return res;
+      } catch {
+        // Rete non disponibile: usa la cache come fallback offline
+        const cached = await cache.match(event.request.url);
+        return cached ?? new Response(JSON.stringify({ message: 'Offline' }), {
+          status: 503,
+          headers: { 'Content-Type': 'application/json' }
+        });
       }
-
-      // Cache miss: aspetta la rete
-      return networkPromise ?? new Response(JSON.stringify({ message: 'Offline' }), {
-        status: 503,
-        headers: { 'Content-Type': 'application/json' }
-      });
     })
   );
 });
