@@ -9,7 +9,7 @@
       <div class="flex items-center justify-between">
         <div>
           <p class="mb-1 text-xs font-semibold tracking-widest uppercase text-[#6750a4] dark:text-[#d0bcff]">Classifiche</p>
-          <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Classifica di {{ username() }}</h2>
+          <h2 class="text-3xl font-bold text-gray-900 truncate dark:text-white">Classifica di {{ username() }}</h2>
           <p class="mt-2 text-gray-600 dark:text-gray-300">Luoghi recensiti dall'utente</p>
         </div>
         @if (!loading() && availableCuisines().length > 0) {
