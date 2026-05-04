@@ -1,6 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { RestaurantService, RankingItem } from '../../services/restaurant.service';
 import { NavigationComponent } from '../navigation/navigation.component';
 
@@ -21,9 +21,14 @@ export class RankingsComponent implements OnInit {
   availableCuisines = signal<string[]>([]);
   includedCuisines = signal<Set<string>>(new Set());
 
-  constructor(private restaurantService: RestaurantService, private router: Router) {}
+  constructor(
+    private restaurantService: RestaurantService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit(): void {
+    this.restoreFiltersFromQueryParams();
     this.loadRankings();
   }
 
@@ -67,6 +72,7 @@ export class RankingsComponent implements OnInit {
 
   toggleFilters(): void {
     this.showFilters.set(!this.showFilters());
+    this.persistFiltersToQueryParams();
   }
 
   toggleCuisine(cuisine: string): void {
@@ -74,6 +80,7 @@ export class RankingsComponent implements OnInit {
     included.has(cuisine) ? included.delete(cuisine) : included.add(cuisine);
     this.includedCuisines.set(included);
     this.applyFilters();
+    this.persistFiltersToQueryParams();
   }
 
   isCuisineIncluded(cuisine: string): boolean {
@@ -91,5 +98,31 @@ export class RankingsComponent implements OnInit {
     const filtered = all.filter((r) => r.cuisine && included.has(r.cuisine));
     this.filtered.set(filtered);
     this.totalCount.set(filtered.length);
+  }
+
+  private restoreFiltersFromQueryParams(): void {
+    const queryMap = this.route.snapshot.queryParamMap;
+    const showFilters = queryMap.get('filters') === '1';
+    const cuisinesParam = queryMap.get('cuisines') || '';
+    const cuisines = cuisinesParam
+      .split(',')
+      .map((c) => c.trim())
+      .filter(Boolean);
+
+    this.showFilters.set(showFilters);
+    this.includedCuisines.set(new Set(cuisines));
+  }
+
+  private persistFiltersToQueryParams(): void {
+    const cuisines = Array.from(this.includedCuisines()).sort();
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        filters: this.showFilters() ? '1' : null,
+        cuisines: cuisines.length > 0 ? cuisines.join(',') : null
+      },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
+    });
   }
 }

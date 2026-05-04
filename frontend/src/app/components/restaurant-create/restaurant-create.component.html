@@ -7,6 +7,21 @@
       <p class="text-xs font-semibold tracking-widest uppercase text-[#6750a4] dark:text-[#d0bcff] mb-1">Luoghi</p>
       <h2 class="text-3xl font-bold text-gray-900 dark:text-white">{{ getTitle() }}</h2>
       <p class="mt-2 text-gray-600 dark:text-gray-300">{{ getSubtitle() }}</p>
+
+      @if (canManageSuggestions()) {
+        <button
+          type="button"
+          (click)="goToSuggestions()"
+          class="flex-1 justify-center w-full sm:w-max px-6 py-3 font-semibold text-white transition duration-150 bg-[#6750a4] rounded-xl shadow-sm hover:bg-[#5a4494] focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-[#2b2930] focus:ring-[#6750a4]/50 mt-4 inline-flex items-center gap-2"
+        >
+          <span>Valuta suggerimenti</span>
+          @if (pendingSuggestionsCount() > 0) {
+            <span class="inline-flex items-center justify-center min-w-[1.35rem] px-1.5 py-0.5 text-[0.66rem] leading-none font-bold bg-red-500 rounded-full">
+              {{ pendingSuggestionsCount() }}
+            </span>
+          }
+        </button>
+      }
     </div>    
     
     <!-- Form Card -->

@@ -220,9 +220,16 @@
       [ngClass]="(isAdminOrSuperAdmin() ? isRoutePrefixActive('/restaurants/create') : isRoutePrefixActive('/restaurants/suggest')) ? ['!text-gray-900', 'dark:!text-white'] : []"
       [attr.aria-label]="isAdminOrSuperAdmin() ? 'Aggiungi' : 'Suggerisci'"
     >
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" class="fill-current">
-        <path d="M12 2a1 1 0 0 1 1 1v8h8a1 1 0 1 1 0 2h-8v8a1 1 0 1 1-2 0v-8H3a1 1 0 0 1 0-2h8V3a1 1 0 0 1 1-1z"/>
-      </svg>
+      <span class="relative inline-flex">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" class="fill-current">
+          <path d="M12 2a1 1 0 0 1 1 1v8h8a1 1 0 1 1 0 2h-8v8a1 1 0 1 1-2 0v-8H3a1 1 0 0 1 0-2h8V3a1 1 0 0 1 1-1z"/>
+        </svg>
+        @if (isAdminOrSuperAdmin() && pendingSuggestionsCount() > 0) {
+          <span class="absolute -top-1.5 -right-2 inline-flex min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-white">
+            {{ pendingSuggestionsCount() }}
+          </span>
+        }
+      </span>
       <span>{{ isAdminOrSuperAdmin() ? 'Aggiungi' : 'Suggerisci' }}</span>
     </button>
 

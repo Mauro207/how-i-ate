@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { RestaurantService, RestaurantSearchResult } from '../../services/restaurant.service';
+import { AuthService } from '../../services/auth.service';
+import { SuggestionsBadgeService } from '../../services/suggestions-badge.service';
 import { NavigationComponent } from '../navigation/navigation.component';
 
 @Component({
@@ -35,10 +37,16 @@ export class RestaurantCreateComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private restaurantService: RestaurantService,
+    private authService: AuthService,
+    private suggestionsBadgeService: SuggestionsBadgeService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
+    if (this.canManageSuggestions()) {
+      this.suggestionsBadgeService.refreshPendingCount();
+    }
+
     const restaurantId = this.route.snapshot.paramMap.get('id');
     if (!restaurantId) {
       return;
@@ -183,5 +191,18 @@ export class RestaurantCreateComponent implements OnInit {
   getCancelRoute(): string[] {
     const restaurantId = this.editingRestaurantId();
     return this.isEditMode() && restaurantId ? ['/restaurants', restaurantId] : ['/restaurants'];
+  }
+
+  canManageSuggestions(): boolean {
+    const role = this.authService.currentUser()?.role;
+    return role === 'admin' || role === 'superadmin';
+  }
+
+  pendingSuggestionsCount(): number {
+    return this.suggestionsBadgeService.pendingCount();
+  }
+
+  goToSuggestions(): void {
+    this.router.navigate(['/suggestions']);
   }
 }

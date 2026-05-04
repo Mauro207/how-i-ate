@@ -34,6 +34,8 @@ export class UserRankingsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.routeSubscription = this.route.paramMap.subscribe(params => {
+      this.restoreFiltersFromQueryParams();
+
       const userId =
         params.get('userId') ||
         this.route.snapshot.queryParamMap.get('userId');
@@ -90,6 +92,7 @@ export class UserRankingsComponent implements OnInit, OnDestroy {
 
   toggleFilters(): void {
     this.showFilters.set(!this.showFilters());
+    this.persistFiltersToQueryParams();
   }
 
   toggleCuisine(cuisine: string): void {
@@ -101,6 +104,7 @@ export class UserRankingsComponent implements OnInit, OnDestroy {
     }
     this.includedCuisines.set(included);
     this.applyFilters();
+    this.persistFiltersToQueryParams();
   }
 
   isCuisineIncluded(cuisine: string): boolean {
@@ -131,5 +135,31 @@ export class UserRankingsComponent implements OnInit, OnDestroy {
       return included.has(r.cuisine);
     });
     this.rankings.set(filtered);
+  }
+
+  private restoreFiltersFromQueryParams(): void {
+    const queryMap = this.route.snapshot.queryParamMap;
+    const showFilters = queryMap.get('filters') === '1';
+    const cuisinesParam = queryMap.get('cuisines') || '';
+    const cuisines = cuisinesParam
+      .split(',')
+      .map((c) => c.trim())
+      .filter(Boolean);
+
+    this.showFilters.set(showFilters);
+    this.includedCuisines.set(new Set(cuisines));
+  }
+
+  private persistFiltersToQueryParams(): void {
+    const cuisines = Array.from(this.includedCuisines()).sort();
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        filters: this.showFilters() ? '1' : null,
+        cuisines: cuisines.length > 0 ? cuisines.join(',') : null
+      },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
+    });
   }
 }
