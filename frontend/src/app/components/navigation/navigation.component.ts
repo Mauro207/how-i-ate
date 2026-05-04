@@ -6,6 +6,7 @@ import { AuthService, UserSearchResult } from '../../services/auth.service';
 import { SuggestionsBadgeService } from '../../services/suggestions-badge.service';
 import { RouterLink, Router } from '@angular/router';
 import { CommonModule, NgIf } from '@angular/common';
+import { Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 type SearchItem =
@@ -23,6 +24,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
   showSearchDropdown = signal(false);
 
   @Input() backUrl: string | null = null;
+  @Input() useHistoryBack = false;
   @Input() showEditBtn = false;
   @Input() showDeleteBtn = false;
   @Output() editClicked = new EventEmitter<void>();
@@ -38,6 +40,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
   public readonly authService = inject(AuthService);
   public readonly suggestionsBadgeService = inject(SuggestionsBadgeService);
   private readonly router = inject(Router);
+  private readonly location = inject(Location);
 
   private readonly destroy$ = new Subject<void>();
   private readonly searchInput$ = new Subject<string>();
@@ -123,6 +126,20 @@ export class NavigationComponent implements OnInit, OnDestroy {
     if (this.menuOpen) {
       this.suggestionsBadgeService.refreshPendingCount();
     }
+  }
+
+  onBackClick(): void {
+    if (this.useHistoryBack && typeof window !== 'undefined' && window.history.length > 1) {
+      this.location.back();
+      return;
+    }
+
+    if (this.backUrl) {
+      this.router.navigateByUrl(this.backUrl);
+      return;
+    }
+
+    this.router.navigate(['/restaurants']);
   }
 
   goToMyRankings(): void {

@@ -5,16 +5,17 @@
 
       <!-- Left: Back button (floating, visible only when backUrl is set) -->
       <div class="flex items-center">
-        <a
-          *ngIf="backUrl"
-          [routerLink]="backUrl"
+        <button
+          *ngIf="backUrl || useHistoryBack"
+          type="button"
+          (click)="onBackClick()"
           class="flex items-center justify-center w-9 h-9 rounded-xl bg-white/80 dark:bg-[#2b2930]/80 backdrop-blur-md shadow-sm border border-black/5 dark:border-white/10 text-gray-700 dark:text-gray-200 hover:bg-[#f3eeff] dark:hover:bg-[#6750a4]/20 transition-colors"
           aria-label="Torna indietro"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
           </svg>
-        </a>
+        </button>
       </div>
 
       <!-- Logo: desktop only -->

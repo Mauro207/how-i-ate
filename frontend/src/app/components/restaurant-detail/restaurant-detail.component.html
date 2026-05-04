@@ -2,6 +2,7 @@
   <!-- Header/Navigation -->
   <app-navigation
     backUrl="/restaurants"
+    [useHistoryBack]="true"
     [showEditBtn]="canEditRestaurant()"
     [showDeleteBtn]="canDeleteRestaurant()"
     (editClicked)="editRestaurant()"
