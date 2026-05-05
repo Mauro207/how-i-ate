@@ -1,0 +1,15 @@
+@if (pwaInstall.canInstall()) {
+  <button
+    type="button"
+    class="android-install-button"
+    (click)="install()"
+    [disabled]="installing()"
+    aria-label="Installa app"
+  >
+    @if (installing()) {
+      Installazione...
+    } @else {
+      Installa app
+    }
+  </button>
+}

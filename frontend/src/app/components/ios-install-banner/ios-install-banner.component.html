@@ -1,0 +1,22 @@
+@if (pwaInstall.showIosHint()) {
+  <aside class="ios-install-banner" role="dialog" aria-live="polite" aria-label="Installa app su iPhone">
+    <div class="ios-install-banner__content">
+      <p class="ios-install-banner__title">Installa How I Ate</p>
+      <p class="ios-install-banner__text">
+        Tocca
+        <span class="ios-install-banner__share" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 16V4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            <path d="M8.5 7.5L12 4L15.5 7.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+            <rect x="5" y="9" width="14" height="11" rx="3" stroke="currentColor" stroke-width="1.8" />
+          </svg>
+        </span>
+        poi <strong>Aggiungi a Home</strong>.
+      </p>
+    </div>
+
+    <button type="button" class="ios-install-banner__close" (click)="dismiss()" aria-label="Chiudi suggerimento installazione">
+      Chiudi
+    </button>
+  </aside>
+}

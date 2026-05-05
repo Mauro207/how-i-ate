@@ -1,10 +1,12 @@
 import { Component, OnDestroy, signal } from '@angular/core';
 import { NavigationCancel, NavigationEnd, NavigationError, NavigationStart, Router, RouterOutlet } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { IosInstallBannerComponent } from './components/ios-install-banner/ios-install-banner.component';
+import { AndroidInstallButtonComponent } from './components/android-install-button/android-install-button.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, IosInstallBannerComponent, AndroidInstallButtonComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

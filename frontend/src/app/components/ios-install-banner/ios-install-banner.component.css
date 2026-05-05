@@ -1,0 +1,71 @@
+.ios-install-banner {
+  position: fixed;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 0.75rem);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  border-radius: 1rem;
+  color: #f9fafb;
+  background: linear-gradient(130deg, #0f172a, #1e1b4b 65%, #312e81);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.35);
+  animation: slide-up 220ms ease-out;
+}
+
+.ios-install-banner__content {
+  min-width: 0;
+}
+
+.ios-install-banner__title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.ios-install-banner__text {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  line-height: 1.35;
+  color: #e2e8f0;
+}
+
+.ios-install-banner__share {
+  display: inline-flex;
+  width: 1.05rem;
+  height: 1.05rem;
+  vertical-align: text-bottom;
+  margin: 0 0.1rem;
+}
+
+.ios-install-banner__close {
+  border: none;
+  border-radius: 999px;
+  padding: 0.42rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #312e81;
+  background: #f8fafc;
+}
+
+@media (min-width: 640px) {
+  .ios-install-banner {
+    left: auto;
+    right: 1rem;
+    width: min(430px, calc(100vw - 2rem));
+  }
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
