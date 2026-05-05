@@ -1,6 +1,10 @@
 {
   "files": [
     {
+      "title": "v1.2.1 - Suggerimenti da Google Maps e miglioramenti vari",
+      "file": "v1.2.1.md"
+    },
+    {
       "title": "v1.2 - Riassunti con Gemini e nuova interfaccia",
       "file": "v1.2.md"
     },
