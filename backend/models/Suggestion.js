@@ -20,6 +20,37 @@ const suggestionSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  googleMapsUrl: {
+    type: String,
+    trim: true,
+    maxlength: [2048, 'Google Maps URL is too long'],
+    validate: {
+      validator: function (value) {
+        if (!value) return true;
+
+        try {
+          const parsed = new URL(value);
+          const protocol = parsed.protocol.toLowerCase();
+          const host = parsed.hostname.toLowerCase();
+          const isGoogleDomain = /^([a-z0-9-]+\.)*google\.[a-z.]+$/.test(host);
+
+          if (protocol !== 'http:' && protocol !== 'https:') {
+            return false;
+          }
+
+          return (
+            (isGoogleDomain && (host.startsWith('maps.') || host === 'google.com' || host.startsWith('www.google.'))) ||
+            host === 'goo.gl' ||
+            host === 'maps.app.goo.gl' ||
+            host.endsWith('.goo.gl')
+          );
+        } catch {
+          return false;
+        }
+      },
+      message: 'Google Maps URL is not valid'
+    }
+  },
   instagramUrl: {
     type: String,
     trim: true,

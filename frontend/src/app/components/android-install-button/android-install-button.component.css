@@ -3,15 +3,24 @@
   right: 0.9rem;
   bottom: calc(env(safe-area-inset-bottom, 0px) + 0.9rem);
   z-index: 55;
-  border: none;
+  border: 1px solid transparent;
   border-radius: 999px;
   padding: 0.72rem 1.05rem;
   font-size: 0.83rem;
   font-weight: 700;
   color: #ffffff;
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.38);
-  transition: transform 140ms ease, filter 140ms ease;
+  background: #6750a4;
+  box-shadow: 0 8px 22px rgba(103, 80, 164, 0.32);
+  transition: transform 140ms ease, background-color 140ms ease, box-shadow 140ms ease;
+}
+
+.android-install-button:hover {
+  background: #5a4494;
+}
+
+.android-install-button:focus-visible {
+  outline: 2px solid rgba(103, 80, 164, 0.4);
+  outline-offset: 2px;
 }
 
 .android-install-button:active {
@@ -20,7 +29,24 @@
 
 .android-install-button:disabled {
   cursor: wait;
-  filter: grayscale(0.15) brightness(1.05);
+  opacity: 0.6;
+  box-shadow: 0 4px 10px rgba(103, 80, 164, 0.22);
+}
+
+@media (prefers-color-scheme: dark) {
+  .android-install-button {
+    border-color: rgba(255, 255, 255, 0.12);
+    background: #6750a4;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  }
+
+  .android-install-button:hover {
+    background: #5a4494;
+  }
+
+  .android-install-button:focus-visible {
+    outline-color: rgba(208, 188, 255, 0.45);
+  }
 }
 
 @media (min-width: 1024px) {

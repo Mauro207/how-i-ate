@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
-import { RestaurantService, RestaurantSearchResult } from '../../services/restaurant.service';
+import { GooglePlaceSuggestion, RestaurantService, RestaurantSearchResult } from '../../services/restaurant.service';
 import { NavigationComponent } from '../navigation/navigation.component';
 
 @Component({
@@ -18,6 +18,7 @@ export class SuggestPlaceComponent {
   description = signal('');
   address = signal('');
   cuisine = signal('');
+  googleMapsUrl = signal('');
   instagramUrl = signal('');
   error = signal('');
   loading = signal(false);
@@ -27,6 +28,8 @@ export class SuggestPlaceComponent {
   similarRestaurants = signal<RestaurantSearchResult[]>([]);
   showDuplicateWarning = signal(false);
   checkingDuplicate = signal(false);
+  googlePlaceSuggestions = signal<GooglePlaceSuggestion[]>([]);
+  loadingGooglePlaces = signal(false);
 
   // Review form constants (come restaurant-detail)
   private readonly DEFAULT_RATING = 5;
@@ -77,23 +80,56 @@ export class SuggestPlaceComponent {
     if (query.length < 2) {
       this.similarRestaurants.set([]);
       this.showDuplicateWarning.set(false);
+      this.googlePlaceSuggestions.set([]);
       return;
     }
+
     this.checkingDuplicate.set(true);
     this.restaurantService.searchRestaurants(query).subscribe({
       next: (response) => {
         this.checkingDuplicate.set(false);
         this.similarRestaurants.set(response.restaurants);
         this.showDuplicateWarning.set(response.restaurants.length > 0);
+
+        if (response.restaurants.length > 0) {
+          this.googlePlaceSuggestions.set([]);
+          return;
+        }
+
+        this.loadGooglePlaceSuggestions(query);
       },
       error: () => {
         this.checkingDuplicate.set(false);
+        this.googlePlaceSuggestions.set([]);
       }
     });
   }
 
   dismissDuplicateWarning(): void {
     this.showDuplicateWarning.set(false);
+  }
+
+  selectGooglePlaceSuggestion(suggestion: GooglePlaceSuggestion): void {
+    this.loadingGooglePlaces.set(true);
+    this.error.set('');
+
+    this.restaurantService.getGooglePlaceDetails(suggestion.placeId).subscribe({
+      next: (place) => {
+        this.name.set(place.name?.trim() || suggestion.mainText);
+        if (place.city?.trim()) {
+          this.address.set(place.city.trim());
+        }
+        if (place.mapsUrl?.trim()) {
+          this.googleMapsUrl.set(place.mapsUrl.trim());
+        }
+        this.googlePlaceSuggestions.set([]);
+        this.loadingGooglePlaces.set(false);
+      },
+      error: () => {
+        this.error.set('Impossibile recuperare i dettagli del luogo da Google Maps.');
+        this.loadingGooglePlaces.set(false);
+      }
+    });
   }
 
   onSubmit(): void {
@@ -115,10 +151,11 @@ export class SuggestPlaceComponent {
     this.error.set('');
 
     const data = {
-      name: this.name(),
-      description: this.description() || undefined,
-      address: this.address() || undefined,
-      cuisine: this.cuisine() || undefined,
+      name: this.name().trim(),
+      description: this.description().trim() || undefined,
+      address: this.address().trim() || undefined,
+      cuisine: this.cuisine().trim() || undefined,
+      googleMapsUrl: this.googleMapsUrl().trim() || undefined,
       instagramUrl: this.instagramUrl().trim() || undefined,
       review: {
         serviceRating: this.serviceRating(),
@@ -136,6 +173,20 @@ export class SuggestPlaceComponent {
       error: (err: HttpErrorResponse) => {
         this.loading.set(false);
         this.error.set(this.getSubmitErrorMessage(err));
+      }
+    });
+  }
+
+  private loadGooglePlaceSuggestions(query: string): void {
+    this.loadingGooglePlaces.set(true);
+    this.restaurantService.getGooglePlaceSuggestions(query).subscribe({
+      next: (response) => {
+        this.googlePlaceSuggestions.set(response.suggestions || []);
+        this.loadingGooglePlaces.set(false);
+      },
+      error: () => {
+        this.googlePlaceSuggestions.set([]);
+        this.loadingGooglePlaces.set(false);
       }
     });
   }

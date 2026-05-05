@@ -71,6 +71,7 @@ export interface Suggestion {
   description?: string;
   address?: string;
   cuisine?: string;
+  googleMapsUrl?: string;
   instagramUrl?: string;
   status: 'pending';
   suggestedBy: {
@@ -256,6 +257,7 @@ export class RestaurantService {
     description?: string;
     address?: string;
     cuisine?: string;
+    googleMapsUrl?: string;
     instagramUrl?: string;
     review: {
       serviceRating: number;

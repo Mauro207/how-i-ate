@@ -14,7 +14,7 @@ const router = express.Router();
 // Submit a suggestion (all authenticated users)
 router.post('/', authenticate, writeLimiter, async (req, res) => {
   try {
-    const { name, description, address, cuisine, instagramUrl, review } = req.body;
+    const { name, description, address, cuisine, googleMapsUrl, instagramUrl, review } = req.body;
 
     if (!name) {
       return res.status(400).json({ message: 'Restaurant name is required' });
@@ -37,6 +37,7 @@ router.post('/', authenticate, writeLimiter, async (req, res) => {
       description,
       address,
       cuisine,
+      googleMapsUrl,
       instagramUrl,
       suggestedBy: req.user.userId
     });
@@ -132,6 +133,7 @@ router.put('/:id/approve', authenticate, writeLimiter, authorize('admin', 'super
       description: suggestion.description,
       address: suggestion.address,
       cuisine: suggestion.cuisine,
+      googleMapsUrl: suggestion.googleMapsUrl,
       instagramUrl: suggestion.instagramUrl,
       createdBy: req.user.userId
     });

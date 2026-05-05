@@ -113,6 +113,47 @@
                   </ul>
                 </div>
               }
+
+              @if (!showDuplicateWarning() && loadingGooglePlaces()) {
+                <div class="flex items-center gap-2 px-4 py-3 mt-2 text-sm text-gray-600 border border-gray-200 dark:border-white/10 rounded-xl bg-gray-50 dark:bg-white/5 dark:text-gray-400">
+                  <svg class="w-4 h-4 text-[#6750a4] dark:text-[#d0bcff] animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Cerco suggerimenti su Google Maps...
+                </div>
+              }
+
+              @if (!showDuplicateWarning() && googlePlaceSuggestions().length > 0) {
+                <div class="mt-2 border border-[#6750a4]/20 rounded-xl bg-white dark:bg-[#2b2930] dark:border-[#6750a4]/30 shadow-sm overflow-hidden">
+                  <div class="px-4 py-3 border-b border-gray-100 dark:border-white/5 bg-[#faf7ff] dark:bg-[#6750a4]/10">
+                    <p class="text-sm font-semibold text-[#4a3880] dark:text-[#d0bcff]">Suggerimenti Google Maps</p>
+                    <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Seleziona un'attività per precompilare nome e comune.</p>
+                  </div>
+
+                  <div class="divide-y divide-gray-100 dark:divide-white/5">
+                    @for (suggestion of googlePlaceSuggestions(); track suggestion.placeId) {
+                      <button
+                        type="button"
+                        (click)="selectGooglePlaceSuggestion(suggestion)"
+                        class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-[#f8f4ff] dark:hover:bg-[#6750a4]/10"
+                      >
+                        <div class="min-w-0">
+                          <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{ suggestion.mainText }}</p>
+                          @if (suggestion.secondaryText) {
+                            <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ suggestion.secondaryText }}</p>
+                          } @else {
+                            <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ suggestion.description }}</p>
+                          }
+                        </div>
+                        <svg class="w-4 h-4 text-[#6750a4] dark:text-[#d0bcff] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
             </div>
 
             <!-- Cuisine Field -->
