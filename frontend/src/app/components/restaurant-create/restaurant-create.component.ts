@@ -2,7 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { RestaurantService, RestaurantSearchResult } from '../../services/restaurant.service';
+import { GooglePlaceSuggestion, RestaurantService, RestaurantSearchResult } from '../../services/restaurant.service';
 import { AuthService } from '../../services/auth.service';
 import { SuggestionsBadgeService } from '../../services/suggestions-badge.service';
 import { NavigationComponent } from '../navigation/navigation.component';
@@ -31,6 +31,8 @@ export class RestaurantCreateComponent implements OnInit {
   similarRestaurants = signal<RestaurantSearchResult[]>([]);
   showDuplicateWarning = signal(false);
   checkingDuplicate = signal(false);
+  googlePlaceSuggestions = signal<GooglePlaceSuggestion[]>([]);
+  loadingGooglePlaces = signal(false);
 
   cuisineOptions = ['Pizzeria', 'Ristorante', 'Pub', 'Paninoteca', 'Bar', 'Braceria', 'Enoteca', 'Sushi', 'Pasticceria', 'Gelateria']; 
   
@@ -92,6 +94,7 @@ export class RestaurantCreateComponent implements OnInit {
     if (query.length < 2) {
       this.similarRestaurants.set([]);
       this.showDuplicateWarning.set(false);
+      this.googlePlaceSuggestions.set([]);
       return;
     }
 
@@ -101,15 +104,50 @@ export class RestaurantCreateComponent implements OnInit {
         this.checkingDuplicate.set(false);
         this.similarRestaurants.set(response.restaurants);
         this.showDuplicateWarning.set(response.restaurants.length > 0);
+
+        if (response.restaurants.length > 0) {
+          this.googlePlaceSuggestions.set([]);
+          return;
+        }
+
+        this.loadGooglePlaceSuggestions(query);
       },
       error: () => {
         this.checkingDuplicate.set(false);
+        this.googlePlaceSuggestions.set([]);
       }
     });
   }
 
   dismissDuplicateWarning(): void {
     this.showDuplicateWarning.set(false);
+  }
+
+  selectGooglePlaceSuggestion(suggestion: GooglePlaceSuggestion): void {
+    if (this.isEditMode()) {
+      return;
+    }
+
+    this.loadingGooglePlaces.set(true);
+    this.error.set('');
+
+    this.restaurantService.getGooglePlaceDetails(suggestion.placeId).subscribe({
+      next: (place) => {
+        this.name.set(place.name?.trim() || suggestion.mainText);
+        if (place.city?.trim()) {
+          this.address.set(place.city.trim());
+        }
+        if (place.mapsUrl?.trim()) {
+          this.googleMapsUrl.set(place.mapsUrl.trim());
+        }
+        this.googlePlaceSuggestions.set([]);
+        this.loadingGooglePlaces.set(false);
+      },
+      error: () => {
+        this.error.set('Impossibile recuperare i dettagli del luogo da Google Maps.');
+        this.loadingGooglePlaces.set(false);
+      }
+    });
   }
 
   onSubmit(): void {
@@ -204,5 +242,19 @@ export class RestaurantCreateComponent implements OnInit {
 
   goToSuggestions(): void {
     this.router.navigate(['/suggestions']);
+  }
+
+  private loadGooglePlaceSuggestions(query: string): void {
+    this.loadingGooglePlaces.set(true);
+    this.restaurantService.getGooglePlaceSuggestions(query).subscribe({
+      next: (response) => {
+        this.googlePlaceSuggestions.set(response.suggestions || []);
+        this.loadingGooglePlaces.set(false);
+      },
+      error: () => {
+        this.googlePlaceSuggestions.set([]);
+        this.loadingGooglePlaces.set(false);
+      }
+    });
   }
 }

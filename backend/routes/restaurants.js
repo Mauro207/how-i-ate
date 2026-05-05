@@ -124,6 +124,132 @@ router.get('/search', authenticate, async (req, res) => {
   }
 });
 
+// Google Places autocomplete (admin/superadmin only)
+router.get('/places/autocomplete', authenticate, authorize('admin', 'superadmin'), async (req, res) => {
+  try {
+    const placesApiKey = process.env.GOOGLE_PLACES_API;
+    if (!placesApiKey) {
+      return res.status(500).json({ message: 'GOOGLE_PLACES_API non configurata sul backend' });
+    }
+
+    const query = (req.query.q || '').toString().trim();
+    if (query.length < 2) {
+      return res.json({ count: 0, suggestions: [] });
+    }
+
+    const params = new URLSearchParams({
+      input: query,
+      types: 'establishment',
+      components: 'country:it',
+      language: 'it',
+      key: placesApiKey
+    });
+
+    const response = await fetch(`https://maps.googleapis.com/maps/api/place/autocomplete/json?${params.toString()}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      return res.status(502).json({
+        message: 'Servizio Google Places non disponibile',
+        error: process.env.NODE_ENV === 'development' ? errorText : undefined
+      });
+    }
+
+    const data = await response.json();
+    if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
+      return res.status(502).json({
+        message: 'Errore da Google Places autocomplete',
+        error: process.env.NODE_ENV === 'development' ? data.error_message || data.status : undefined
+      });
+    }
+
+    const suggestions = (data.predictions || []).slice(0, 5).map((prediction) => ({
+      placeId: prediction.place_id,
+      description: prediction.description,
+      mainText: prediction.structured_formatting?.main_text || prediction.description,
+      secondaryText: prediction.structured_formatting?.secondary_text || ''
+    }));
+
+    return res.json({
+      count: suggestions.length,
+      suggestions
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: 'Errore nel recupero suggerimenti Google Places',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// Google Places details (admin/superadmin only)
+router.get('/places/details', authenticate, authorize('admin', 'superadmin'), async (req, res) => {
+  try {
+    const placesApiKey = process.env.GOOGLE_PLACES_API;
+    if (!placesApiKey) {
+      return res.status(500).json({ message: 'GOOGLE_PLACES_API non configurata sul backend' });
+    }
+
+    const placeId = (req.query.placeId || '').toString().trim();
+    if (!placeId) {
+      return res.status(400).json({ message: 'placeId è obbligatorio' });
+    }
+
+    const params = new URLSearchParams({
+      place_id: placeId,
+      fields: 'name,url,address_component',
+      language: 'it',
+      key: placesApiKey
+    });
+
+    const response = await fetch(`https://maps.googleapis.com/maps/api/place/details/json?${params.toString()}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      return res.status(502).json({
+        message: 'Servizio Google Places non disponibile',
+        error: process.env.NODE_ENV === 'development' ? errorText : undefined
+      });
+    }
+
+    const data = await response.json();
+    if (data.status !== 'OK' || !data.result) {
+      return res.status(502).json({
+        message: 'Errore da Google Places details',
+        error: process.env.NODE_ENV === 'development' ? data.error_message || data.status : undefined
+      });
+    }
+
+    const addressComponents = Array.isArray(data.result.address_components)
+      ? data.result.address_components
+      : [];
+
+    const preferredTypes = ['locality', 'postal_town', 'administrative_area_level_3', 'administrative_area_level_2'];
+    let city = '';
+    for (const type of preferredTypes) {
+      const match = addressComponents.find((component) =>
+        Array.isArray(component.types) && component.types.includes(type)
+      );
+      if (match?.long_name) {
+        city = match.long_name;
+        break;
+      }
+    }
+
+    const mapsUrl = data.result.url || `https://www.google.com/maps/place/?q=place_id:${encodeURIComponent(placeId)}`;
+
+    return res.json({
+      placeId,
+      name: data.result.name || '',
+      city,
+      mapsUrl
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: 'Errore nel recupero dettagli Google Places',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
 // Summarize restaurant feedback with Gemini
 router.post('/:id/feedback-summary', writeLimiter, authenticate, async (req, res) => {
   try {

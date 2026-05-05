@@ -91,6 +91,20 @@ export interface FeedbackSummaryResponse {
   generatedAt: string;
 }
 
+export interface GooglePlaceSuggestion {
+  placeId: string;
+  description: string;
+  mainText: string;
+  secondaryText: string;
+}
+
+export interface GooglePlaceDetails {
+  placeId: string;
+  name: string;
+  city: string;
+  mapsUrl: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -127,6 +141,19 @@ export class RestaurantService {
       `${environment.apiUrl}/restaurants/search`,
       { params }
     );
+  }
+
+  getGooglePlaceSuggestions(q: string): Observable<{ count: number; suggestions: GooglePlaceSuggestion[] }> {
+    const params = new HttpParams().set('q', q);
+    return this.http.get<{ count: number; suggestions: GooglePlaceSuggestion[] }>(
+      `${this.apiUrl}/restaurants/places/autocomplete`,
+      { params }
+    );
+  }
+
+  getGooglePlaceDetails(placeId: string): Observable<GooglePlaceDetails> {
+    const params = new HttpParams().set('placeId', placeId);
+    return this.http.get<GooglePlaceDetails>(`${this.apiUrl}/restaurants/places/details`, { params });
   }
 
   getRestaurant(id: string): Observable<{ restaurant: Restaurant }> {
