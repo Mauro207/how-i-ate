@@ -22,6 +22,7 @@ export class RestaurantDetailComponent implements OnInit {
   coverImageLoadFailed = signal(false);
   loading = signal(true);
   error = signal('');
+  reviewsError = signal('');
   feedbackSummary = signal('');
   feedbackSummaryError = signal('');
   feedbackSummaryLoading = signal(false);
@@ -31,6 +32,8 @@ export class RestaurantDetailComponent implements OnInit {
   readonly MIN_RATING = 0.25;
   readonly MAX_RATING = 10;
   readonly RATING_STEP = 0.25;
+  readonly COMMENT_MIN_LENGTH = 5;
+  readonly COMMENT_MAX_LENGTH = 600;
   
   // Review form
   showReviewForm = signal(false);
@@ -69,7 +72,7 @@ export class RestaurantDetailComponent implements OnInit {
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set('Caricamento del luogo fallito.');
+        this.error.set(this.httpErrorMessage(err, 'Caricamento del luogo fallito'));
         this.loading.set(false);
       }
     });
@@ -81,13 +84,14 @@ export class RestaurantDetailComponent implements OnInit {
 
   loadReviews(id: string): void {
     this.reviewsLoading.set(true);
+    this.reviewsError.set('');
     this.restaurantService.getRestaurantReviews(id).subscribe({
       next: (response) => {
         this.reviews.set(response.reviews);
         this.reviewsLoading.set(false);
       },
       error: (err) => {
-        console.error('Caricamento del luogo fallito.', err);
+        this.reviewsError.set(this.httpErrorMessage(err, 'Caricamento delle recensioni fallito'));
         this.reviewsLoading.set(false);
       }
     });
@@ -166,8 +170,17 @@ export class RestaurantDetailComponent implements OnInit {
   }
 
   createReview(): void {
-    if (!this.comment().trim()) {
+    const trimmed = this.comment().trim();
+    if (!trimmed) {
       this.reviewError.set('Per favore aggiungi un commento.');
+      return;
+    }
+    if (trimmed.length < this.COMMENT_MIN_LENGTH) {
+      this.reviewError.set(`Il commento deve essere di almeno ${this.COMMENT_MIN_LENGTH} caratteri.`);
+      return;
+    }
+    if (trimmed.length > this.COMMENT_MAX_LENGTH) {
+      this.reviewError.set(`Il commento supera il limite di ${this.COMMENT_MAX_LENGTH} caratteri (${trimmed.length}/${this.COMMENT_MAX_LENGTH}).`);
       return;
     }
 
@@ -223,6 +236,28 @@ export class RestaurantDetailComponent implements OnInit {
     return rounded.toFixed(1);
   }
 
+  private httpErrorMessage(err: any, context: string): string {
+    if (err.status === 0) {
+      return `${context}: impossibile raggiungere il server. Verifica la connessione e riprova.`;
+    }
+    if (err.status === 401) {
+      return `${context}: sessione scaduta. Effettua nuovamente l'accesso.`;
+    }
+    if (err.status === 403) {
+      return `${context}: accesso non autorizzato.`;
+    }
+    if (err.status === 404) {
+      return `${context}: risorsa non trovata.`;
+    }
+    if (err.status === 429) {
+      return `${context}: troppe richieste. Attendi qualche secondo e riprova.`;
+    }
+    if (err.status >= 500) {
+      return `${context}: errore del server (${err.status}). Riprova più tardi.`;
+    }
+    return err.error?.message || `${context} (codice: ${err.status ?? 'nessuna risposta'}).`;
+  }
+
   viewUserRankings(userId: string, username: string): void {
     this.router.navigate(['/user-rankings', userId, username]);
   }
@@ -265,8 +300,17 @@ export class RestaurantDetailComponent implements OnInit {
   }
 
   updateReview(): void {
-    if (!this.comment().trim()) {
+    const trimmed = this.comment().trim();
+    if (!trimmed) {
       this.reviewError.set('Aggiornamento della recensione fallita: aggiungi un commento');
+      return;
+    }
+    if (trimmed.length < this.COMMENT_MIN_LENGTH) {
+      this.reviewError.set(`Il commento deve essere di almeno ${this.COMMENT_MIN_LENGTH} caratteri.`);
+      return;
+    }
+    if (trimmed.length > this.COMMENT_MAX_LENGTH) {
+      this.reviewError.set(`Il commento supera il limite di ${this.COMMENT_MAX_LENGTH} caratteri (${trimmed.length}/${this.COMMENT_MAX_LENGTH}).`);
       return;
     }
 

@@ -46,10 +46,7 @@ export class RankingsComponent implements OnInit {
         this.loading.set(false);
       },
       error: (err) => {
-        const errorMsg = err.status === 404
-          ? 'Nessuna classifica disponibile'
-          : 'Errore nel caricamento della classifica';
-        this.error.set(errorMsg);
+        this.error.set(this.httpErrorMessage(err, 'Caricamento della classifica fallito'));
         this.loading.set(false);
       }
     });
@@ -57,6 +54,28 @@ export class RankingsComponent implements OnInit {
 
   viewRestaurant(restaurantId: string): void {
     this.router.navigate(['/restaurants', restaurantId]);
+  }
+
+  private httpErrorMessage(err: any, context: string): string {
+    if (err.status === 0) {
+      return `${context}: impossibile raggiungere il server. Verifica la connessione e riprova.`;
+    }
+    if (err.status === 401) {
+      return `${context}: sessione scaduta. Effettua nuovamente l'accesso.`;
+    }
+    if (err.status === 403) {
+      return `${context}: accesso non autorizzato.`;
+    }
+    if (err.status === 404) {
+      return `${context}: nessuna classifica disponibile.`;
+    }
+    if (err.status === 429) {
+      return `${context}: troppe richieste. Attendi qualche secondo e riprova.`;
+    }
+    if (err.status >= 500) {
+      return `${context}: errore del server (${err.status}). Riprova più tardi.`;
+    }
+    return err.error?.message || `${context} (codice: ${err.status ?? 'nessuna risposta'}).`;
   }
 
   formatRating(rating: number): string {

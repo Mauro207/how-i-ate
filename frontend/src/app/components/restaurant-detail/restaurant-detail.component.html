@@ -257,6 +257,11 @@
       </div>
       <!-- Reviews Section -->
       <div class="px-6 py-8 bg-white dark:bg-[#2b2930] shadow-sm border border-gray-100 dark:border-white/5 rounded-2xl">
+        @if (reviewsError()) {
+          <div class="px-4 py-3 mb-6 text-sm text-red-700 border border-red-200 rounded-xl bg-red-50 dark:bg-red-500/20 dark:text-red-300 dark:border-red-500/40">
+            {{ reviewsError() }}
+          </div>
+        }
         @if (!reviewsLoading() && !showReviewForm() && !hasUserReviewed()) {
           <div class="flex flex-col justify-between gap-3 mb-6 lg:flex-row lg:items-center">
             <button
@@ -344,10 +349,31 @@
                   name="comment"
                   rows="4"
                   required
+                  [minlength]="COMMENT_MIN_LENGTH"
+                  [maxlength]="COMMENT_MAX_LENGTH"
                   [disabled]="submittingReview()"
                   class="w-full px-4 py-2.5 transition duration-150 border border-gray-200 dark:border-white/10 rounded-xl bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#6750a4]/40 focus:border-[#6750a4] dark:focus:border-[#d0bcff] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                  [class.border-red-400]="comment().trim().length > COMMENT_MAX_LENGTH || (comment().trim().length > 0 && comment().trim().length < COMMENT_MIN_LENGTH)"
+                  [class.dark:border-red-500]="comment().trim().length > COMMENT_MAX_LENGTH || (comment().trim().length > 0 && comment().trim().length < COMMENT_MIN_LENGTH)"
                   placeholder="Condividi la tua esperienza..."
                 ></textarea>
+                <div class="flex items-center justify-between mt-1">
+                  @if (comment().trim().length > 0 && comment().trim().length < COMMENT_MIN_LENGTH) {
+                    <span class="text-xs text-red-500 dark:text-red-400">Minimo {{ COMMENT_MIN_LENGTH }} caratteri</span>
+                  } @else if (comment().trim().length > COMMENT_MAX_LENGTH) {
+                    <span class="text-xs text-red-500 dark:text-red-400">Limite superato di {{ comment().trim().length - COMMENT_MAX_LENGTH }} caratteri</span>
+                  } @else {
+                    <span></span>
+                  }
+                  <span
+                    class="text-xs ml-auto"
+                    [class.text-red-500]="comment().trim().length > COMMENT_MAX_LENGTH"
+                    [class.dark:text-red-400]="comment().trim().length > COMMENT_MAX_LENGTH"
+                    [class.text-amber-500]="comment().trim().length >= COMMENT_MAX_LENGTH * 0.9 && comment().trim().length <= COMMENT_MAX_LENGTH"
+                    [class.text-gray-400]="comment().trim().length < COMMENT_MAX_LENGTH * 0.9"
+                    [class.dark:text-gray-500]="comment().trim().length < COMMENT_MAX_LENGTH * 0.9"
+                  >{{ comment().trim().length }}/{{ COMMENT_MAX_LENGTH }}</span>
+                </div>
               </div>
 
               <!-- Action Buttons -->

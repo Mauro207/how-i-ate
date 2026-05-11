@@ -45,7 +45,7 @@ export class RestaurantsComponent implements OnInit {
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set('Caricamento dei luoghi fallito.');
+        this.error.set(this.httpErrorMessage(err, 'Caricamento dei luoghi fallito'));
         this.loading.set(false);
       }
     });
@@ -62,6 +62,28 @@ export class RestaurantsComponent implements OnInit {
 
   viewRestaurant(id: string): void {
     this.router.navigate(['/restaurants', id]);
+  }
+
+  private httpErrorMessage(err: any, context: string): string {
+    if (err.status === 0) {
+      return `${context}: impossibile raggiungere il server. Verifica la connessione e riprova.`;
+    }
+    if (err.status === 401) {
+      return `${context}: sessione scaduta. Effettua nuovamente l'accesso.`;
+    }
+    if (err.status === 403) {
+      return `${context}: accesso non autorizzato.`;
+    }
+    if (err.status === 404) {
+      return `${context}: risorsa non trovata.`;
+    }
+    if (err.status === 429) {
+      return `${context}: troppe richieste. Attendi qualche secondo e riprova.`;
+    }
+    if (err.status >= 500) {
+      return `${context}: errore del server (${err.status}). Riprova più tardi.`;
+    }
+    return err.error?.message || `${context} (codice: ${err.status ?? 'nessuna risposta'}).`;
   }
 
   getCuisineIcon(cuisine?: string): string {
