@@ -23,6 +23,8 @@ export class RestaurantDetailComponent implements OnInit {
   loading = signal(true);
   error = signal('');
   reviewsError = signal('');
+  private retryAttempted = false;
+  private reviewsRetryAttempted = false;
   feedbackSummary = signal('');
   feedbackSummaryError = signal('');
   feedbackSummaryLoading = signal(false);
@@ -64,16 +66,35 @@ export class RestaurantDetailComponent implements OnInit {
     }
   }
 
+  reloadRestaurant(): void {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) this.loadRestaurant(id);
+  }
+
+  reloadReviews(): void {
+    const id = this.restaurant()?._id ?? this.route.snapshot.paramMap.get('id');
+    if (id) this.loadReviews(id);
+  }
+
   loadRestaurant(id: string): void {
+    this.loading.set(true);
+    this.error.set('');
     this.restaurantService.getRestaurant(id).subscribe({
       next: (response) => {
         this.restaurant.set(response.restaurant);
         this.coverImageLoadFailed.set(false);
         this.loading.set(false);
+        this.retryAttempted = false;
       },
       error: (err) => {
-        this.error.set(this.httpErrorMessage(err, 'Caricamento del luogo fallito'));
-        this.loading.set(false);
+        if (!this.retryAttempted && err.status === 0) {
+          this.retryAttempted = true;
+          setTimeout(() => this.loadRestaurant(id), 2000);
+        } else {
+          this.error.set(this.httpErrorMessage(err, 'Caricamento del luogo fallito'));
+          this.loading.set(false);
+          this.retryAttempted = false;
+        }
       }
     });
   }
@@ -89,10 +110,17 @@ export class RestaurantDetailComponent implements OnInit {
       next: (response) => {
         this.reviews.set(response.reviews);
         this.reviewsLoading.set(false);
+        this.reviewsRetryAttempted = false;
       },
       error: (err) => {
-        this.reviewsError.set(this.httpErrorMessage(err, 'Caricamento delle recensioni fallito'));
-        this.reviewsLoading.set(false);
+        if (!this.reviewsRetryAttempted && err.status === 0) {
+          this.reviewsRetryAttempted = true;
+          setTimeout(() => this.loadReviews(id), 2000);
+        } else {
+          this.reviewsError.set(this.httpErrorMessage(err, 'Caricamento delle recensioni fallito'));
+          this.reviewsLoading.set(false);
+          this.reviewsRetryAttempted = false;
+        }
       }
     });
   }

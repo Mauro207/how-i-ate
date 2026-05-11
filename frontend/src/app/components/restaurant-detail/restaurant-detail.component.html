@@ -19,14 +19,22 @@
 
   <!-- Error State -->
   <div *ngIf="error() && !loading()" class="max-w-4xl px-4 py-12 mx-auto">
-    <div class="px-6 py-4 text-red-700 border border-red-200 rounded-xl bg-red-50 dark:bg-red-500/20 dark:text-red-300 dark:border-red-500/40">
+    <div class="flex flex-col items-start gap-3 px-6 py-4 text-red-700 border border-red-200 rounded-xl bg-red-50 dark:bg-red-500/20 dark:text-red-300 dark:border-red-500/40">
       <p>{{ error() }}</p>
-      <button
-        routerLink="/restaurants"
-        class="mt-4 font-medium text-[#6750a4] dark:text-[#d0bcff] hover:text-[#4a3880] dark:hover:text-white"
-      >
-        Torna indietro
-      </button>
+      <div class="flex gap-3">
+        <button
+          (click)="reloadRestaurant()"
+          class="px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500/40 transition duration-150"
+        >
+          Ricarica
+        </button>
+        <button
+          routerLink="/restaurants"
+          class="font-medium text-[#6750a4] dark:text-[#d0bcff] hover:text-[#4a3880] dark:hover:text-white"
+        >
+          Torna indietro
+        </button>
+      </div>
     </div>
   </div>
 
@@ -258,8 +266,14 @@
       <!-- Reviews Section -->
       <div class="px-6 py-8 bg-white dark:bg-[#2b2930] shadow-sm border border-gray-100 dark:border-white/5 rounded-2xl">
         @if (reviewsError()) {
-          <div class="px-4 py-3 mb-6 text-sm text-red-700 border border-red-200 rounded-xl bg-red-50 dark:bg-red-500/20 dark:text-red-300 dark:border-red-500/40">
+          <div class="flex flex-col items-start gap-3 px-4 py-3 mb-6 text-sm text-red-700 border border-red-200 rounded-xl bg-red-50 dark:bg-red-500/20 dark:text-red-300 dark:border-red-500/40">
             {{ reviewsError() }}
+            <button
+              (click)="reloadReviews()"
+              class="px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500/40 transition duration-150"
+            >
+              Ricarica recensioni
+            </button>
           </div>
         }
         @if (!reviewsLoading() && !showReviewForm() && !hasUserReviewed()) {

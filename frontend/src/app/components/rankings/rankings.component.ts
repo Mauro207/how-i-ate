@@ -17,6 +17,7 @@ export class RankingsComponent implements OnInit {
   totalCount = signal(0);
   loading = signal(true);
   error = signal('');
+  private retryAttempted = false;
   showFilters = signal(false);
   availableCuisines = signal<string[]>([]);
   includedCuisines = signal<Set<string>>(new Set());
@@ -34,6 +35,7 @@ export class RankingsComponent implements OnInit {
 
   loadRankings(): void {
     this.loading.set(true);
+    this.error.set('');
     this.restaurantService.getGlobalRankings().subscribe({
       next: (response) => {
         this.rankings.set(response.rankings);
@@ -44,10 +46,17 @@ export class RankingsComponent implements OnInit {
         this.availableCuisines.set(Array.from(cuisines).sort());
         this.applyFilters();
         this.loading.set(false);
+        this.retryAttempted = false;
       },
       error: (err) => {
-        this.error.set(this.httpErrorMessage(err, 'Caricamento della classifica fallito'));
-        this.loading.set(false);
+        if (!this.retryAttempted && err.status === 0) {
+          this.retryAttempted = true;
+          setTimeout(() => this.loadRankings(), 2000);
+        } else {
+          this.error.set(this.httpErrorMessage(err, 'Caricamento della classifica fallito'));
+          this.loading.set(false);
+          this.retryAttempted = false;
+        }
       }
     });
   }

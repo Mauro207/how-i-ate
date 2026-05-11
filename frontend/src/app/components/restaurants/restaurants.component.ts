@@ -24,6 +24,7 @@ export class RestaurantsComponent implements OnInit {
   });
   loading = signal(true);
   error = signal('');
+  private retryAttempted = false;
 
   constructor(
     public restaurantService: RestaurantService,
@@ -39,14 +40,22 @@ export class RestaurantsComponent implements OnInit {
 
   loadRestaurants(): void {
     this.loading.set(true);
+    this.error.set('');
     this.restaurantService.getRestaurants().subscribe({
       next: (restaurants) => {
         this.restaurants.set(restaurants);
         this.loading.set(false);
+        this.retryAttempted = false;
       },
       error: (err) => {
-        this.error.set(this.httpErrorMessage(err, 'Caricamento dei luoghi fallito'));
-        this.loading.set(false);
+        if (!this.retryAttempted && err.status === 0) {
+          this.retryAttempted = true;
+          setTimeout(() => this.loadRestaurants(), 2000);
+        } else {
+          this.error.set(this.httpErrorMessage(err, 'Caricamento dei luoghi fallito'));
+          this.loading.set(false);
+          this.retryAttempted = false;
+        }
       }
     });
   }
