@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { RestaurantService, UserRankingItem } from '../../services/restaurant.service';
 import { NavigationComponent } from '../navigation/navigation.component';
@@ -9,7 +9,7 @@ import { getStarArray } from '../../utils/rating.utils';
 @Component({
   selector: 'app-user-rankings',
   standalone: true,
-  imports: [CommonModule, RouterLink, NavigationComponent],
+  imports: [CommonModule, NavigationComponent],
   templateUrl: './user-rankings.component.html',
   styleUrl: './user-rankings.component.css'
 })

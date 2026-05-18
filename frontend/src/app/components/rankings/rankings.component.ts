@@ -1,13 +1,13 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { RestaurantService, RankingItem } from '../../services/restaurant.service';
 import { NavigationComponent } from '../navigation/navigation.component';
 
 @Component({
   selector: 'app-rankings',
   standalone: true,
-  imports: [CommonModule, RouterLink, NavigationComponent],
+  imports: [CommonModule, NavigationComponent],
   templateUrl: './rankings.component.html',
   styleUrl: './rankings.component.css'
 })

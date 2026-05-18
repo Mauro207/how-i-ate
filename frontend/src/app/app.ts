@@ -1,6 +1,6 @@
-import { Component, OnDestroy, signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationCancel, NavigationEnd, NavigationError, NavigationStart, Router, RouterOutlet } from '@angular/router';
-import { Subscription } from 'rxjs';
 import { IosInstallBannerComponent } from './components/ios-install-banner/ios-install-banner.component';
 import { AndroidInstallButtonComponent } from './components/android-install-button/android-install-button.component';
 
@@ -10,13 +10,12 @@ import { AndroidInstallButtonComponent } from './components/android-install-butt
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App implements OnDestroy {
+export class App {
   protected readonly title = signal('frontend');
   routeLoading = signal(true);
-  private routerSubscription: Subscription;
 
   constructor(private router: Router) {
-    this.routerSubscription = this.router.events.subscribe((event) => {
+    this.router.events.pipe(takeUntilDestroyed()).subscribe((event) => {
       if (event instanceof NavigationStart) {
         this.routeLoading.set(true);
       }
@@ -29,9 +28,5 @@ export class App implements OnDestroy {
         this.routeLoading.set(false);
       }
     });
-  }
-
-  ngOnDestroy(): void {
-    this.routerSubscription.unsubscribe();
   }
 }

@@ -1,7 +1,7 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, switchMap, tap } from 'rxjs/operators';
 import { Subject } from 'rxjs';
@@ -16,7 +16,7 @@ type SearchResultItem =
 @Component({
   selector: 'app-search',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, NavigationComponent],
+  imports: [CommonModule, FormsModule, NavigationComponent],
   templateUrl: './search.component.html',
   styleUrl: './search.component.css'
 })
