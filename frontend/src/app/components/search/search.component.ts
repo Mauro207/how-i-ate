@@ -123,7 +123,9 @@ export class SearchComponent implements OnInit {
     if (value.includes('sushi')) return 'sushi';
     if (value.includes('paninoteca')) return 'burger';
     if (value.includes('bar')) return 'coffee';
-    if (value.includes('pasticceria') || value.includes('gelateria')) return 'dessert';
+    if (value.includes('gelateria') || value.includes('gelaterie')) return 'icecream';
+    if (value.includes('pasticceria') || value.includes('pasticcerie')) return 'pastry';
+    if (value.includes('dessert')) return 'dessert';
     return 'generic';
   }
 
