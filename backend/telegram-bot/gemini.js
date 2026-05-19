@@ -1,29 +1,239 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+let GoogleGenerativeAI;
 
-const MODEL_NAME = 'gemini-2.5-flash-lite-preview-06-17';
-const MODEL_CANDIDATES = [
-  MODEL_NAME,
+const MODEL_NAME = 'deterministic-intent-parser';
+const GEMINI_MODEL_NAME = 'gemini-2.5-flash-lite-preview-06-17';
+const GEMINI_MODEL_CANDIDATES = [
+  GEMINI_MODEL_NAME,
   'gemini-2.5-flash-lite',
   'gemini-2.5-flash',
   'gemini-1.5-flash'
 ];
 
-let model;
-let selectedModelName;
+let geminiModel;
+let selectedGeminiModelName;
 
-const getModel = () => {
-  if (model) {
-    return model;
+const PLACE_TYPE_PATTERNS = [
+  { type: 'ristorante giapponese', patterns: [/\bristorante\s+giapponese\b/i] },
+  { type: 'ristorante cinese', patterns: [/\bristorante\s+cinese\b/i] },
+  { type: 'hamburger', patterns: [/\bhamburger(?:eria)?\b/i, /\bburger(?:eria)?\b/i] },
+  { type: 'pizzeria', patterns: [/\bpizz(?:a|eria|erie|e)\b/i] },
+  { type: 'sushi', patterns: [/\bsushi\b/i, /\bjapanese\b/i, /\bg(i|ii)appones[ei]\b/i] },
+  { type: 'pub', patterns: [/\bpub\b/i, /\bbirreria\b/i, /\bbrewpub\b/i] },
+  { type: 'trattoria', patterns: [/\btrattoria\b/i, /\bosteria\b/i] },
+  { type: 'braceria', patterns: [/\bbraceria\b/i, /\bgriglieria\b/i, /\bsteak\s*house\b/i] },
+  { type: 'ristorante', patterns: [/\bristorante\b/i, /\blocale\b/i, /\blocali\b/i] },
+  { type: 'bar', patterns: [/\bbar\b/i, /\bcaff[eè]\b/i, /\bbistrot\b/i] },
+  { type: 'gelateria', patterns: [/\bgelateria\b/i, /\bgelato\b/i] },
+  { type: 'pasticceria', patterns: [/\bpasticceria\b/i, /\bdolci\b/i, /\bcornetti\b/i] },
+  { type: 'paninoteca', patterns: [/\bpaninoteca\b/i, /\bpanino\b/i, /\bpanini\b/i] },
+  { type: 'pesce', patterns: [/\bpesce\b/i, /\bseafood\b/i] },
+  { type: 'carne', patterns: [/\bcarne\b/i, /\bgriglia\b/i] },
+  { type: 'pizza al taglio', patterns: [/\bpizza\s+al\s+taglio\b/i] },
+  { type: 'aperitivo', patterns: [/\baperitivo\b/i, /\bapericena\b/i] },
+  { type: 'brunch', patterns: [/\bbrunch\b/i] }
+];
+
+const CITY_PREPOSITIONS = [
+  'vicino a',
+  'nei pressi di',
+  'nei pressi del',
+  'nei pressi della',
+  'zona',
+  'a',
+  'ad',
+  'in',
+  'da',
+  'nel',
+  'nella',
+  'nei',
+  'nelle',
+  'su'
+];
+
+const CITY_STOP_WORDS = new Set([
+  'oggi', 'stasera', 'domani', 'adesso', 'subito', 'buono', 'buona', 'buoni', 'buone',
+  'top', 'economico', 'economica', 'economici', 'economiche', 'migliore', 'migliori',
+  'dove', 'trovo', 'cerco', 'consigliami', 'consigliami', 'consiglia', 'vorrei', 'voglio',
+  'un', 'una', 'uno', 'dei', 'delle', 'del', 'della', 'di', 'per', 'con', 'senza', 'il', 'la', 'lo'
+]);
+
+const DESCRIPTOR_WORDS = new Set([
+  'economico', 'economica', 'economici', 'economiche', 'romantico', 'romantica', 'romantici', 'romantiche',
+  'buono', 'buona', 'buoni', 'buone', 'ottimo', 'ottima', 'ottimi', 'ottime', 'migliore', 'migliori',
+  'vegano', 'vegana', 'vegani', 'vegane', 'veloce', 'veloci', 'tranquillo', 'tranquilla', 'tranquilli', 'tranquille'
+]);
+
+const ITALIAN_LOWERCASE_PARTICLES = new Set(['di', 'del', 'della', 'dello', 'dei', 'degli', 'delle', 'da', 'de', 'san', 'sant', 'santa']);
+
+const REQUEST_PREFIXES = [
+  /^ciao\s+/i,
+  /^hey\s+/i,
+  /^ehi\s+/i,
+  /^cerco\s+/i,
+  /^sto cercando\s+/i,
+  /^mi trovi\s+/i,
+  /^mi trovi una?\s+/i,
+  /^mi consigli\s+/i,
+  /^consigliami\s+/i,
+  /^vorrei\s+/i,
+  /^voglio\s+/i,
+  /^dove mangiare\s+/i,
+  /^dove posso mangiare\s+/i,
+  /^mi suggerisci\s+/i
+];
+
+const normalizeText = (value) => (value || '')
+  .toString()
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .replace(/[“”"'`]/g, ' ')
+  .replace(/[!?.,;:()\[\]{}]/g, ' ')
+  .replace(/\s+/g, ' ')
+  .trim();
+
+const toTitleCase = (value) => value
+  .split(/\s+/)
+  .filter(Boolean)
+  .map((token, index) => {
+    const lower = token.toLowerCase();
+    if (index > 0 && ITALIAN_LOWERCASE_PARTICLES.has(lower)) {
+      return lower;
+    }
+
+    return lower.charAt(0).toUpperCase() + lower.slice(1);
+  })
+  .join(' ');
+
+const cleanupCity = (value) => {
+  if (!value) {
+    return null;
   }
 
-  if (!process.env.GEMINI_API_KEY) {
-    throw new Error('Missing GEMINI_API_KEY in environment');
+  const cleaned = normalizeText(value)
+    .replace(/^(di|del|della|dello|dei|degli|delle)\s+/i, '')
+    .replace(/\b(?:centro|provincia|zona|quartiere)\b/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (!cleaned) {
+    return null;
   }
 
-  const client = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-  model = client.getGenerativeModel({ model: MODEL_NAME });
-  selectedModelName = MODEL_NAME;
-  return model;
+  const tokens = cleaned.split(' ').filter((token) => {
+    const lower = token.toLowerCase();
+    return !CITY_STOP_WORDS.has(lower) || ITALIAN_LOWERCASE_PARTICLES.has(lower);
+  });
+  if (!tokens.length) {
+    return null;
+  }
+
+  return toTitleCase(tokens.join(' '));
+};
+
+const detectPlaceType = (messageText) => {
+  for (const entry of PLACE_TYPE_PATTERNS) {
+    if (entry.patterns.some((pattern) => pattern.test(messageText))) {
+      return entry.type;
+    }
+  }
+
+  return null;
+};
+
+const detectCityFromPreposition = (messageText) => {
+  for (const preposition of CITY_PREPOSITIONS) {
+    const pattern = new RegExp(`\\b${preposition.replace(/\s+/g, '\\s+')}\\s+([a-zA-ZÀ-ÿ][a-zA-ZÀ-ÿ' -]{1,40})$`, 'i');
+    const match = messageText.match(pattern);
+
+    if (match?.[1]) {
+      const city = cleanupCity(match[1]);
+      if (city) {
+        return city;
+      }
+    }
+  }
+
+  return null;
+};
+
+const stripKnownPlaceType = (messageText) => {
+  let stripped = messageText;
+
+  for (const entry of PLACE_TYPE_PATTERNS) {
+    for (const pattern of entry.patterns) {
+      stripped = stripped.replace(pattern, ' ');
+    }
+  }
+
+  return stripped.replace(/\s+/g, ' ').trim();
+};
+
+const detectTrailingCity = (messageText, placeType) => {
+  let stripped = stripKnownPlaceType(messageText);
+
+  for (const prefix of REQUEST_PREFIXES) {
+    stripped = stripped.replace(prefix, '');
+  }
+
+  stripped = stripped
+    .replace(/\b(?:buona?|buoni|buone|top|economica?|economici|economiche|migliore|migliori)\b/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (!stripped) {
+    return null;
+  }
+
+  const prepositionCity = detectCityFromPreposition(stripped);
+  if (prepositionCity) {
+    return prepositionCity;
+  }
+
+  const tokens = stripped
+    .split(' ')
+    .filter(Boolean)
+    .filter((token) => !DESCRIPTOR_WORDS.has(token.toLowerCase()));
+
+  if (placeType) {
+    if (tokens.length >= 1 && tokens.length <= 4) {
+      return cleanupCity(tokens.join(' '));
+    }
+  }
+
+  if (!placeType && tokens.length >= 1 && tokens.length <= 4) {
+    return cleanupCity(tokens.join(' '));
+  }
+
+  return null;
+};
+
+const buildSearchText = ({ originalMessage, city, placeType }) => {
+  const fallback = normalizeText(originalMessage).slice(0, 60);
+  const compact = [placeType, city].filter(Boolean).join(' ').trim();
+  return (compact || fallback).slice(0, 60);
+};
+
+const canUseGeminiFallback = () => Boolean(process.env.GEMINI_API_KEY);
+
+const getGeminiSdk = () => {
+  if (GoogleGenerativeAI) {
+    return GoogleGenerativeAI;
+  }
+
+  ({ GoogleGenerativeAI } = require('@google/generative-ai'));
+  return GoogleGenerativeAI;
+};
+
+const getGeminiModel = () => {
+  if (geminiModel) {
+    return geminiModel;
+  }
+
+  const GeminiSdk = getGeminiSdk();
+  const client = new GeminiSdk(process.env.GEMINI_API_KEY);
+  geminiModel = client.getGenerativeModel({ model: GEMINI_MODEL_NAME });
+  selectedGeminiModelName = GEMINI_MODEL_NAME;
+  return geminiModel;
 };
 
 const isModelNotFoundError = (error) => {
@@ -32,7 +242,7 @@ const isModelNotFoundError = (error) => {
 };
 
 const generateContentWithFallback = async ({ contents, generationConfig }) => {
-  const primaryModel = getModel();
+  const primaryModel = getGeminiModel();
 
   try {
     return await primaryModel.generateContent({ contents, generationConfig });
@@ -42,14 +252,11 @@ const generateContentWithFallback = async ({ contents, generationConfig }) => {
     }
   }
 
-  if (!process.env.GEMINI_API_KEY) {
-    throw new Error('Missing GEMINI_API_KEY in environment');
-  }
+  const GeminiSdk = getGeminiSdk();
+  const client = new GeminiSdk(process.env.GEMINI_API_KEY);
 
-  const client = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-  for (const candidate of MODEL_CANDIDATES) {
-    if (candidate === selectedModelName) {
+  for (const candidate of GEMINI_MODEL_CANDIDATES) {
+    if (candidate === selectedGeminiModelName) {
       continue;
     }
 
@@ -57,8 +264,8 @@ const generateContentWithFallback = async ({ contents, generationConfig }) => {
 
     try {
       const result = await candidateModel.generateContent({ contents, generationConfig });
-      model = candidateModel;
-      selectedModelName = candidate;
+      geminiModel = candidateModel;
+      selectedGeminiModelName = candidate;
       console.log(`[telegram-bot] Gemini fallback model attivo: ${candidate}`);
       return result;
     } catch (error) {
@@ -100,7 +307,7 @@ const parseJsonBlock = (rawText) => {
   }
 };
 
-const extractIntent = async (messageText) => {
+const extractIntentWithGemini = async (messageText) => {
   const prompt = [
     'Estrai intento da una richiesta utente su ristoranti in Italia.',
     'Rispondi SOLO JSON valido con queste chiavi:',
@@ -130,103 +337,35 @@ const extractIntent = async (messageText) => {
     placeType: typeof parsed.placeType === 'string' && parsed.placeType.trim() ? parsed.placeType.trim() : null,
     searchText: typeof parsed.searchText === 'string' && parsed.searchText.trim()
       ? parsed.searchText.trim().slice(0, 60)
-      : messageText.trim().slice(0, 60)
+      : normalizeText(messageText).slice(0, 60)
   };
 };
 
-const buildFallbackRecommendation = ({ city, placeType, candidates }) => {
-  const best = candidates[0];
-  const where = city ? ` a ${city}` : '';
-  const what = placeType ? ` per ${placeType}` : '';
+const extractIntent = async (messageText) => {
+  const normalizedMessage = normalizeText(messageText);
+  const placeType = detectPlaceType(normalizedMessage);
+  const city = detectCityFromPreposition(normalizedMessage) || detectTrailingCity(normalizedMessage, placeType);
 
-  const lines = [
-    `Ho trovato questo posto top${where}${what}:`,
-    '',
-    `*${best.name}*`,
-    `- Voto medio: ${best.averageRating.toFixed(1)}/10 (${best.reviewCount} recensioni)`,
-    best.cuisine ? `- Tipologia: ${best.cuisine}` : null,
-    best.address ? `- Indirizzo: ${best.address}` : null,
-    best.googleMapsUrl ? `- Maps: ${best.googleMapsUrl}` : null,
-    '',
-    'Se vuoi posso proporti anche un paio di alternative.'
-  ].filter(Boolean);
-
-  return lines.join('\n');
-};
-
-const generateRecommendation = async ({ originalMessage, city, placeType, candidates }) => {
-  if (!Array.isArray(candidates) || candidates.length === 0) {
-    return {
-      bestIndex: -1,
-      replyMarkdown: 'Non ho trovato risultati utili. Prova con una citta o un tipo di locale piu specifico 🙂'
-    };
-  }
-
-  const shortlist = candidates.slice(0, 6).map((candidate, index) => ({
-    index,
-    name: candidate.name,
-    address: candidate.address || null,
-    cuisine: candidate.cuisine || null,
-    averageRating: Number(candidate.averageRating || 0),
-    reviewCount: Number(candidate.reviewCount || 0),
-    googleMapsUrl: candidate.googleMapsUrl || null,
-    instagramUrl: candidate.instagramUrl || null
-  }));
-
-  const prompt = [
-    'Sei un assistente food advisor per Telegram.',
-    'Scegli il miglior locale tra i candidati, tenendo conto soprattutto di voto medio e numero recensioni,',
-    'ma anche della coerenza con la richiesta utente.',
-    'Rispondi SOLO JSON valido con chiavi:',
-    '{"bestIndex":number,"replyMarkdown":"string"}',
-    'Regole replyMarkdown:',
-    '- Lingua italiana',
-    '- Tono friendly',
-    '- Usa 2-4 emoji max',
-    '- Formato Markdown semplice (compatibile Telegram)',
-    '- Max 8 righe',
-    '- Cita nome locale, motivo scelta, voto medio, recensioni, indirizzo se presente, link Maps se presente',
-    '- Non inventare dati',
-    '',
-    `Richiesta utente: ${originalMessage}`,
-    `Citta estratta: ${city || 'non specificata'}`,
-    `Tipo locale estratto: ${placeType || 'non specificato'}`,
-    '',
-    `Candidati: ${JSON.stringify(shortlist)}`
-  ].join('\n');
-
-  try {
-    const result = await generateContentWithFallback({
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: 0.35,
-        responseMimeType: 'application/json'
-      }
-    });
-
-    const text = result?.response?.text?.() || '';
-    const parsed = parseJsonBlock(text) || {};
-    const bestIndex = Number.isInteger(parsed.bestIndex) ? parsed.bestIndex : 0;
-    const chosen = shortlist[bestIndex] ? bestIndex : 0;
-
-    if (typeof parsed.replyMarkdown === 'string' && parsed.replyMarkdown.trim()) {
-      return {
-        bestIndex: chosen,
-        replyMarkdown: parsed.replyMarkdown.trim()
-      };
+  if (!city && !placeType && canUseGeminiFallback()) {
+    try {
+      return await extractIntentWithGemini(messageText);
+    } catch (error) {
+      console.error('[telegram-bot] Gemini fallback extractIntent failed:', error.message);
     }
-  } catch (_) {
-    // Fallback below keeps the bot responsive even if AI formatting fails.
   }
 
   return {
-    bestIndex: 0,
-    replyMarkdown: buildFallbackRecommendation({ city, placeType, candidates: shortlist })
+    city,
+    placeType,
+    searchText: buildSearchText({
+      originalMessage: messageText,
+      city,
+      placeType
+    })
   };
 };
 
 module.exports = {
   MODEL_NAME,
-  extractIntent,
-  generateRecommendation
+  extractIntent
 };

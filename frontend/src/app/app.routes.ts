@@ -12,7 +12,6 @@ import { SuggestPlaceComponent } from './components/suggest-place/suggest-place.
 import { SuggestionsComponent } from './components/suggestions/suggestions.component';
 import { SearchComponent } from './components/search/search.component';
 import { UpdatesComponent } from './components/updates/updates.component';
-import { OpenInWebappComponent } from './components/open-in-webapp/open-in-webapp.component';
 import { authGuard } from './guards/auth.guard';
 import { superadminGuard } from './guards/superadmin.guard';
 import { adminGuard } from './guards/admin.guard';
@@ -21,7 +20,6 @@ import { guestGuard } from './guards/guest.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/restaurants', pathMatch: 'full' },
-  { path: 'open-in-webapp', component: OpenInWebappComponent },
   { path: 'login', component: LoginComponent, canActivate: [guestGuard] },
   { path: 'restaurants', component: RestaurantsComponent, canActivate: [authGuard] },
   { path: 'restaurants/create', component: RestaurantCreateComponent, canActivate: [authGuard, adminGuard] },

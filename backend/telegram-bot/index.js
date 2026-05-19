@@ -13,10 +13,6 @@ if (!BOT_TOKEN) {
   throw new Error('Missing TELEGRAM_BOT_TOKEN in environment');
 }
 
-if (!process.env.GEMINI_API_KEY) {
-  throw new Error('Missing GEMINI_API_KEY in environment');
-}
-
 const bot = new TelegramBot(BOT_TOKEN);
 const sessions = new Map();
 const processingChats = new Set();
@@ -36,8 +32,7 @@ const helpMessage = [
 ].join('\n');
 
 const buildRestaurantPageUrl = (restaurantId) => {
-  const target = encodeURIComponent(`/restaurants/${restaurantId}`);
-  return `${PUBLIC_APP_URL}/open-in-webapp?target=${target}`;
+  return `${PUBLIC_APP_URL}/restaurants/${restaurantId}`;
 };
 
 const buildTopThreeMessage = ({ city, placeType, places }) => {
