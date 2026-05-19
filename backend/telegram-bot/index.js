@@ -1,6 +1,7 @@
 const TelegramBot = require('node-telegram-bot-api');
 const { extractIntent } = require('./gemini');
 const { findPlaces } = require('./placesService');
+const { checkAndConsumeDailyRequest } = require('./usageService');
 
 // dotenv is already loaded by backend/index.js before this module is required
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
@@ -16,6 +17,7 @@ if (!process.env.GEMINI_API_KEY) {
 
 const bot = new TelegramBot(BOT_TOKEN);
 const sessions = new Map();
+const processingChats = new Set();
 
 const helpMessage = [
   '*How-I-Ate Bot* 🍽️',
@@ -133,39 +135,79 @@ const sendMarkdown = async (chatId, text) => {
   }
 };
 
-const runSearchFlow = async ({ chatId, userMessage, forcedCity, forcedPlaceType }) => {
-  await bot.sendChatAction(chatId, 'typing');
-
-  const extracted = await extractIntent(userMessage);
-  const city = forcedCity || extracted.city;
-  const placeType = forcedPlaceType || extracted.placeType;
-  const searchText = extracted.searchText || userMessage;
-
-  const { places, usedNearbyFallback } = await findPlaces({
-    city,
-    placeType,
-    searchText,
-    limit: 3
-  });
-
-  if (!places.length) {
+const runSearchFlow = async ({ chatId, userId, userMessage, forcedCity, forcedPlaceType }) => {
+  if (processingChats.has(chatId)) {
     await sendMarkdown(
       chatId,
-      'Non ho trovato locali in linea con la richiesta 😕\nProva a specificare meglio citta e tipologia (es: pizzeria Caserta).'
+      'Sto ancora elaborando la richiesta precedente ⏳\nNon inviare altri messaggi: riceverai comunque la risposta appena pronta.'
     );
     return;
   }
 
-  if (usedNearbyFallback) {
-    await sendMarkdown(chatId, buildNearbyFallbackMessage({ city, placeType, places }));
-    return;
-  }
+  processingChats.add(chatId);
 
-  await sendMarkdown(chatId, buildTopThreeMessage({ city, placeType, places }));
+  try {
+    const extracted = await extractIntent(userMessage);
+    const city = forcedCity || extracted.city;
+    const placeType = forcedPlaceType || extracted.placeType;
+    const searchText = extracted.searchText || userMessage;
+
+    // Se non riusciamo a ricavare ne localita ne tipologia, blocchiamo la ricerca.
+    if (!city && !placeType) {
+      await sendMarkdown(
+        chatId,
+        'Il messaggio non e corretto 😕\nScrivi almeno *tipologia* o *localita* \(meglio entrambe\).\nEsempio: *"Cerco una pizzeria a Benevento"*.'
+      );
+      return;
+    }
+
+    const usage = await checkAndConsumeDailyRequest({
+      telegramUserId: String(userId || chatId)
+    });
+
+    if (!usage.allowed) {
+      await sendMarkdown(
+        chatId,
+        `Hai raggiunto il limite giornaliero di *${usage.max}* richieste 🙏\nRiprova domani.`
+      );
+      return;
+    }
+
+    await sendMarkdown(
+      chatId,
+      `Richiesta ricevuta ✅\nSto cercando i risultati migliori \(${usage.remaining} richieste rimaste oggi\).\nNon inviare altri messaggi: ti rispondo appena pronto ⏳`
+    );
+    await bot.sendChatAction(chatId, 'typing');
+
+    const { places, usedNearbyFallback } = await findPlaces({
+      city,
+      placeType,
+      searchText,
+      limit: 3
+    });
+
+    if (!places.length) {
+      await sendMarkdown(
+        chatId,
+        'Non ho trovato locali in linea con la richiesta 😕\nProva a specificare meglio citta e tipologia (es: pizzeria Caserta).'
+      );
+      return;
+    }
+
+    if (usedNearbyFallback) {
+      await sendMarkdown(chatId, buildNearbyFallbackMessage({ city, placeType, places }));
+      return;
+    }
+
+    await sendMarkdown(chatId, buildTopThreeMessage({ city, placeType, places }));
+  } finally {
+    processingChats.delete(chatId);
+  }
 };
 
 const handleMessage = async (msg) => {
   const chatId = msg.chat.id;
+  const userId = msg.from?.id;
   const text = (msg.text || '').trim();
 
   if (!text) {
@@ -224,6 +266,7 @@ const handleMessage = async (msg) => {
         const syntheticMessage = [placeType, city].filter(Boolean).join(' ');
         await runSearchFlow({
           chatId,
+          userId,
           userMessage: syntheticMessage,
           forcedCity: city,
           forcedPlaceType: placeType
@@ -234,6 +277,7 @@ const handleMessage = async (msg) => {
 
     await runSearchFlow({
       chatId,
+      userId,
       userMessage: text
     });
   } catch (error) {
