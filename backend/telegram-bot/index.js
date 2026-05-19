@@ -6,7 +6,8 @@ const { checkAndConsumeDailyRequest } = require('./usageService');
 // dotenv is already loaded by backend/index.js before this module is required
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const SESSION_TTL_MS = 15 * 60 * 1000;
-const PUBLIC_APP_URL = 'https://how-i-ate.it';
+const DEFAULT_PUBLIC_APP_URL = 'https://www.how-i-ate.it';
+const PUBLIC_APP_URL = (process.env.PUBLIC_APP_URL || DEFAULT_PUBLIC_APP_URL).replace(/\/+$/, '');
 
 if (!BOT_TOKEN) {
   throw new Error('Missing TELEGRAM_BOT_TOKEN in environment');
