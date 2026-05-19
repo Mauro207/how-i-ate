@@ -1,8 +1,15 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const MODEL_NAME = 'gemini-2.5-flash-lite-preview-06-17';
+const MODEL_CANDIDATES = [
+  MODEL_NAME,
+  'gemini-2.5-flash-lite',
+  'gemini-2.5-flash',
+  'gemini-1.5-flash'
+];
 
 let model;
+let selectedModelName;
 
 const getModel = () => {
   if (model) {
@@ -15,7 +22,53 @@ const getModel = () => {
 
   const client = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
   model = client.getGenerativeModel({ model: MODEL_NAME });
+  selectedModelName = MODEL_NAME;
   return model;
+};
+
+const isModelNotFoundError = (error) => {
+  const message = String(error?.message || '');
+  return error?.status === 404 || message.includes('404') || message.includes('is not found');
+};
+
+const generateContentWithFallback = async ({ contents, generationConfig }) => {
+  const primaryModel = getModel();
+
+  try {
+    return await primaryModel.generateContent({ contents, generationConfig });
+  } catch (error) {
+    if (!isModelNotFoundError(error)) {
+      throw error;
+    }
+  }
+
+  if (!process.env.GEMINI_API_KEY) {
+    throw new Error('Missing GEMINI_API_KEY in environment');
+  }
+
+  const client = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+  for (const candidate of MODEL_CANDIDATES) {
+    if (candidate === selectedModelName) {
+      continue;
+    }
+
+    const candidateModel = client.getGenerativeModel({ model: candidate });
+
+    try {
+      const result = await candidateModel.generateContent({ contents, generationConfig });
+      model = candidateModel;
+      selectedModelName = candidate;
+      console.log(`[telegram-bot] Gemini fallback model attivo: ${candidate}`);
+      return result;
+    } catch (error) {
+      if (!isModelNotFoundError(error)) {
+        throw error;
+      }
+    }
+  }
+
+  throw new Error('Nessun modello Gemini disponibile tra i candidati configurati');
 };
 
 const parseJsonBlock = (rawText) => {
@@ -61,8 +114,7 @@ const extractIntent = async (messageText) => {
     `Messaggio utente: ${messageText}`
   ].join('\n');
 
-  const aiModel = getModel();
-  const result = await aiModel.generateContent({
+  const result = await generateContentWithFallback({
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
     generationConfig: {
       temperature: 0.1,
@@ -144,8 +196,7 @@ const generateRecommendation = async ({ originalMessage, city, placeType, candid
   ].join('\n');
 
   try {
-    const aiModel = getModel();
-    const result = await aiModel.generateContent({
+    const result = await generateContentWithFallback({
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       generationConfig: {
         temperature: 0.35,
