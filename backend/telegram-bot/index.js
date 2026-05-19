@@ -1,5 +1,5 @@
 const TelegramBot = require('node-telegram-bot-api');
-const { extractIntent, generateRecommendation } = require('./gemini');
+const { extractIntent } = require('./gemini');
 const { findPlaces } = require('./placesService');
 
 // dotenv is already loaded by backend/index.js before this module is required
@@ -20,13 +20,77 @@ const sessions = new Map();
 const helpMessage = [
   '*How-I-Ate Bot* 🍽️',
   '',
-  'Scrivimi in testo libero, ad esempio:',
+  'Scrivimi una richiesta tipo:',
   '- Cerco una pizzeria a Benevento',
   '- sushi Napoli',
   '',
-  'Oppure usa il flusso guidato con /cerca',
+  'Ti rispondo con le *prime 3* opzioni nella citta/provincia indicata,',
+  'ordinate per *media recensioni* dalla piu alta alla piu bassa.',
+  '',
+  'In alternativa usa il flusso guidato con /cerca.',
   'Puoi annullare in qualsiasi momento con /annulla'
 ].join('\n');
+
+const buildTopThreeMessage = ({ city, placeType, places }) => {
+  const locationLabel = city || 'zona richiesta';
+  const typeLabel = placeType || 'locali';
+
+  const lines = [
+    `Ecco le *top 3* ${typeLabel} per *${locationLabel}* 🏆`,
+    ''
+  ];
+
+  places.slice(0, 3).forEach((place, index) => {
+    lines.push(`*${index + 1}\. ${place.name}*`);
+    lines.push(`Media recensioni: *${place.averageRating.toFixed(1)}/10* \(${place.reviewCount} recensioni\)`);
+
+    if (place.cuisine) {
+      lines.push(`Tipologia: ${place.cuisine}`);
+    }
+
+    if (place.address) {
+      lines.push(`Indirizzo: ${place.address}`);
+    }
+
+    if (place.googleMapsUrl) {
+      lines.push(`Maps: ${place.googleMapsUrl}`);
+    }
+
+    lines.push('');
+  });
+
+  lines.push('Se vuoi, posso cercare anche in un\'altra zona 🙂');
+  return lines.join('\n');
+};
+
+const buildNearbyFallbackMessage = ({ city, placeType, places }) => {
+  const locationLabel = city || 'la zona richiesta';
+  const typeLabel = placeType || 'locali';
+
+  const lines = [
+    `Non ho trovato ${typeLabel} con recensioni per *${locationLabel}* 😕`,
+    'Ti consiglio quindi le opzioni recensite *piu vicine* disponibili:',
+    ''
+  ];
+
+  places.slice(0, 3).forEach((place, index) => {
+    lines.push(`*${index + 1}\. ${place.name}*`);
+    lines.push(`Media recensioni: *${place.averageRating.toFixed(1)}/10* \(${place.reviewCount} recensioni\)`);
+
+    if (place.address) {
+      lines.push(`Zona: ${place.address}`);
+    }
+
+    if (place.googleMapsUrl) {
+      lines.push(`Maps: ${place.googleMapsUrl}`);
+    }
+
+    lines.push('');
+  });
+
+  lines.push('Se vuoi, provo anche con un\'altra provincia vicina 👌');
+  return lines.join('\n');
+};
 
 const now = () => Date.now();
 
@@ -77,11 +141,11 @@ const runSearchFlow = async ({ chatId, userMessage, forcedCity, forcedPlaceType 
   const placeType = forcedPlaceType || extracted.placeType;
   const searchText = extracted.searchText || userMessage;
 
-  const places = await findPlaces({
+  const { places, usedNearbyFallback } = await findPlaces({
     city,
     placeType,
     searchText,
-    limit: 8
+    limit: 3
   });
 
   if (!places.length) {
@@ -92,14 +156,12 @@ const runSearchFlow = async ({ chatId, userMessage, forcedCity, forcedPlaceType 
     return;
   }
 
-  const recommendation = await generateRecommendation({
-    originalMessage: userMessage,
-    city,
-    placeType,
-    candidates: places
-  });
+  if (usedNearbyFallback) {
+    await sendMarkdown(chatId, buildNearbyFallbackMessage({ city, placeType, places }));
+    return;
+  }
 
-  await sendMarkdown(chatId, recommendation.replyMarkdown);
+  await sendMarkdown(chatId, buildTopThreeMessage({ city, placeType, places }));
 };
 
 const handleMessage = async (msg) => {
