@@ -34,7 +34,10 @@ const helpMessage = [
   'Puoi annullare in qualsiasi momento con /annulla'
 ].join('\n');
 
-const buildRestaurantPageUrl = (restaurantId) => `${PUBLIC_APP_URL}/restaurants/${restaurantId}`;
+const buildRestaurantPageUrl = (restaurantId) => {
+  const target = encodeURIComponent(`/restaurants/${restaurantId}`);
+  return `${PUBLIC_APP_URL}/open-in-webapp?target=${target}`;
+};
 
 const buildTopThreeMessage = ({ city, placeType, places }) => {
   const locationLabel = city || 'zona richiesta';
@@ -61,7 +64,7 @@ const buildTopThreeMessage = ({ city, placeType, places }) => {
       lines.push(`Maps: ${place.googleMapsUrl}`);
     }
 
-    lines.push(`Scheda completa: ${buildRestaurantPageUrl(place.id)}`);
+    lines.push(`Scheda completa: [Apri Link](${buildRestaurantPageUrl(place.id)})`);
 
     lines.push('');
   });
@@ -92,7 +95,7 @@ const buildNearbyFallbackMessage = ({ city, placeType, places }) => {
       lines.push(`Maps: ${place.googleMapsUrl}`);
     }
 
-    lines.push(`Scheda completa: ${buildRestaurantPageUrl(place.id)}`);
+    lines.push(`Scheda completa: [Apri Link](${buildRestaurantPageUrl(place.id)})`);
 
     lines.push('');
   });

@@ -1,0 +1,25 @@
+<section class="open-webapp">
+  <div class="open-webapp__card">
+    <h1>Apri in WebApp</h1>
+
+    @if (isStandalone()) {
+      <p>Ti stiamo reindirizzando alla scheda del locale nella web app.</p>
+    } @else {
+      <p>
+        Se hai installato How I Ate, apri questa pagina dalla schermata Home per mantenere la sessione
+        nell'app.
+      </p>
+
+      @if (isLikelySafari()) {
+        <ol>
+          <li>Tocca il pulsante Condividi in Safari.</li>
+          <li>Seleziona Aggiungi alla schermata Home.</li>
+          <li>Apri How I Ate dalla Home e poi torna su questo link.</li>
+        </ol>
+      }
+
+      <a [routerLink]="targetPath()" class="open-webapp__button">Apri scheda adesso</a>
+      <p class="open-webapp__hint">Se sei gia nella web app installata, la scheda si aprira direttamente li.</p>
+    }
+  </div>
+</section>
