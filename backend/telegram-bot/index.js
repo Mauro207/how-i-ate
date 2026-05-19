@@ -6,6 +6,14 @@ const { findPlaces } = require('./placesService');
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const SESSION_TTL_MS = 15 * 60 * 1000;
 
+if (!BOT_TOKEN) {
+  throw new Error('Missing TELEGRAM_BOT_TOKEN in environment');
+}
+
+if (!process.env.GEMINI_API_KEY) {
+  throw new Error('Missing GEMINI_API_KEY in environment');
+}
+
 const bot = new TelegramBot(BOT_TOKEN);
 const sessions = new Map();
 
@@ -94,37 +102,39 @@ const runSearchFlow = async ({ chatId, userMessage, forcedCity, forcedPlaceType 
   await sendMarkdown(chatId, recommendation.replyMarkdown);
 };
 
-bot.onText(/^\/start$/, async (msg) => {
-  await sendMarkdown(msg.chat.id, helpMessage);
-});
-
-bot.onText(/^\/help$/, async (msg) => {
-  await sendMarkdown(msg.chat.id, helpMessage);
-});
-
-bot.onText(/^\/annulla$/, async (msg) => {
-  clearSession(msg.chat.id);
-  await sendMarkdown(msg.chat.id, 'Ricerca guidata annullata. Quando vuoi, riparti con /cerca 👍');
-});
-
-bot.onText(/^\/cerca$/, async (msg) => {
-  const chatId = msg.chat.id;
-
-  setSession(chatId, {
-    mode: 'guided-search',
-    step: 'city',
-    city: null,
-    placeType: null
-  });
-
-  await sendMarkdown(chatId, 'Perfetto! In quale citta stai cercando?');
-});
-
-bot.on('message', async (msg) => {
+const handleMessage = async (msg) => {
   const chatId = msg.chat.id;
   const text = (msg.text || '').trim();
 
-  if (!text || text.startsWith('/')) {
+  if (!text) {
+    return;
+  }
+
+  if (/^\/start$/i.test(text) || /^\/help$/i.test(text)) {
+    await sendMarkdown(chatId, helpMessage);
+    return;
+  }
+
+  if (/^\/annulla$/i.test(text)) {
+    clearSession(chatId);
+    await sendMarkdown(chatId, 'Ricerca guidata annullata. Quando vuoi, riparti con /cerca 👍');
+    return;
+  }
+
+  if (/^\/cerca$/i.test(text)) {
+    setSession(chatId, {
+      mode: 'guided-search',
+      step: 'city',
+      city: null,
+      placeType: null
+    });
+
+    await sendMarkdown(chatId, 'Perfetto! In quale citta stai cercando?');
+    return;
+  }
+
+  if (text.startsWith('/')) {
+    await sendMarkdown(chatId, 'Comando non riconosciuto. Usa /help per vedere i comandi disponibili.');
     return;
   }
 
@@ -166,15 +176,20 @@ bot.on('message', async (msg) => {
     });
   } catch (error) {
     console.error('[telegram-bot] Error:', error.message);
-    await bot.sendMessage(
-      chatId,
-      'Ops, qualcosa e andato storto durante la ricerca. Riprova tra poco 🙏'
-    );
+    await sendMarkdown(chatId, 'Ops, qualcosa e andato storto durante la ricerca. Riprova tra poco 🙏');
   }
-});
+};
+
+const processTelegramUpdate = async (update) => {
+  if (!update?.message) {
+    return;
+  }
+
+  await handleMessage(update.message);
+};
 
 bot.on('polling_error', (error) => {
   console.error('[telegram-bot] Polling error:', error.message);
 });
 
-module.exports = { bot };
+module.exports = { bot, processTelegramUpdate };

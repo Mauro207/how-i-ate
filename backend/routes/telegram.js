@@ -1,5 +1,5 @@
 const express = require('express');
-const { bot } = require('../telegram-bot/index');
+const { processTelegramUpdate } = require('../telegram-bot/index');
 
 const router = express.Router();
 
@@ -9,7 +9,7 @@ const router = express.Router();
  * Riceve gli aggiornamenti da Telegram e li passa al bot.
  * Telegram invia l'header X-Telegram-Bot-Api-Secret-Token se configurato.
  */
-router.post('/webhook', (req, res) => {
+router.post('/webhook', async (req, res) => {
   const secret = process.env.TELEGRAM_WEBHOOK_SECRET;
 
   if (secret) {
@@ -19,8 +19,14 @@ router.post('/webhook', (req, res) => {
     }
   }
 
-  bot.processUpdate(req.body);
-  res.sendStatus(200);
+  try {
+    await processTelegramUpdate(req.body);
+    return res.sendStatus(200);
+  } catch (error) {
+    console.error('[telegram-webhook] Error:', error.message);
+    // Return 200 to avoid repeated retries for the same update.
+    return res.sendStatus(200);
+  }
 });
 
 module.exports = router;
