@@ -5,6 +5,10 @@
   "scripts": {
     "start": "node index.js",
     "dev": "node index.js",
+    "telegram:set-webhook": "node telegram-bot/manageTelegram.js set-webhook",
+    "telegram:webhook-info": "node telegram-bot/manageTelegram.js webhook-info",
+    "telegram:set-commands": "node telegram-bot/manageTelegram.js set-commands",
+    "telegram:delete-webhook": "node telegram-bot/manageTelegram.js delete-webhook",
     "init-superadmin": "node createSuperAdmin.js",
     "test": "node --test"
   },
