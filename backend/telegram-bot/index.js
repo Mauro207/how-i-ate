@@ -6,6 +6,7 @@ const { checkAndConsumeDailyRequest } = require('./usageService');
 // dotenv is already loaded by backend/index.js before this module is required
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const SESSION_TTL_MS = 15 * 60 * 1000;
+const PUBLIC_APP_URL = 'https://how-i-ate.it';
 
 if (!BOT_TOKEN) {
   throw new Error('Missing TELEGRAM_BOT_TOKEN in environment');
@@ -33,6 +34,8 @@ const helpMessage = [
   'Puoi annullare in qualsiasi momento con /annulla'
 ].join('\n');
 
+const buildRestaurantPageUrl = (restaurantId) => `${PUBLIC_APP_URL}/restaurants/${restaurantId}`;
+
 const buildTopThreeMessage = ({ city, placeType, places }) => {
   const locationLabel = city || 'zona richiesta';
   const typeLabel = placeType || 'locali';
@@ -57,6 +60,8 @@ const buildTopThreeMessage = ({ city, placeType, places }) => {
     if (place.googleMapsUrl) {
       lines.push(`Maps: ${place.googleMapsUrl}`);
     }
+
+    lines.push(`Scheda completa: ${buildRestaurantPageUrl(place.id)}`);
 
     lines.push('');
   });
@@ -86,6 +91,8 @@ const buildNearbyFallbackMessage = ({ city, placeType, places }) => {
     if (place.googleMapsUrl) {
       lines.push(`Maps: ${place.googleMapsUrl}`);
     }
+
+    lines.push(`Scheda completa: ${buildRestaurantPageUrl(place.id)}`);
 
     lines.push('');
   });
