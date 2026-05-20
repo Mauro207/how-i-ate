@@ -65,15 +65,15 @@ struct Review: Decodable, Identifiable, Equatable {
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         id = try c.decodeIfPresent(String.self, forKey: .id) ?? c.decode(String.self, forKey: .underscoreId)
-        if let restaurantId = try c.decodeIfPresent(String.self, forKey: .restaurant) {
+        if let restaurantId = try? c.decode(String.self, forKey: .restaurant) {
             restaurant = restaurantId
-        } else if let restaurantRef = try c.decodeIfPresent(EntityRef.self, forKey: .restaurant) {
+        } else if let restaurantRef = try? c.decode(EntityRef.self, forKey: .restaurant) {
             restaurant = restaurantRef.id
         } else {
             restaurant = nil
         }
 
-        if let userObject = try c.decodeIfPresent(ReviewUser.self, forKey: .user) {
+        if let userObject = try? c.decode(ReviewUser.self, forKey: .user) {
             user = userObject
         } else {
             user = nil

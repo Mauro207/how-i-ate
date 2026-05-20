@@ -53,9 +53,9 @@ struct Restaurant: Decodable, Identifiable, Equatable {
         coverImageUrl = try c.decodeIfPresent(String.self, forKey: .coverImageUrl)
         googleMapsUrl = try c.decodeIfPresent(String.self, forKey: .googleMapsUrl)
         instagramUrl = try c.decodeIfPresent(String.self, forKey: .instagramUrl)
-        if let createdById = try c.decodeIfPresent(String.self, forKey: .createdBy) {
+        if let createdById = try? c.decode(String.self, forKey: .createdBy) {
             createdBy = createdById
-        } else if let createdByRef = try c.decodeIfPresent(CreatedByRef.self, forKey: .createdBy) {
+        } else if let createdByRef = try? c.decode(CreatedByRef.self, forKey: .createdBy) {
             createdBy = createdByRef.id
         } else {
             createdBy = nil

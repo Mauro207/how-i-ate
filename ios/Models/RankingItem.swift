@@ -49,31 +49,31 @@ struct RankingItem: Decodable, Equatable {
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
 
-        let nestedRestaurant = try c.decodeIfPresent(RestaurantRef.self, forKey: .restaurant)
+        let nestedRestaurant = try? c.decode(RestaurantRef.self, forKey: .restaurant)
 
-        let restaurantIdValue = try c.decodeIfPresent(String.self, forKey: .restaurantId)
-        let underscoreIdValue = try c.decodeIfPresent(String.self, forKey: .underscoreId)
+        let restaurantIdValue = try? c.decode(String.self, forKey: .restaurantId)
+        let underscoreIdValue = try? c.decode(String.self, forKey: .underscoreId)
         restaurantId = restaurantIdValue ?? underscoreIdValue ?? nestedRestaurant?.id ?? ""
 
-        let restaurantNameValue = try c.decodeIfPresent(String.self, forKey: .restaurantName)
-        let nameValue = try c.decodeIfPresent(String.self, forKey: .name)
+        let restaurantNameValue = try? c.decode(String.self, forKey: .restaurantName)
+        let nameValue = try? c.decode(String.self, forKey: .name)
         restaurantName = restaurantNameValue ?? nameValue ?? nestedRestaurant?.name ?? "Luogo"
 
-        cuisine = try c.decodeIfPresent(String.self, forKey: .cuisine) ?? nestedRestaurant?.cuisine
-        address = try c.decodeIfPresent(String.self, forKey: .address) ?? nestedRestaurant?.address
+        cuisine = (try? c.decode(String.self, forKey: .cuisine)) ?? nestedRestaurant?.cuisine
+        address = (try? c.decode(String.self, forKey: .address)) ?? nestedRestaurant?.address
 
-        if let value = try c.decodeIfPresent(Double.self, forKey: .averageRating)
-            ?? (try c.decodeIfPresent(Double.self, forKey: .avgRating)) {
+        if let value = (try? c.decode(Double.self, forKey: .averageRating))
+            ?? (try? c.decode(Double.self, forKey: .avgRating)) {
             averageRating = value
-        } else if let value = try c.decodeIfPresent(Int.self, forKey: .averageRating)
-            ?? (try c.decodeIfPresent(Int.self, forKey: .avgRating)) {
+        } else if let value = (try? c.decode(Int.self, forKey: .averageRating))
+            ?? (try? c.decode(Int.self, forKey: .avgRating)) {
             averageRating = Double(value)
         } else {
             averageRating = 0
         }
 
-        let reviewCountValue = try c.decodeIfPresent(Int.self, forKey: .reviewCount)
-        let countValue = try c.decodeIfPresent(Int.self, forKey: .count)
+        let reviewCountValue = try? c.decode(Int.self, forKey: .reviewCount)
+        let countValue = try? c.decode(Int.self, forKey: .count)
         reviewCount = reviewCountValue ?? countValue ?? 0
     }
 }
