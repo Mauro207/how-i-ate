@@ -25,29 +25,38 @@ final class APIClient {
 
     func send<T: Decodable>(_ request: APIRequest, responseType: T.Type = T.self) async throws -> T {
         let urlRequest = try buildURLRequest(from: request)
+        let debugRequestId = UUID().uuidString.prefix(8)
 
         let data: Data
         let response: URLResponse
         do {
             (data, response) = try await URLSession.shared.data(for: urlRequest)
         } catch {
+            debugLog("[\(debugRequestId)] Transport error: \(error.localizedDescription)")
             throw APIError.transport(error)
         }
 
         guard let httpResponse = response as? HTTPURLResponse else {
+            debugLog("[\(debugRequestId)] Invalid HTTP response for \(request.method.rawValue) \(urlRequest.url?.absoluteString ?? "-")")
             throw APIError.invalidResponse
         }
+
+        debugLog("[\(debugRequestId)] \(request.method.rawValue) \(urlRequest.url?.absoluteString ?? "-") -> \(httpResponse.statusCode)")
 
         switch httpResponse.statusCode {
         case 200 ... 299:
             break
         case 401:
+            debugLogResponseBody(data, requestId: debugRequestId, note: "401 body")
             throw APIError.unauthorized
         case 403:
+            debugLogResponseBody(data, requestId: debugRequestId, note: "403 body")
             throw APIError.forbidden
         case 404:
+            debugLogResponseBody(data, requestId: debugRequestId, note: "404 body")
             throw APIError.notFound
         default:
+            debugLogResponseBody(data, requestId: debugRequestId, note: "error body")
             let message = parseServerMessage(from: data) ?? "Errore server (\(httpResponse.statusCode))"
             throw APIError.server(status: httpResponse.statusCode, message: message)
         }
@@ -55,6 +64,9 @@ final class APIClient {
         do {
             return try decoder.decode(T.self, from: data)
         } catch {
+            debugLogResponseBody(data, requestId: debugRequestId, note: "decode body")
+            debugLog("[\(debugRequestId)] Decoding target: \(String(describing: T.self))")
+            debugLog("[\(debugRequestId)] Decoding error: \(describeDecodingError(error))")
             throw APIError.decoding(error)
         }
     }
@@ -94,5 +106,44 @@ final class APIClient {
             return nil
         }
         return message
+    }
+
+    private func describeDecodingError(_ error: Error) -> String {
+        if let decodingError = error as? DecodingError {
+            switch decodingError {
+            case let .keyNotFound(key, context):
+                return "keyNotFound(\(key.stringValue)) path=\(codingPath(context.codingPath)) desc=\(context.debugDescription)"
+            case let .typeMismatch(type, context):
+                return "typeMismatch(\(type)) path=\(codingPath(context.codingPath)) desc=\(context.debugDescription)"
+            case let .valueNotFound(type, context):
+                return "valueNotFound(\(type)) path=\(codingPath(context.codingPath)) desc=\(context.debugDescription)"
+            case let .dataCorrupted(context):
+                return "dataCorrupted(path=\(codingPath(context.codingPath)) desc=\(context.debugDescription))"
+            @unknown default:
+                return "unknown DecodingError: \(decodingError.localizedDescription)"
+            }
+        }
+
+        return error.localizedDescription
+    }
+
+    private func codingPath(_ path: [CodingKey]) -> String {
+        if path.isEmpty {
+            return "<root>"
+        }
+        return path.map { $0.stringValue }.joined(separator: ".")
+    }
+
+    private func debugLogResponseBody(_ data: Data, requestId: String.SubSequence, note: String) {
+        let raw = String(data: data, encoding: .utf8) ?? "<body non UTF-8, \(data.count) bytes>"
+        let maxLen = 2500
+        let trimmed = raw.count > maxLen ? String(raw.prefix(maxLen)) + " ...<truncated>" : raw
+        debugLog("[\(requestId)] \(note): \(trimmed)")
+    }
+
+    private func debugLog(_ message: String) {
+#if DEBUG
+        print("[API DEBUG] \(message)")
+#endif
     }
 }
