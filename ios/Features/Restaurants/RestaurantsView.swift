@@ -4,11 +4,6 @@ struct RestaurantsView: View {
     @EnvironmentObject private var session: SessionManager
     @StateObject var viewModel: RestaurantsViewModel
 
-    private var isAdminOrSuperAdmin: Bool {
-        let role = session.currentUser?.role ?? ""
-        return role == "admin" || role == "superadmin"
-    }
-
     private var displayName: String {
         session.currentUser?.displayName ?? session.currentUser?.username ?? "Utente"
     }
@@ -17,11 +12,6 @@ struct RestaurantsView: View {
         NavigationStack {
             ScrollView {
                 LazyVStack(spacing: 16, pinnedViews: []) {
-                    HomeHeroCard(
-                        username: displayName,
-                        isAdmin: isAdminOrSuperAdmin
-                    )
-
                     if viewModel.isLoading {
                         ProgressView("Caricamento homepage...")
                             .frame(maxWidth: .infinity, alignment: .center)
@@ -33,7 +23,75 @@ struct RestaurantsView: View {
                         if viewModel.recentRestaurants.isEmpty {
                             UnavailableStateView(title: "Nessun luogo trovato", systemImage: "fork.knife.circle", message: "Aggiungi o suggerisci il primo ristorante")
                                 .frame(height: 220)
-                        } else {
+                        }
+
+                        if let rankingError = viewModel.rankingErrorMessage, viewModel.topRankings.isEmpty {
+                            HStack(spacing: 8) {
+                                Image(systemName: "chart.bar.xaxis")
+                                Text("Classifica non disponibile: \(rankingError)")
+                                    .font(.caption)
+                                    .lineLimit(2)
+                            }
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.top, 4)
+                        }
+
+                        if !viewModel.topRankings.isEmpty {
+                            HomeSectionTitle(title: "Top ranking", subtitle: "I migliori luoghi del momento")
+
+                            VStack(spacing: 10) {
+                                ForEach(Array(viewModel.topRankings.enumerated()), id: \.element.restaurantId) { index, item in
+                                    NavigationLink {
+                                        RestaurantDetailView(
+                                            viewModel: RestaurantDetailViewModel(
+                                                restaurantId: item.restaurantId,
+                                                restaurantService: viewModel.restaurantService,
+                                                reviewService: viewModel.reviewService,
+                                                currentUserId: session.currentUser?.id
+                                            )
+                                        )
+                                    } label: {
+                                        HStack(spacing: 12) {
+                                            Text("#\(index + 1)")
+                                                .font(.headline)
+                                                .frame(width: 34)
+
+                                            VStack(alignment: .leading, spacing: 3) {
+                                                Text(item.restaurantName)
+                                                    .font(.subheadline.weight(.semibold))
+                                                    .lineLimit(1)
+                                                Text("Media \(item.averageRating, specifier: "%.2f") · \(item.reviewCount) review")
+                                                    .font(.caption)
+                                                    .foregroundStyle(.secondary)
+                                            }
+
+                                            Spacer(minLength: 0)
+                                        }
+                                        .padding(12)
+                                        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+
+                                NavigationLink {
+                                    RankingsView(
+                                        viewModel: RankingsViewModel(service: viewModel.rankingService),
+                                        restaurantService: viewModel.restaurantService,
+                                        reviewService: viewModel.reviewService
+                                    )
+                                } label: {
+                                    Text("Vai alla classifica completa")
+                                        .font(.subheadline.weight(.semibold))
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 12)
+                                        .background(Color.indigo.opacity(0.12), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+
+                        if !viewModel.recentRestaurants.isEmpty {
                             HomeSectionTitle(title: "Ultimi luoghi", subtitle: "Recensisci i luoghi creati di recente")
 
                             VStack(spacing: 10) {
@@ -54,45 +112,6 @@ struct RestaurantsView: View {
                                 }
                             }
                         }
-
-                        if let rankingError = viewModel.rankingErrorMessage, viewModel.topRankings.isEmpty {
-                            HStack(spacing: 8) {
-                                Image(systemName: "chart.bar.xaxis")
-                                Text("Classifica non disponibile: \(rankingError)")
-                                    .font(.caption)
-                                    .lineLimit(2)
-                            }
-                            .foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.top, 4)
-                        }
-
-                        if !viewModel.topRankings.isEmpty {
-                            HomeSectionTitle(title: "Top ranking", subtitle: "I migliori luoghi del momento")
-
-                            VStack(spacing: 10) {
-                                ForEach(Array(viewModel.topRankings.enumerated()), id: \.element.restaurantId) { index, item in
-                                    HStack(spacing: 12) {
-                                        Text("#\(index + 1)")
-                                            .font(.headline)
-                                            .frame(width: 34)
-
-                                        VStack(alignment: .leading, spacing: 3) {
-                                            Text(item.restaurantName)
-                                                .font(.subheadline.weight(.semibold))
-                                                .lineLimit(1)
-                                            Text("Media \(item.averageRating, specifier: "%.2f") · \(item.reviewCount) review")
-                                                .font(.caption)
-                                                .foregroundStyle(.secondary)
-                                        }
-
-                                        Spacer(minLength: 0)
-                                    }
-                                    .padding(12)
-                                    .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-                                }
-                            }
-                        }
                     }
                 }
                 .padding(.horizontal, 16)
@@ -106,27 +125,10 @@ struct RestaurantsView: View {
                     endPoint: .bottom
                 )
             )
-            .navigationTitle("Home")
+            .navigationTitle("Ciao \(displayName)")
             .refreshable { await viewModel.load() }
             .task { await viewModel.load() }
         }
-    }
-}
-
-private struct HomeHeroCard: View {
-    let username: String
-    let isAdmin: Bool
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text("Ciao \(username) 👋")
-                .font(.title3.weight(.bold))
-            Text(isAdmin ? "Gestisci e recensisci gli ultimi luoghi aggiunti." : "Esplora e recensisci gli ultimi luoghi aggiunti.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-        }
-        .padding(18)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
     }
 }
 

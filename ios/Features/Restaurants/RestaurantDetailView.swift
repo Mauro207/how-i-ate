@@ -1,10 +1,18 @@
 import SwiftUI
 
 struct RestaurantDetailView: View {
+    @EnvironmentObject private var session: SessionManager
     @StateObject var viewModel: RestaurantDetailViewModel
+
     @State private var showReviewComposer = false
+    @State private var showRestaurantEditor = false
     @State private var editingReview: Review?
     @State private var deletingReview: Review?
+
+    private var canEditRestaurant: Bool {
+        let role = session.currentUser?.role ?? ""
+        return role == "admin" || role == "superadmin"
+    }
 
     private var averageService: Double {
         guard !viewModel.reviews.isEmpty else { return 0 }
@@ -44,66 +52,59 @@ struct RestaurantDetailView: View {
                                         image
                                             .resizable()
                                             .scaledToFill()
-                                            .frame(height: 200)
-                                            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                                            .frame(height: 210)
+                                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                                     case .failure:
-                                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                            .fill(Color(.secondarySystemBackground))
-                                            .frame(height: 200)
-                                            .overlay(Image(systemName: "photo").foregroundStyle(.secondary))
+                                        roundedPlaceholder(icon: "photo")
                                     default:
-                                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                            .fill(Color(.secondarySystemBackground))
-                                            .frame(height: 200)
+                                        roundedPlaceholder(icon: "photo")
                                             .overlay(ProgressView())
                                     }
                                 }
                                 .listRowInsets(EdgeInsets())
                             }
 
-                            Text(restaurant.name)
-                                .font(.title3.weight(.bold))
+                            VStack(alignment: .leading, spacing: 10) {
+                                Text(restaurant.name)
+                                    .font(.title3.weight(.bold))
 
-                            if let description = restaurant.description, !description.isEmpty {
-                                Text(description)
-                                    .font(.body)
-                            }
+                                if let description = restaurant.description, !description.isEmpty {
+                                    Text(description)
+                                        .font(.body)
+                                }
 
-                            if let cuisine = restaurant.cuisine, !cuisine.isEmpty {
-                                Label(cuisine, systemImage: "fork.knife")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                            }
+                                if let cuisine = restaurant.cuisine, !cuisine.isEmpty {
+                                    detailLine("fork.knife", cuisine)
+                                }
 
-                            if let address = restaurant.address, !address.isEmpty {
-                                Label(address, systemImage: "mappin.and.ellipse")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                            }
+                                if let address = restaurant.address, !address.isEmpty {
+                                    detailLine("mappin.and.ellipse", address)
+                                }
 
-                            if let createdAt = restaurant.createdAt, !createdAt.isEmpty {
-                                Label("Creato il \(formattedDate(createdAt))", systemImage: "calendar")
-                                    .font(.footnote)
-                                    .foregroundStyle(.secondary)
-                            }
+                                if let createdAt = restaurant.createdAt, !createdAt.isEmpty {
+                                    detailLine("calendar", "Creato il \(formattedDate(createdAt))")
+                                }
 
-                            if let maps = restaurant.googleMapsUrl,
-                               let mapsURL = URL(string: maps) {
-                                Link(destination: mapsURL) {
-                                    Label("Apri in mappe", systemImage: "map")
-                                        .font(.subheadline.weight(.semibold))
+                                HStack(spacing: 12) {
+                                    if let maps = restaurant.googleMapsUrl,
+                                       let mapsURL = URL(string: maps) {
+                                        Link(destination: mapsURL) {
+                                            linkChip("Apri mappe", "map")
+                                        }
+                                    }
+
+                                    if let instagram = restaurant.instagramUrl,
+                                       let instagramURL = URL(string: instagram) {
+                                        Link(destination: instagramURL) {
+                                            linkChip("Instagram", "camera")
+                                        }
+                                    }
                                 }
                             }
-
-                            if let instagram = restaurant.instagramUrl,
-                               let instagramURL = URL(string: instagram) {
-                                Link(destination: instagramURL) {
-                                    Label("Apri Instagram", systemImage: "camera")
-                                        .font(.subheadline.weight(.semibold))
-                                }
-                            }
+                            .padding(14)
+                            .background(Color.indigo.opacity(0.08), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
                         } header: {
-                            Text("Informazioni")
+                            Text("Informazioni luogo")
                         }
 
                         Section {
@@ -112,8 +113,9 @@ struct RestaurantDetailView: View {
                                     .font(.subheadline.weight(.semibold))
                                 Text("\(averageOverall, specifier: "%.2f") / 10")
                                     .font(.title2.weight(.bold))
+                                    .foregroundStyle(.indigo)
 
-                                HStack(spacing: 12) {
+                                HStack(spacing: 10) {
                                     scorePill(title: "Servizio", value: averageService)
                                     scorePill(title: "Prezzo", value: averagePrice)
                                     scorePill(title: "Menu", value: averageMenu)
@@ -125,17 +127,26 @@ struct RestaurantDetailView: View {
                             }
                             .padding(.vertical, 4)
                         } header: {
-                            Text("Classifica locale")
+                            Text("Valutazioni")
                         }
                     }
 
-                    Section("Recensioni") {
+                    Section {
+                        Button {
+                            showReviewComposer = true
+                        } label: {
+                            Label("Aggiungi recensione", systemImage: "plus.bubble")
+                                .font(.subheadline.weight(.semibold))
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .buttonStyle(.plain)
+
                         if viewModel.reviews.isEmpty {
                             Text("Nessuna recensione")
                                 .foregroundStyle(.secondary)
                         } else {
                             ForEach(viewModel.reviews) { review in
-                                VStack(alignment: .leading, spacing: 6) {
+                                VStack(alignment: .leading, spacing: 8) {
                                     HStack {
                                         Text(review.user?.displayName ?? review.user?.username ?? "Utente")
                                             .font(.subheadline.bold())
@@ -157,7 +168,7 @@ struct RestaurantDetailView: View {
                                         .font(.body)
 
                                     if viewModel.isOwnReview(review) {
-                                        HStack(spacing: 16) {
+                                        HStack(spacing: 18) {
                                             Button("Modifica") {
                                                 editingReview = review
                                             }
@@ -166,23 +177,43 @@ struct RestaurantDetailView: View {
                                                 deletingReview = review
                                             }
                                         }
-                                        .font(.footnote)
+                                        .font(.footnote.weight(.semibold))
                                     }
                                 }
                                 .padding(.vertical, 4)
                             }
                         }
+                    } header: {
+                        Text("Recensioni")
                     }
                 }
+                .listStyle(.insetGrouped)
+                .scrollContentBackground(.hidden)
+                .background(
+                    LinearGradient(
+                        colors: [Color.indigo.opacity(0.12), Color(.systemBackground), Color(.systemBackground)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
             }
         }
         .navigationTitle(viewModel.restaurant?.name ?? "Ristorante")
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Recensisci") {
-                    showReviewComposer = true
+            if canEditRestaurant {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showRestaurantEditor = true
+                    } label: {
+                        if viewModel.isSavingRestaurant {
+                            ProgressView()
+                        } else {
+                            Label("Modifica", systemImage: "pencil")
+                        }
+                    }
+                    .disabled(viewModel.restaurant == nil || viewModel.isSavingRestaurant)
                 }
-                .disabled(viewModel.isSubmittingReview)
             }
         }
         .task { await viewModel.load() }
@@ -193,6 +224,20 @@ struct RestaurantDetailView: View {
                 showReviewComposer = viewModel.errorMessage != nil
             }
             .presentationDetents([.medium, .large])
+        }
+        .sheet(isPresented: $showRestaurantEditor) {
+            if let restaurant = viewModel.restaurant {
+                RestaurantEditSheetView(
+                    restaurant: restaurant,
+                    isSaving: viewModel.isSavingRestaurant
+                ) { payload in
+                    let success = await viewModel.updateRestaurant(payload: payload)
+                    if success {
+                        showRestaurantEditor = false
+                    }
+                }
+                .presentationDetents([.large])
+            }
         }
         .sheet(item: $editingReview) { review in
             ReviewComposerView(
@@ -233,6 +278,30 @@ struct RestaurantDetailView: View {
     }
 
     @ViewBuilder
+    private func roundedPlaceholder(icon: String) -> some View {
+        RoundedRectangle(cornerRadius: 16, style: .continuous)
+            .fill(Color(.secondarySystemBackground))
+            .frame(height: 210)
+            .overlay(Image(systemName: icon).foregroundStyle(.secondary))
+    }
+
+    @ViewBuilder
+    private func detailLine(_ icon: String, _ text: String) -> some View {
+        Label(text, systemImage: icon)
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
+    }
+
+    @ViewBuilder
+    private func linkChip(_ title: String, _ icon: String) -> some View {
+        Label(title, systemImage: icon)
+            .font(.caption.weight(.semibold))
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .background(Color.indigo.opacity(0.14), in: Capsule())
+    }
+
+    @ViewBuilder
     private func scorePill(title: String, value: Double) -> some View {
         HStack(spacing: 4) {
             Text(title)
@@ -255,6 +324,83 @@ struct RestaurantDetailView: View {
             return formatter.string(from: date)
         }
         return isoDate
+    }
+}
+
+private struct RestaurantEditSheetView: View {
+    let restaurant: Restaurant
+    let isSaving: Bool
+    let onSave: (RestaurantMutationPayload) async -> Void
+
+    @State private var name: String
+    @State private var description: String
+    @State private var address: String
+    @State private var cuisine: String
+    @State private var coverImageUrl: String
+    @State private var googleMapsUrl: String
+    @State private var instagramUrl: String
+
+    init(restaurant: Restaurant, isSaving: Bool, onSave: @escaping (RestaurantMutationPayload) async -> Void) {
+        self.restaurant = restaurant
+        self.isSaving = isSaving
+        self.onSave = onSave
+        _name = State(initialValue: restaurant.name)
+        _description = State(initialValue: restaurant.description ?? "")
+        _address = State(initialValue: restaurant.address ?? "")
+        _cuisine = State(initialValue: restaurant.cuisine ?? "")
+        _coverImageUrl = State(initialValue: restaurant.coverImageUrl ?? "")
+        _googleMapsUrl = State(initialValue: restaurant.googleMapsUrl ?? "")
+        _instagramUrl = State(initialValue: restaurant.instagramUrl ?? "")
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Base") {
+                    TextField("Nome", text: $name)
+                    TextField("Descrizione", text: $description, axis: .vertical)
+                    TextField("Indirizzo", text: $address)
+                    TextField("Cucina", text: $cuisine)
+                }
+
+                Section("Link") {
+                    TextField("Cover image URL", text: $coverImageUrl)
+                        .textInputAutocapitalization(.never)
+                    TextField("Google Maps URL", text: $googleMapsUrl)
+                        .textInputAutocapitalization(.never)
+                    TextField("Instagram URL", text: $instagramUrl)
+                        .textInputAutocapitalization(.never)
+                }
+
+                Section {
+                    Button {
+                        Task {
+                            await onSave(
+                                RestaurantMutationPayload(
+                                    name: name.trimmed,
+                                    description: description.nilIfEmpty,
+                                    address: address.nilIfEmpty,
+                                    cuisine: cuisine.nilIfEmpty,
+                                    coverImageUrl: coverImageUrl.nilIfEmpty,
+                                    googleMapsUrl: googleMapsUrl.nilIfEmpty,
+                                    instagramUrl: instagramUrl.nilIfEmpty
+                                )
+                            )
+                        }
+                    } label: {
+                        if isSaving {
+                            ProgressView()
+                                .frame(maxWidth: .infinity)
+                        } else {
+                            Text("Salva modifiche")
+                                .frame(maxWidth: .infinity)
+                        }
+                    }
+                    .disabled(name.trimmed.isEmpty || isSaving)
+                }
+            }
+            .navigationTitle("Modifica luogo")
+        }
     }
 }
 
@@ -338,5 +484,16 @@ private struct ReviewComposerView: View {
             }
             .navigationTitle(title)
         }
+    }
+}
+
+private extension String {
+    var trimmed: String {
+        trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    var nilIfEmpty: String? {
+        let value = trimmed
+        return value.isEmpty ? nil : value
     }
 }

@@ -12,7 +12,7 @@ final class RestaurantsViewModel: ObservableObject {
 
     let restaurantService: RestaurantService
     let reviewService: ReviewService
-    private let rankingService: RankingService
+    let rankingService: RankingService
     private let suggestionService: SuggestionService
 
     init(
@@ -30,7 +30,7 @@ final class RestaurantsViewModel: ObservableObject {
     var recentRestaurants: [Restaurant] {
         Array(restaurants.sorted {
             ($0.createdAt ?? "") > ($1.createdAt ?? "")
-        }.prefix(5))
+        }.prefix(4))
     }
 
     func load() async {
@@ -48,7 +48,7 @@ final class RestaurantsViewModel: ObservableObject {
 
         // La classifica non deve bloccare la visibilita degli ultimi ristoranti.
         do {
-            topRankings = Array((try await rankingService.getGlobalRankings()).prefix(3))
+            topRankings = Array((try await rankingService.getGlobalRankings()).prefix(5))
             rankingErrorMessage = nil
         } catch {
             topRankings = []

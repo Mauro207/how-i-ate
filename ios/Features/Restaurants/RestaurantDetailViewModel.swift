@@ -6,6 +6,7 @@ final class RestaurantDetailViewModel: ObservableObject {
     @Published var reviews: [Review] = []
     @Published var isLoading = false
     @Published var isSubmittingReview = false
+    @Published var isSavingRestaurant = false
     @Published var errorMessage: String?
     let currentUserId: String?
 
@@ -109,6 +110,20 @@ final class RestaurantDetailViewModel: ObservableObject {
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
+        }
+    }
+
+    func updateRestaurant(payload: RestaurantMutationPayload) async -> Bool {
+        isSavingRestaurant = true
+        defer { isSavingRestaurant = false }
+
+        do {
+            restaurant = try await restaurantService.updateRestaurant(id: restaurantId, payload: payload)
+            errorMessage = nil
+            return true
+        } catch {
+            errorMessage = error.localizedDescription
+            return false
         }
     }
 }
