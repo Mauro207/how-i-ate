@@ -6,6 +6,26 @@ struct RestaurantDetailView: View {
     @State private var editingReview: Review?
     @State private var deletingReview: Review?
 
+    private var averageService: Double {
+        guard !viewModel.reviews.isEmpty else { return 0 }
+        return viewModel.reviews.map(\.serviceRating).reduce(0, +) / Double(viewModel.reviews.count)
+    }
+
+    private var averagePrice: Double {
+        guard !viewModel.reviews.isEmpty else { return 0 }
+        return viewModel.reviews.map(\.priceRating).reduce(0, +) / Double(viewModel.reviews.count)
+    }
+
+    private var averageMenu: Double {
+        guard !viewModel.reviews.isEmpty else { return 0 }
+        return viewModel.reviews.map(\.menuRating).reduce(0, +) / Double(viewModel.reviews.count)
+    }
+
+    private var averageOverall: Double {
+        guard !viewModel.reviews.isEmpty else { return 0 }
+        return (averageService + averagePrice + averageMenu) / 3
+    }
+
     var body: some View {
         Group {
             if viewModel.isLoading {
@@ -15,20 +35,97 @@ struct RestaurantDetailView: View {
             } else {
                 List {
                     if let restaurant = viewModel.restaurant {
-                        Section("Dettaglio") {
+                        Section {
+                            if let imageUrl = restaurant.coverImageUrl,
+                               let url = URL(string: imageUrl) {
+                                AsyncImage(url: url) { phase in
+                                    switch phase {
+                                    case let .success(image):
+                                        image
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(height: 200)
+                                            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                                    case .failure:
+                                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                            .fill(Color(.secondarySystemBackground))
+                                            .frame(height: 200)
+                                            .overlay(Image(systemName: "photo").foregroundStyle(.secondary))
+                                    default:
+                                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                            .fill(Color(.secondarySystemBackground))
+                                            .frame(height: 200)
+                                            .overlay(ProgressView())
+                                    }
+                                }
+                                .listRowInsets(EdgeInsets())
+                            }
+
                             Text(restaurant.name)
-                                .font(.headline)
+                                .font(.title3.weight(.bold))
+
                             if let description = restaurant.description, !description.isEmpty {
                                 Text(description)
+                                    .font(.body)
                             }
+
                             if let cuisine = restaurant.cuisine, !cuisine.isEmpty {
-                                Text("Cucina: \(cuisine)")
+                                Label(cuisine, systemImage: "fork.knife")
+                                    .font(.subheadline)
                                     .foregroundStyle(.secondary)
                             }
+
                             if let address = restaurant.address, !address.isEmpty {
-                                Text(address)
+                                Label(address, systemImage: "mappin.and.ellipse")
+                                    .font(.subheadline)
                                     .foregroundStyle(.secondary)
                             }
+
+                            if let createdAt = restaurant.createdAt, !createdAt.isEmpty {
+                                Label("Creato il \(formattedDate(createdAt))", systemImage: "calendar")
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                            }
+
+                            if let maps = restaurant.googleMapsUrl,
+                               let mapsURL = URL(string: maps) {
+                                Link(destination: mapsURL) {
+                                    Label("Apri in mappe", systemImage: "map")
+                                        .font(.subheadline.weight(.semibold))
+                                }
+                            }
+
+                            if let instagram = restaurant.instagramUrl,
+                               let instagramURL = URL(string: instagram) {
+                                Link(destination: instagramURL) {
+                                    Label("Apri Instagram", systemImage: "camera")
+                                        .font(.subheadline.weight(.semibold))
+                                }
+                            }
+                        } header: {
+                            Text("Informazioni")
+                        }
+
+                        Section {
+                            VStack(alignment: .leading, spacing: 10) {
+                                Text("Valutazione media")
+                                    .font(.subheadline.weight(.semibold))
+                                Text("\(averageOverall, specifier: "%.2f") / 10")
+                                    .font(.title2.weight(.bold))
+
+                                HStack(spacing: 12) {
+                                    scorePill(title: "Servizio", value: averageService)
+                                    scorePill(title: "Prezzo", value: averagePrice)
+                                    scorePill(title: "Menu", value: averageMenu)
+                                }
+
+                                Text("\(viewModel.reviews.count) recensioni")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding(.vertical, 4)
+                        } header: {
+                            Text("Classifica locale")
                         }
                     }
 
@@ -39,12 +136,25 @@ struct RestaurantDetailView: View {
                         } else {
                             ForEach(viewModel.reviews) { review in
                                 VStack(alignment: .leading, spacing: 6) {
-                                    Text(review.user?.displayName ?? review.user?.username ?? "Utente")
-                                        .font(.subheadline.bold())
-                                    Text("Servizio: \(review.serviceRating, specifier: "%.1f") · Prezzo: \(review.priceRating, specifier: "%.1f") · Menu: \(review.menuRating, specifier: "%.1f")")
-                                        .font(.footnote)
-                                        .foregroundStyle(.secondary)
+                                    HStack {
+                                        Text(review.user?.displayName ?? review.user?.username ?? "Utente")
+                                            .font(.subheadline.bold())
+                                        Spacer(minLength: 0)
+                                        if let createdAt = review.createdAt, !createdAt.isEmpty {
+                                            Text(formattedDate(createdAt))
+                                                .font(.caption)
+                                                .foregroundStyle(.secondary)
+                                        }
+                                    }
+
+                                    HStack(spacing: 8) {
+                                        scorePill(title: "S", value: review.serviceRating)
+                                        scorePill(title: "P", value: review.priceRating)
+                                        scorePill(title: "M", value: review.menuRating)
+                                    }
+
                                     Text(review.comment)
+                                        .font(.body)
 
                                     if viewModel.isOwnReview(review) {
                                         HStack(spacing: 16) {
@@ -120,6 +230,31 @@ struct RestaurantDetailView: View {
                 deletingReview = nil
             }
         }
+    }
+
+    @ViewBuilder
+    private func scorePill(title: String, value: Double) -> some View {
+        HStack(spacing: 4) {
+            Text(title)
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(.secondary)
+            Text("\(value, specifier: "%.1f")")
+                .font(.caption.weight(.semibold))
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
+        .background(Color(.secondarySystemBackground), in: Capsule())
+    }
+
+    private func formattedDate(_ isoDate: String) -> String {
+        let parser = ISO8601DateFormatter()
+        if let date = parser.date(from: isoDate) {
+            let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: "it_IT")
+            formatter.dateStyle = .medium
+            return formatter.string(from: date)
+        }
+        return isoDate
     }
 }
 

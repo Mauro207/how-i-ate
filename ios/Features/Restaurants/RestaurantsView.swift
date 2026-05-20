@@ -49,7 +49,7 @@ struct RestaurantsView: View {
                         ProgressView("Caricamento homepage...")
                             .frame(maxWidth: .infinity, alignment: .center)
                             .padding(.vertical, 24)
-                    } else if let error = viewModel.errorMessage {
+                    } else if let error = viewModel.errorMessage, viewModel.recentRestaurants.isEmpty {
                         UnavailableStateView(title: "Errore", systemImage: "exclamationmark.triangle", message: error)
                             .frame(height: 220)
                     } else {
@@ -60,7 +60,7 @@ struct RestaurantsView: View {
                             HomeSectionTitle(title: "Ultimi luoghi", subtitle: "Recensisci i luoghi creati di recente")
 
                             VStack(spacing: 10) {
-                                ForEach(viewModel.recentRestaurants.prefix(8)) { restaurant in
+                                ForEach(viewModel.recentRestaurants) { restaurant in
                                     NavigationLink {
                                         RestaurantDetailView(
                                             viewModel: RestaurantDetailViewModel(
@@ -76,6 +76,18 @@ struct RestaurantsView: View {
                                     .buttonStyle(.plain)
                                 }
                             }
+                        }
+
+                        if let rankingError = viewModel.rankingErrorMessage, viewModel.topRankings.isEmpty {
+                            HStack(spacing: 8) {
+                                Image(systemName: "chart.bar.xaxis")
+                                Text("Classifica non disponibile: \(rankingError)")
+                                    .font(.caption)
+                                    .lineLimit(2)
+                            }
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.top, 4)
                         }
 
                         if !viewModel.topRankings.isEmpty {

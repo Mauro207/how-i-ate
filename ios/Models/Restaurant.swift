@@ -13,6 +13,21 @@ struct Restaurant: Decodable, Identifiable, Equatable {
     let createdAt: String?
     let updatedAt: String?
 
+    private struct CreatedByRef: Decodable {
+        let id: String?
+
+        enum CodingKeys: String, CodingKey {
+            case id
+            case underscoreId = "_id"
+        }
+
+        init(from decoder: Decoder) throws {
+            let c = try decoder.container(keyedBy: CodingKeys.self)
+            id = try c.decodeIfPresent(String.self, forKey: .id)
+                ?? c.decodeIfPresent(String.self, forKey: .underscoreId)
+        }
+    }
+
     enum CodingKeys: String, CodingKey {
         case id
         case underscoreId = "_id"
@@ -38,7 +53,13 @@ struct Restaurant: Decodable, Identifiable, Equatable {
         coverImageUrl = try c.decodeIfPresent(String.self, forKey: .coverImageUrl)
         googleMapsUrl = try c.decodeIfPresent(String.self, forKey: .googleMapsUrl)
         instagramUrl = try c.decodeIfPresent(String.self, forKey: .instagramUrl)
-        createdBy = try c.decodeIfPresent(String.self, forKey: .createdBy)
+        if let createdById = try c.decodeIfPresent(String.self, forKey: .createdBy) {
+            createdBy = createdById
+        } else if let createdByRef = try c.decodeIfPresent(CreatedByRef.self, forKey: .createdBy) {
+            createdBy = createdByRef.id
+        } else {
+            createdBy = nil
+        }
         createdAt = try c.decodeIfPresent(String.self, forKey: .createdAt)
         updatedAt = try c.decodeIfPresent(String.self, forKey: .updatedAt)
     }

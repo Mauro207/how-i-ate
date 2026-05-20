@@ -7,6 +7,7 @@ final class RestaurantsViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var isSubmittingSuggestion = false
     @Published var errorMessage: String?
+    @Published var rankingErrorMessage: String?
     @Published var suggestionMessage: String?
 
     let restaurantService: RestaurantService
@@ -27,24 +28,31 @@ final class RestaurantsViewModel: ObservableObject {
     }
 
     var recentRestaurants: [Restaurant] {
-        restaurants.sorted {
+        Array(restaurants.sorted {
             ($0.createdAt ?? "") > ($1.createdAt ?? "")
-        }
+        }.prefix(5))
     }
 
     func load() async {
         isLoading = true
         defer { isLoading = false }
 
+        // In linea con Angular: se i ristoranti non arrivano, la home e in errore.
         do {
-            async let restaurantsCall = restaurantService.getRestaurants()
-            async let rankingsCall = rankingService.getGlobalRankings()
-
-            restaurants = try await restaurantsCall
-            topRankings = Array((try await rankingsCall).prefix(3))
+            restaurants = try await restaurantService.getRestaurants()
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
+            restaurants = []
+        }
+
+        // La classifica non deve bloccare la visibilita degli ultimi ristoranti.
+        do {
+            topRankings = Array((try await rankingService.getGlobalRankings()).prefix(3))
+            rankingErrorMessage = nil
+        } catch {
+            topRankings = []
+            rankingErrorMessage = error.localizedDescription
         }
     }
 
