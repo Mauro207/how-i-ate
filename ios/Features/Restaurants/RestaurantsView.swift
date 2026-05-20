@@ -3,7 +3,6 @@ import SwiftUI
 struct RestaurantsView: View {
     @EnvironmentObject private var session: SessionManager
     @StateObject var viewModel: RestaurantsViewModel
-    @State private var showSuggestSheet = false
 
     private var isAdminOrSuperAdmin: Bool {
         let role = session.currentUser?.role ?? ""
@@ -20,30 +19,8 @@ struct RestaurantsView: View {
                 LazyVStack(spacing: 16, pinnedViews: []) {
                     HomeHeroCard(
                         username: displayName,
-                        isAdmin: isAdminOrSuperAdmin,
-                        onPrimaryAction: {
-                            if isAdminOrSuperAdmin {
-                                // Per admin il flusso di creazione resta nel pannello admin.
-                            } else {
-                                showSuggestSheet = true
-                            }
-                        }
+                        isAdmin: isAdminOrSuperAdmin
                     )
-
-                    if isAdminOrSuperAdmin {
-                        NavigationLink {
-                            AdminRestaurantsView(
-                                viewModel: AdminRestaurantsViewModel(service: viewModel.restaurantService)
-                            )
-                        } label: {
-                            Label("Apri gestione ristoranti", systemImage: "slider.horizontal.3")
-                                .font(.subheadline.weight(.semibold))
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 12)
-                                .background(Color.indigo.opacity(0.12), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-                        }
-                        .buttonStyle(.plain)
-                    }
 
                     if viewModel.isLoading {
                         ProgressView("Caricamento homepage...")
@@ -132,10 +109,6 @@ struct RestaurantsView: View {
             .navigationTitle("Home")
             .refreshable { await viewModel.load() }
             .task { await viewModel.load() }
-            .sheet(isPresented: $showSuggestSheet) {
-                SuggestPlaceView(viewModel: viewModel)
-                    .presentationDetents([.large])
-            }
         }
     }
 }
@@ -143,24 +116,14 @@ struct RestaurantsView: View {
 private struct HomeHeroCard: View {
     let username: String
     let isAdmin: Bool
-    let onPrimaryAction: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text("Ciao \(username) 👋")
                 .font(.title3.weight(.bold))
-            Text("Esplora e recensisci gli ultimi luoghi aggiunti.")
+            Text(isAdmin ? "Gestisci e recensisci gli ultimi luoghi aggiunti." : "Esplora e recensisci gli ultimi luoghi aggiunti.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
-
-            Button(action: onPrimaryAction) {
-                Label(isAdmin ? "Gestione admin" : "Suggerisci luogo", systemImage: isAdmin ? "building.2.crop.circle" : "plus.circle.fill")
-                    .font(.subheadline.weight(.semibold))
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 44)
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(.indigo)
         }
         .padding(18)
         .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
@@ -228,101 +191,3 @@ private struct RestaurantRowCard: View {
     }
 }
 
-private struct SuggestPlaceView: View {
-    @Environment(\.dismiss) private var dismiss
-    @ObservedObject var viewModel: RestaurantsViewModel
-
-    @State private var name = ""
-    @State private var description = ""
-    @State private var address = ""
-    @State private var cuisine = ""
-    @State private var mapsUrl = ""
-    @State private var instagramUrl = ""
-    @State private var serviceRating = 7.0
-    @State private var priceRating = 7.0
-    @State private var menuRating = 7.0
-    @State private var comment = ""
-
-    var body: some View {
-        NavigationStack {
-            Form {
-                Section("Luogo") {
-                    TextField("Nome", text: $name)
-                    TextField("Descrizione", text: $description, axis: .vertical)
-                    TextField("Indirizzo", text: $address)
-                    TextField("Cucina", text: $cuisine)
-                }
-
-                Section("Link") {
-                    TextField("Google Maps URL", text: $mapsUrl)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                    TextField("Instagram URL", text: $instagramUrl)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                }
-
-                Section("Prima recensione") {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Servizio: \(serviceRating, specifier: "%.1f")")
-                        Slider(value: $serviceRating, in: 0 ... 10, step: 0.5)
-                    }
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Prezzo: \(priceRating, specifier: "%.1f")")
-                        Slider(value: $priceRating, in: 0 ... 10, step: 0.5)
-                    }
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Menu: \(menuRating, specifier: "%.1f")")
-                        Slider(value: $menuRating, in: 0 ... 10, step: 0.5)
-                    }
-                    TextEditor(text: $comment)
-                        .frame(minHeight: 90)
-                }
-
-                if let message = viewModel.suggestionMessage {
-                    Section {
-                        Text(message)
-                            .foregroundStyle(message.lowercased().contains("successo") ? .green : .red)
-                    }
-                }
-
-                Section {
-                    Button {
-                        Task {
-                            await viewModel.createSuggestion(
-                                name: name,
-                                description: description,
-                                address: address,
-                                cuisine: cuisine,
-                                googleMapsUrl: mapsUrl,
-                                instagramUrl: instagramUrl,
-                                serviceRating: serviceRating,
-                                priceRating: priceRating,
-                                menuRating: menuRating,
-                                comment: comment
-                            )
-                            if (viewModel.suggestionMessage ?? "").lowercased().contains("successo") {
-                                dismiss()
-                            }
-                        }
-                    } label: {
-                        if viewModel.isSubmittingSuggestion {
-                            ProgressView()
-                                .frame(maxWidth: .infinity)
-                        } else {
-                            Text("Invia suggerimento")
-                                .frame(maxWidth: .infinity)
-                        }
-                    }
-                    .disabled(viewModel.isSubmittingSuggestion)
-                }
-            }
-            .navigationTitle("Suggerisci luogo")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Chiudi") { dismiss() }
-                }
-            }
-        }
-    }
-}

@@ -34,6 +34,21 @@ struct Review: Decodable, Identifiable, Equatable {
     let createdAt: String?
     let updatedAt: String?
 
+    private struct EntityRef: Decodable {
+        let id: String?
+
+        enum CodingKeys: String, CodingKey {
+            case id
+            case underscoreId = "_id"
+        }
+
+        init(from decoder: Decoder) throws {
+            let c = try decoder.container(keyedBy: CodingKeys.self)
+            id = try c.decodeIfPresent(String.self, forKey: .id)
+                ?? c.decodeIfPresent(String.self, forKey: .underscoreId)
+        }
+    }
+
     enum CodingKeys: String, CodingKey {
         case id
         case underscoreId = "_id"
@@ -50,13 +65,38 @@ struct Review: Decodable, Identifiable, Equatable {
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         id = try c.decodeIfPresent(String.self, forKey: .id) ?? c.decode(String.self, forKey: .underscoreId)
-        restaurant = try c.decodeIfPresent(String.self, forKey: .restaurant)
-        user = try c.decodeIfPresent(ReviewUser.self, forKey: .user)
-        serviceRating = try c.decode(Double.self, forKey: .serviceRating)
-        priceRating = try c.decode(Double.self, forKey: .priceRating)
-        menuRating = try c.decode(Double.self, forKey: .menuRating)
+        if let restaurantId = try c.decodeIfPresent(String.self, forKey: .restaurant) {
+            restaurant = restaurantId
+        } else if let restaurantRef = try c.decodeIfPresent(EntityRef.self, forKey: .restaurant) {
+            restaurant = restaurantRef.id
+        } else {
+            restaurant = nil
+        }
+
+        if let userObject = try c.decodeIfPresent(ReviewUser.self, forKey: .user) {
+            user = userObject
+        } else {
+            user = nil
+        }
+
+        serviceRating = try Self.decodeFlexibleDouble(from: c, key: .serviceRating)
+        priceRating = try Self.decodeFlexibleDouble(from: c, key: .priceRating)
+        menuRating = try Self.decodeFlexibleDouble(from: c, key: .menuRating)
         comment = try c.decode(String.self, forKey: .comment)
         createdAt = try c.decodeIfPresent(String.self, forKey: .createdAt)
         updatedAt = try c.decodeIfPresent(String.self, forKey: .updatedAt)
+    }
+
+    private static func decodeFlexibleDouble(
+        from container: KeyedDecodingContainer<CodingKeys>,
+        key: CodingKeys
+    ) throws -> Double {
+        if let value = try container.decodeIfPresent(Double.self, forKey: key) {
+            return value
+        }
+        if let value = try container.decodeIfPresent(Int.self, forKey: key) {
+            return Double(value)
+        }
+        return 0
     }
 }
