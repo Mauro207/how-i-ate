@@ -27,7 +27,7 @@ private struct MainTabView: View {
         AuthService(client: client, session: session)
     }
 
-    private var canManageSuggestions: Bool {
+    private var isAdminOrSuperAdmin: Bool {
         guard let role = session.currentUser?.role else { return false }
         return role == "admin" || role == "superadmin"
     }
@@ -43,28 +43,48 @@ private struct MainTabView: View {
                 )
             )
             .tabItem {
-                Label("Ristoranti", systemImage: "fork.knife")
+                Label("Home", systemImage: "house.fill")
             }
 
-            RankingsView(
-                viewModel: RankingsViewModel(service: RankingService(client: client))
+            SearchView(
+                viewModel: SearchViewModel(
+                    restaurantService: RestaurantService(client: client)
+                ),
+                restaurantService: RestaurantService(client: client),
+                reviewService: ReviewService(client: client)
             )
             .tabItem {
-                Label("Rankings", systemImage: "chart.bar.fill")
+                Label("Cerca", systemImage: "magnifyingglass")
             }
 
-            if canManageSuggestions {
-                AdminPanelView(client: client)
+            MyRatingsView(
+                viewModel: MyRatingsViewModel(service: RankingService(client: client)),
+                restaurantService: RestaurantService(client: client),
+                reviewService: ReviewService(client: client)
+            )
+            .tabItem {
+                Label("I tuoi voti", systemImage: "chart.bar.fill")
+            }
+
+            if isAdminOrSuperAdmin {
+                AdminRestaurantsView(
+                    viewModel: AdminRestaurantsViewModel(service: RestaurantService(client: client))
+                )
                 .tabItem {
-                    Label("Admin", systemImage: "person.3.fill")
+                    Label("Aggiungi", systemImage: "plus.circle.fill")
                 }
+            } else {
+                AddSuggestionTabView(service: SuggestionService(client: client))
+                    .tabItem {
+                        Label("Suggerisci", systemImage: "plus.circle.fill")
+                    }
             }
 
             SettingsView(
                 authService: authService
             )
             .tabItem {
-                Label("Settings", systemImage: "gearshape.fill")
+                Label("Impostazioni", systemImage: "gearshape.fill")
             }
         }
         .task {
