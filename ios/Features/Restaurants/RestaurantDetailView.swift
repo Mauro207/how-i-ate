@@ -8,10 +8,21 @@ struct RestaurantDetailView: View {
     @State private var showRestaurantEditor = false
     @State private var editingReview: Review?
     @State private var deletingReview: Review?
+    @State private var expandedReviewIds: Set<String> = []
 
     private var canEditRestaurant: Bool {
         let role = session.currentUser?.role ?? ""
         return role == "admin" || role == "superadmin"
+    }
+
+    private var canModerateReviews: Bool {
+        let role = session.currentUser?.role ?? ""
+        return role == "admin" || role == "superadmin"
+    }
+
+    private var hasUserReviewed: Bool {
+        guard let userId = session.currentUser?.id else { return false }
+        return viewModel.reviews.contains { $0.user?.id == userId }
     }
 
     private var averageService: Double {
@@ -132,55 +143,119 @@ struct RestaurantDetailView: View {
                     }
 
                     Section {
-                        Button {
-                            showReviewComposer = true
-                        } label: {
-                            Label("Aggiungi recensione", systemImage: "plus.bubble")
-                                .font(.subheadline.weight(.semibold))
-                                .frame(maxWidth: .infinity, alignment: .leading)
+                        if !hasUserReviewed {
+                            Button {
+                                showReviewComposer = true
+                            } label: {
+                                Label("Lascia una recensione", systemImage: "plus.bubble")
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(.white)
+                                    .padding(.horizontal, 14)
+                                    .padding(.vertical, 9)
+                                    .frame(maxWidth: .infinity, alignment: .center)
+                                    .background(Color.indigo, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            }
+                            .buttonStyle(.plain)
+                            .listRowBackground(Color.clear)
                         }
-                        .buttonStyle(.plain)
 
                         if viewModel.reviews.isEmpty {
-                            Text("Nessuna recensione")
+                            Text("Nessuna recensione presente. Lasciala per primo.")
                                 .foregroundStyle(.secondary)
                         } else {
                             ForEach(viewModel.reviews) { review in
-                                VStack(alignment: .leading, spacing: 8) {
-                                    HStack {
-                                        Text(review.user?.displayName ?? review.user?.username ?? "Utente")
-                                            .font(.subheadline.bold())
-                                        Spacer(minLength: 0)
-                                        if let createdAt = review.createdAt, !createdAt.isEmpty {
-                                            Text(formattedDate(createdAt))
-                                                .font(.caption)
-                                                .foregroundStyle(.secondary)
+                                VStack(alignment: .leading, spacing: 12) {
+                                    HStack(alignment: .top) {
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text(review.user?.displayName ?? review.user?.username ?? "Utente")
+                                                .font(.subheadline.bold())
+                                                .foregroundStyle(Color.indigo)
+
+                                            if let createdAt = review.createdAt, !createdAt.isEmpty {
+                                                Text(formattedDate(createdAt))
+                                                    .font(.caption)
+                                                    .foregroundStyle(.secondary)
+                                            }
+
+                                            if let createdAt = review.createdAt,
+                                               let updatedAt = review.updatedAt,
+                                               !createdAt.isEmpty,
+                                               !updatedAt.isEmpty,
+                                               createdAt != updatedAt {
+                                                Text("Modificata il \(formattedDate(updatedAt))")
+                                                    .font(.caption2)
+                                                    .foregroundStyle(.secondary)
+                                            }
                                         }
+
+                                        Spacer(minLength: 8)
+
+                                        Button {
+                                            toggleReviewAccordion(review.id)
+                                        } label: {
+                                            HStack(spacing: 6) {
+                                                Image(systemName: "star.fill")
+                                                    .font(.caption)
+                                                Text(formatRating(reviewAverage(review)))
+                                                    .font(.footnote.weight(.semibold))
+                                                Image(systemName: expandedReviewIds.contains(review.id) ? "chevron.up" : "chevron.down")
+                                                    .font(.caption2)
+                                            }
+                                            .foregroundStyle(Color.indigo)
+                                            .padding(.horizontal, 10)
+                                            .padding(.vertical, 7)
+                                            .background(Color.indigo.opacity(0.12), in: Capsule())
+                                        }
+                                        .buttonStyle(.plain)
                                     }
 
-                                    HStack(spacing: 8) {
-                                        scorePill(title: "S", value: review.serviceRating)
-                                        scorePill(title: "P", value: review.priceRating)
-                                        scorePill(title: "M", value: review.menuRating)
+                                    if expandedReviewIds.contains(review.id) {
+                                        HStack(spacing: 10) {
+                                            breakdownPill(title: "Servizio", value: review.serviceRating, color: .blue)
+                                            breakdownPill(title: "Prezzo", value: review.priceRating, color: .green)
+                                            breakdownPill(title: "Menu", value: review.menuRating, color: .purple)
+                                        }
+                                        .transition(.opacity.combined(with: .move(edge: .top)))
                                     }
 
                                     Text(review.comment)
                                         .font(.body)
 
                                     if viewModel.isOwnReview(review) {
-                                        HStack(spacing: 18) {
+                                        HStack(spacing: 12) {
                                             Button("Modifica") {
                                                 editingReview = review
                                             }
+                                            .buttonStyle(.bordered)
+                                            .tint(.indigo)
 
                                             Button("Elimina", role: .destructive) {
                                                 deletingReview = review
                                             }
+                                            .buttonStyle(.bordered)
                                         }
                                         .font(.footnote.weight(.semibold))
                                     }
                                 }
-                                .padding(.vertical, 4)
+                                .padding(12)
+                                .background(Color.indigo.opacity(0.06), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                                .listRowSeparator(.hidden)
+                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                    if canModerateReviews && !viewModel.isOwnReview(review) {
+                                        Button {
+                                            editingReview = review
+                                        } label: {
+                                            Label("Modifica", systemImage: "pencil")
+                                        }
+                                        .tint(.indigo)
+
+                                        Button(role: .destructive) {
+                                            deletingReview = review
+                                        } label: {
+                                            Label("Elimina", systemImage: "trash")
+                                        }
+                                    }
+                                }
                             }
                         }
                     } header: {
@@ -313,6 +388,51 @@ struct RestaurantDetailView: View {
         .padding(.horizontal, 8)
         .padding(.vertical, 5)
         .background(Color(.secondarySystemBackground), in: Capsule())
+    }
+
+    @ViewBuilder
+    private func breakdownPill(title: String, value: Double, color: Color) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+            Text(formatRating(value))
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(color)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(color.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+    }
+
+    private func reviewAverage(_ review: Review) -> Double {
+        (review.serviceRating + review.priceRating + review.menuRating) / 3
+    }
+
+    private func toggleReviewAccordion(_ reviewId: String) {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            if expandedReviewIds.contains(reviewId) {
+                expandedReviewIds.remove(reviewId)
+            } else {
+                expandedReviewIds.insert(reviewId)
+            }
+        }
+    }
+
+    private func formatRating(_ rating: Double) -> String {
+        let rounded = (rating * 4).rounded() / 4
+        let whole = floor(rounded)
+        let remainder = (rounded - whole).rounded(toPlaces: 2)
+
+        if remainder == 0.25 {
+            return "\(Int(whole))+"
+        }
+        if remainder == 0.75 {
+            return "\(Int(whole) + 1)-"
+        }
+
+        return String(format: "%.1f", rounded)
     }
 
     private func formattedDate(_ isoDate: String) -> String {
@@ -495,5 +615,13 @@ private extension String {
     var nilIfEmpty: String? {
         let value = trimmed
         return value.isEmpty ? nil : value
+    }
+}
+
+private extension Double {
+    func rounded(toPlaces places: Int) -> Double {
+        guard places >= 0 else { return self }
+        let divisor = pow(10.0, Double(places))
+        return (self * divisor).rounded() / divisor
     }
 }

@@ -10,6 +10,26 @@ struct RestaurantMutationPayload: Encodable {
     let instagramUrl: String?
 }
 
+struct GooglePlaceSuggestion: Decodable, Identifiable, Equatable {
+    let placeId: String
+    let description: String
+    let mainText: String
+    let secondaryText: String
+
+    var id: String { placeId }
+}
+
+struct GooglePlaceDetails: Decodable, Equatable {
+    let placeId: String
+    let name: String
+    let city: String
+    let mapsUrl: String
+}
+
+private struct GooglePlacesAutocompleteResponse: Decodable {
+    let suggestions: [GooglePlaceSuggestion]
+}
+
 final class RestaurantService {
     private let client: APIClient
 
@@ -37,6 +57,25 @@ final class RestaurantService {
         )
         let response: RestaurantsResponse = try await client.send(req)
         return response.restaurants
+    }
+
+    func getGooglePlaceSuggestions(query: String) async throws -> [GooglePlaceSuggestion] {
+        let req = APIRequest(
+            path: "restaurants/places/autocomplete",
+            method: .get,
+            queryItems: [URLQueryItem(name: "q", value: query)]
+        )
+        let response: GooglePlacesAutocompleteResponse = try await client.send(req)
+        return response.suggestions
+    }
+
+    func getGooglePlaceDetails(placeId: String) async throws -> GooglePlaceDetails {
+        let req = APIRequest(
+            path: "restaurants/places/details",
+            method: .get,
+            queryItems: [URLQueryItem(name: "placeId", value: placeId)]
+        )
+        return try await client.send(req)
     }
 
     func createRestaurant(payload: RestaurantMutationPayload) async throws -> Restaurant {

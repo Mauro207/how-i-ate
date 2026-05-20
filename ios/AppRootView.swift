@@ -67,14 +67,18 @@ private struct MainTabView: View {
             }
 
             if isAdminOrSuperAdmin {
-                AdminRestaurantsView(
-                    viewModel: AdminRestaurantsViewModel(service: RestaurantService(client: client))
+                AdminAddPlaceView(
+                    restaurantService: RestaurantService(client: client),
+                    suggestionService: SuggestionService(client: client)
                 )
                 .tabItem {
                     Label("Aggiungi", systemImage: "plus.circle.fill")
                 }
             } else {
-                AddSuggestionTabView(service: SuggestionService(client: client))
+                AddSuggestionTabView(
+                    service: SuggestionService(client: client),
+                    restaurantService: RestaurantService(client: client)
+                )
                     .tabItem {
                         Label("Suggerisci", systemImage: "plus.circle.fill")
                     }

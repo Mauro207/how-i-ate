@@ -48,6 +48,7 @@
 		E17A536CB6DE6165CF820CBE /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90E0A726B8E06FD090C88E51 /* SearchView.swift */; };
 		E560B14000F3309E6D063526 /* RestaurantsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C7DCB92659CD0BA7087D1EF /* RestaurantsViewModel.swift */; };
 		E8B01168709A114E8F9A4BCF /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B86EBC7F887BE3E13E1B4F3 /* User.swift */; };
+		FA51223D57B61026C556F483 /* AdminAddPlaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2195FC44F7DF0944C609EE61 /* AdminAddPlaceView.swift */; };
 		FAED21638F0C1069249B2FA2 /* SearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9563D530E1D0A8A36F393A72 /* SearchViewModel.swift */; };
 /* End PBXBuildFile section */
 
@@ -59,6 +60,7 @@
 		180F6AABC9E9CB4C87C1D6D4 /* LoginViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewModel.swift; sourceTree = "<group>"; };
 		1B86EBC7F887BE3E13E1B4F3 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		1BFAFA8F2A3BDD17C7C94275 /* SessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionManager.swift; sourceTree = "<group>"; };
+		2195FC44F7DF0944C609EE61 /* AdminAddPlaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminAddPlaceView.swift; sourceTree = "<group>"; };
 		30ED83491316752ACB43F7F7 /* AdminRestaurantsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminRestaurantsView.swift; sourceTree = "<group>"; };
 		35C438B0481B9C08E14BD228 /* APIRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIRequest.swift; sourceTree = "<group>"; };
 		38AF89A41EB5175F2FEAD4D9 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
@@ -162,6 +164,7 @@
 		3F873D3B88610DF2DF09FF57 /* Admin */ = {
 			isa = PBXGroup;
 			children = (
+				2195FC44F7DF0944C609EE61 /* AdminAddPlaceView.swift */,
 				DA9DD39E4EC03E27FF162F44 /* AdminPanelView.swift */,
 				30ED83491316752ACB43F7F7 /* AdminRestaurantsView.swift */,
 				E14EBA594816470C0446E302 /* AdminRestaurantsViewModel.swift */,
@@ -354,6 +357,7 @@
 				34B6E751F4C8731019EB4D94 /* APIError.swift in Sources */,
 				0FBEC68312D5646AB4278AB1 /* APIRequest.swift in Sources */,
 				69853C7E5AB3F2B5AB345DFB /* AddSuggestionTabView.swift in Sources */,
+				FA51223D57B61026C556F483 /* AdminAddPlaceView.swift in Sources */,
 				7ABC4D3A035580C4FE55C1AE /* AdminPanelView.swift in Sources */,
 				699BD1DA3506440E3AF7D247 /* AdminRestaurantsView.swift in Sources */,
 				1E8F1FAC42F9193F0FC64BB2 /* AdminRestaurantsViewModel.swift in Sources */,
