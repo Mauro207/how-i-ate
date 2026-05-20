@@ -37,7 +37,9 @@ private struct MainTabView: View {
             RestaurantsView(
                 viewModel: RestaurantsViewModel(
                     restaurantService: RestaurantService(client: client),
-                    reviewService: ReviewService(client: client)
+                    reviewService: ReviewService(client: client),
+                    rankingService: RankingService(client: client),
+                    suggestionService: SuggestionService(client: client)
                 )
             )
             .tabItem {

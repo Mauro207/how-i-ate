@@ -13,11 +13,23 @@ final class LoginViewModel: ObservableObject {
         self.authService = authService
     }
 
+    var canSubmit: Bool {
+        !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+        !password.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+        !isLoading
+    }
+
     func login() async {
-        guard !email.isEmpty, !password.isEmpty else {
+        let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedPassword = password.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard !trimmedEmail.isEmpty, !trimmedPassword.isEmpty else {
             errorMessage = "Inserisci email e password"
             return
         }
+
+        email = trimmedEmail
+        password = trimmedPassword
 
         isLoading = true
         defer { isLoading = false }
