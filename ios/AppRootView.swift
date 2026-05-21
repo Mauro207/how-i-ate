@@ -98,3 +98,15 @@ private struct MainTabView: View {
         }
     }
 }
+
+#if DEBUG
+struct AppRootView_Previews: PreviewProvider {
+    static var previews: some View {
+        let session = SessionManager()
+        let client = APIClient(baseURL: URL(string: "https://example.com/api")!)
+
+        return AppRootView(client: client)
+            .environmentObject(session)
+    }
+}
+#endif

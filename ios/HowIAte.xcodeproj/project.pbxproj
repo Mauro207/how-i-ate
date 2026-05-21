@@ -12,7 +12,6 @@
 		0FBEC68312D5646AB4278AB1 /* APIRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35C438B0481B9C08E14BD228 /* APIRequest.swift */; };
 		1171C8B370CBF2452E765709 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38AF89A41EB5175F2FEAD4D9 /* LoginView.swift */; };
 		1585DF1AEE03C021A13BDC3C /* RankingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54DF2B69F21C6CB7545C46A3 /* RankingsView.swift */; };
-		1E8F1FAC42F9193F0FC64BB2 /* AdminRestaurantsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E14EBA594816470C0446E302 /* AdminRestaurantsViewModel.swift */; };
 		2D79A622FC54E769640C75A1 /* HowIAteApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B71A452700AB237F4995CA1A /* HowIAteApp.swift */; };
 		34B6E751F4C8731019EB4D94 /* APIError.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5D99A3CE4220BD916563FDD /* APIError.swift */; };
 		3E70149351277090B482CBAF /* AppRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D822F7B9CA4EB05FAD42F5CA /* AppRootView.swift */; };
@@ -22,11 +21,9 @@
 		4DA01491730276B98D952761 /* SuggestionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 028783D331F7AFD95E065049 /* SuggestionService.swift */; };
 		55B9908A38A8AFFCE6B73BD6 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1669617926E8A2C425AD8544 /* SettingsView.swift */; };
 		69853C7E5AB3F2B5AB345DFB /* AddSuggestionTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7326FB95307E67CDFF24BE9F /* AddSuggestionTabView.swift */; };
-		699BD1DA3506440E3AF7D247 /* AdminRestaurantsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30ED83491316752ACB43F7F7 /* AdminRestaurantsView.swift */; };
 		6BD2853FED643C482E38F3AB /* RestaurantService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0AE86F9C1EC36EEBCA9D97D /* RestaurantService.swift */; };
 		701AAB7D564A9E6C43F561D9 /* LoginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 180F6AABC9E9CB4C87C1D6D4 /* LoginViewModel.swift */; };
 		753976F1105D68F6433D0FDF /* RestaurantsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76497C7D9CFBBB51CE077F6B /* RestaurantsView.swift */; };
-		7ABC4D3A035580C4FE55C1AE /* AdminPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA9DD39E4EC03E27FF162F44 /* AdminPanelView.swift */; };
 		863C5FBCE559F29D47AAED01 /* Suggestion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9EEC40D2FE11AE1157E0623 /* Suggestion.swift */; };
 		88F9953F7B4434EE3FDC4D28 /* MyRatingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF1A8AF072ACA4970041DEF4 /* MyRatingsViewModel.swift */; };
 		89745B23468EFD292B5EBBA9 /* CommonResponses.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB4B501D9177696B7FE236E /* CommonResponses.swift */; };
@@ -61,7 +58,6 @@
 		1B86EBC7F887BE3E13E1B4F3 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		1BFAFA8F2A3BDD17C7C94275 /* SessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionManager.swift; sourceTree = "<group>"; };
 		2195FC44F7DF0944C609EE61 /* AdminAddPlaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminAddPlaceView.swift; sourceTree = "<group>"; };
-		30ED83491316752ACB43F7F7 /* AdminRestaurantsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminRestaurantsView.swift; sourceTree = "<group>"; };
 		35C438B0481B9C08E14BD228 /* APIRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIRequest.swift; sourceTree = "<group>"; };
 		38AF89A41EB5175F2FEAD4D9 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		3A47A47F7CD4960098F9FE68 /* MyRatingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyRatingsView.swift; sourceTree = "<group>"; };
@@ -89,9 +85,7 @@
 		BE3A7B25DD2E526656E271C0 /* HTTPMethod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPMethod.swift; sourceTree = "<group>"; };
 		D0AE86F9C1EC36EEBCA9D97D /* RestaurantService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestaurantService.swift; sourceTree = "<group>"; };
 		D822F7B9CA4EB05FAD42F5CA /* AppRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRootView.swift; sourceTree = "<group>"; };
-		DA9DD39E4EC03E27FF162F44 /* AdminPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminPanelView.swift; sourceTree = "<group>"; };
 		DDF11D6D3C45FD5C37109048 /* Restaurant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Restaurant.swift; sourceTree = "<group>"; };
-		E14EBA594816470C0446E302 /* AdminRestaurantsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminRestaurantsViewModel.swift; sourceTree = "<group>"; };
 		ED0BF3922601F3EB99BA4B56 /* RankingItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RankingItem.swift; sourceTree = "<group>"; };
 		EF1A8AF072ACA4970041DEF4 /* MyRatingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyRatingsViewModel.swift; sourceTree = "<group>"; };
 		F5D99A3CE4220BD916563FDD /* APIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIError.swift; sourceTree = "<group>"; };
@@ -165,9 +159,6 @@
 			isa = PBXGroup;
 			children = (
 				2195FC44F7DF0944C609EE61 /* AdminAddPlaceView.swift */,
-				DA9DD39E4EC03E27FF162F44 /* AdminPanelView.swift */,
-				30ED83491316752ACB43F7F7 /* AdminRestaurantsView.swift */,
-				E14EBA594816470C0446E302 /* AdminRestaurantsViewModel.swift */,
 				9BBDAFC8862578EE316E7A04 /* AdminSuggestionsView.swift */,
 				8FA34975DE00B6C3B7785D8A /* AdminSuggestionsViewModel.swift */,
 			);
@@ -358,9 +349,6 @@
 				0FBEC68312D5646AB4278AB1 /* APIRequest.swift in Sources */,
 				69853C7E5AB3F2B5AB345DFB /* AddSuggestionTabView.swift in Sources */,
 				FA51223D57B61026C556F483 /* AdminAddPlaceView.swift in Sources */,
-				7ABC4D3A035580C4FE55C1AE /* AdminPanelView.swift in Sources */,
-				699BD1DA3506440E3AF7D247 /* AdminRestaurantsView.swift in Sources */,
-				1E8F1FAC42F9193F0FC64BB2 /* AdminRestaurantsViewModel.swift in Sources */,
 				424B62B1E6168489A57E3E73 /* AdminSuggestionsView.swift in Sources */,
 				8EA9944A3849F830DA3833AF /* AdminSuggestionsViewModel.swift in Sources */,
 				8B11372AE3AF4AF1987825B7 /* AppConfig.swift in Sources */,

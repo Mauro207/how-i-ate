@@ -3,6 +3,7 @@ import SwiftUI
 struct AdminAddPlaceView: View {
     let restaurantService: RestaurantService
     let suggestionService: SuggestionService
+    let disableInitialLoad: Bool
 
     @State private var name = ""
     @State private var description = ""
@@ -27,6 +28,16 @@ struct AdminAddPlaceView: View {
     @State private var openSuggestions = false
 
     private let cuisineOptions = ["Pizzeria", "Ristorante", "Pub", "Paninoteca", "Bar", "Braceria", "Enoteca", "Sushi", "Pasticceria", "Gelateria"]
+
+    init(
+        restaurantService: RestaurantService,
+        suggestionService: SuggestionService,
+        disableInitialLoad: Bool = false
+    ) {
+        self.restaurantService = restaurantService
+        self.suggestionService = suggestionService
+        self.disableInitialLoad = disableInitialLoad
+    }
 
     var body: some View {
         NavigationStack {
@@ -169,6 +180,7 @@ struct AdminAddPlaceView: View {
             }
             .navigationTitle("Aggiungi luogo")
             .task {
+                guard !disableInitialLoad else { return }
                 await refreshPendingSuggestionsCount()
             }
             .onChange(of: name) { newValue in
@@ -325,6 +337,19 @@ struct AdminAddPlaceView: View {
         googleSuggestions = []
     }
 }
+
+#if DEBUG
+struct AdminAddPlaceView_Previews: PreviewProvider {
+    static var previews: some View {
+        let client = APIClient(baseURL: URL(string: "https://example.com/api")!)
+        return AdminAddPlaceView(
+            restaurantService: RestaurantService(client: client),
+            suggestionService: SuggestionService(client: client),
+            disableInitialLoad: true
+        )
+    }
+}
+#endif
 
 private extension String {
     var trimmed: String {

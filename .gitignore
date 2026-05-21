@@ -21,6 +21,9 @@ build/
 *.swo
 *~
 .DS_Store
+*.xcuserstate
+xcuserdata/
+DerivedData/
 
 # Logs
 logs

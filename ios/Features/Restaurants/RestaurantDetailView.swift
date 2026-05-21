@@ -151,7 +151,7 @@ struct RestaurantDetailView: View {
                                     .font(.subheadline.weight(.semibold))
                                     .foregroundStyle(.white)
                                     .padding(.horizontal, 14)
-                                    .padding(.vertical, 9)
+                                    .padding(.vertical, 2)
                                     .frame(maxWidth: .infinity, alignment: .center)
                                     .background(Color.indigo, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                             }
@@ -238,7 +238,7 @@ struct RestaurantDetailView: View {
                                     }
                                 }
                                 .padding(12)
-                                .background(Color.indigo.opacity(0.06), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                                .background(Color.indigo.opacity(0.06), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                                 .listRowSeparator(.hidden)
                                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                     if canModerateReviews && !viewModel.isOwnReview(review) {
