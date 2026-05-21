@@ -3,9 +3,18 @@ import SwiftUI
 struct AppRootView: View {
     @EnvironmentObject private var session: SessionManager
     private let client: APIClient
+    private let tokenProvider = AuthTokenProvider()
 
     private var isRunningInPreviews: Bool {
         ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+    }
+
+    private var isLivePreviewEnabled: Bool {
+        ProcessInfo.processInfo.environment["HOWIATE_PREVIEW_LIVE_DATA"] != "0"
+    }
+
+    private var shouldDisablePreviewNetworking: Bool {
+        isRunningInPreviews && !isLivePreviewEnabled
     }
 
     init(client: APIClient) {
@@ -20,10 +29,14 @@ struct AppRootView: View {
                 LoginView(
                     viewModel: LoginViewModel(
                         authService: AuthService(client: client, session: session),
-                        previewMode: isRunningInPreviews
+                        previewMode: shouldDisablePreviewNetworking
                     )
                 )
             }
+        }
+        .task {
+            client.setTokenProvider(tokenProvider)
+            session.restoreSession()
         }
     }
 }
@@ -31,6 +44,18 @@ struct AppRootView: View {
 private struct MainTabView: View {
     @EnvironmentObject private var session: SessionManager
     let client: APIClient
+
+    private var isRunningInPreviews: Bool {
+        ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+    }
+
+    private var isLivePreviewEnabled: Bool {
+        ProcessInfo.processInfo.environment["HOWIATE_PREVIEW_LIVE_DATA"] != "0"
+    }
+
+    private var shouldDisablePreviewNetworking: Bool {
+        isRunningInPreviews && !isLivePreviewEnabled
+    }
 
     private var authService: AuthService {
         AuthService(client: client, session: session)
@@ -49,7 +74,8 @@ private struct MainTabView: View {
                     reviewService: ReviewService(client: client),
                     rankingService: RankingService(client: client),
                     suggestionService: SuggestionService(client: client)
-                )
+                ),
+                disableAutoLoad: shouldDisablePreviewNetworking
             )
             .tabItem {
                 Label("Home", systemImage: "house.fill")
@@ -69,7 +95,8 @@ private struct MainTabView: View {
             MyRatingsView(
                 viewModel: MyRatingsViewModel(service: RankingService(client: client)),
                 restaurantService: RestaurantService(client: client),
-                reviewService: ReviewService(client: client)
+                reviewService: ReviewService(client: client),
+                disableAutoLoad: shouldDisablePreviewNetworking
             )
             .tabItem {
                 Label("I tuoi voti", systemImage: "chart.bar.fill")
@@ -78,7 +105,8 @@ private struct MainTabView: View {
             if isAdminOrSuperAdmin {
                 AdminAddPlaceView(
                     restaurantService: RestaurantService(client: client),
-                    suggestionService: SuggestionService(client: client)
+                    suggestionService: SuggestionService(client: client),
+                    disableInitialLoad: shouldDisablePreviewNetworking
                 )
                 .tabItem {
                     Label("Aggiungi", systemImage: "plus.circle.fill")
@@ -94,13 +122,15 @@ private struct MainTabView: View {
             }
 
             SettingsView(
-                authService: authService
+                authService: authService,
+                disableAutoLoad: shouldDisablePreviewNetworking
             )
             .tabItem {
                 Label("Impostazioni", systemImage: "gearshape.fill")
             }
         }
         .task {
+            guard !shouldDisablePreviewNetworking else { return }
             if session.currentUser == nil {
                 _ = try? await authService.fetchMe()
             }
@@ -112,15 +142,28 @@ private struct MainTabView: View {
 struct AppRootView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            previewRoot(role: "admin")
-                .previewDisplayName("App Shell - Admin")
+            livePreviewRoot()
+                .previewDisplayName("App Shell - Live API")
 
-            previewRoot(role: "user")
-                .previewDisplayName("App Shell - User")
+            mockPreviewRoot(role: "admin")
+                .previewDisplayName("App Shell - Mock Admin")
+
+            mockPreviewRoot(role: "user")
+                .previewDisplayName("App Shell - Mock User")
         }
     }
 
-    private static func previewRoot(role: String) -> some View {
+    private static func livePreviewRoot() -> some View {
+        let session = SessionManager()
+        // Reuse configured app backend for live canvas data.
+        let client = APIClient(baseURL: AppConfig.apiBaseURL)
+        session.restoreSession()
+
+        return AppRootView(client: client)
+            .environmentObject(session)
+    }
+
+    private static func mockPreviewRoot(role: String) -> some View {
         let session = SessionManager()
         let client = APIClient(baseURL: URL(string: "https://example.com/api")!)
 

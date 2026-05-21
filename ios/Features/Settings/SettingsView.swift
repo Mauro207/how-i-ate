@@ -3,6 +3,12 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject private var session: SessionManager
     let authService: AuthService
+    let disableAutoLoad: Bool
+
+    init(authService: AuthService, disableAutoLoad: Bool = false) {
+        self.authService = authService
+        self.disableAutoLoad = disableAutoLoad
+    }
 
     var body: some View {
         NavigationStack {
@@ -23,6 +29,7 @@ struct SettingsView: View {
             }
             .navigationTitle("Settings")
             .task {
+                guard !disableAutoLoad else { return }
                 if session.currentUser == nil {
                     _ = try? await authService.fetchMe()
                 }

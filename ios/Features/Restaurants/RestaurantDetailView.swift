@@ -45,6 +45,10 @@ struct RestaurantDetailView: View {
         return (averageService + averagePrice + averageMenu) / 3
     }
 
+    private var averageOverallDisplay: String {
+        String(format: "%.2f", averageOverall)
+    }
+
     var body: some View {
         Group {
             if viewModel.isLoading {
@@ -76,8 +80,23 @@ struct RestaurantDetailView: View {
                             }
 
                             VStack(alignment: .leading, spacing: 10) {
-                                Text(restaurant.name)
-                                    .font(.title3.weight(.bold))
+                                HStack(alignment: .firstTextBaseline) {
+                                    Text(restaurant.name)
+                                        .font(.title2.weight(.bold))
+
+                                    Spacer(minLength: 8)
+
+                                    HStack(spacing: 6) {
+                                        Image(systemName: "star.fill")
+                                            .font(.caption)
+                                        Text(averageOverallDisplay)
+                                            .font(.subheadline.weight(.semibold))
+                                    }
+                                    .foregroundStyle(Color.indigo)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 6)
+                                    .background(Color.indigo.opacity(0.12), in: Capsule())
+                                }
 
                                 if let description = restaurant.description, !description.isEmpty {
                                     Text(description)
@@ -90,10 +109,6 @@ struct RestaurantDetailView: View {
 
                                 if let address = restaurant.address, !address.isEmpty {
                                     detailLine("mappin.and.ellipse", address)
-                                }
-
-                                if let createdAt = restaurant.createdAt, !createdAt.isEmpty {
-                                    detailLine("calendar", "Creato il \(formattedDate(createdAt))")
                                 }
 
                                 HStack(spacing: 12) {
@@ -113,33 +128,13 @@ struct RestaurantDetailView: View {
                                 }
                             }
                             .padding(14)
-                            .background(Color.indigo.opacity(0.08), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Color(uiColor: .secondarySystemGroupedBackground))
+                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                         } header: {
                             Text("Informazioni luogo")
                         }
 
-                        Section {
-                            VStack(alignment: .leading, spacing: 10) {
-                                Text("Valutazione media")
-                                    .font(.subheadline.weight(.semibold))
-                                Text("\(averageOverall, specifier: "%.2f") / 10")
-                                    .font(.title2.weight(.bold))
-                                    .foregroundStyle(.indigo)
-
-                                HStack(spacing: 10) {
-                                    scorePill(title: "Servizio", value: averageService)
-                                    scorePill(title: "Prezzo", value: averagePrice)
-                                    scorePill(title: "Menu", value: averageMenu)
-                                }
-
-                                Text("\(viewModel.reviews.count) recensioni")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                            .padding(.vertical, 4)
-                        } header: {
-                            Text("Valutazioni")
-                        }
                     }
 
                     Section {
@@ -237,9 +232,8 @@ struct RestaurantDetailView: View {
                                         .font(.footnote.weight(.semibold))
                                     }
                                 }
-                                .padding(12)
-                                .background(Color.indigo.opacity(0.06), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-                                .listRowSeparator(.hidden)
+                                .background(Color(uiColor: .secondarySystemGroupedBackground))
+                                .padding(.vertical, 14)
                                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                     if canModerateReviews && !viewModel.isOwnReview(review) {
                                         Button {

@@ -19,12 +19,18 @@ Questi file abilitano anteprime SwiftUI immediate nel progetto iOS:
 
 1. Apri `ios/AppRootView.swift`.
 2. Nel canvas usa una delle preview:
-	- `App Shell - Admin`
-	- `App Shell - User`
-3. Queste preview partono gia autenticate, quindi puoi passare tra tutte le tab senza fare login.
+	- `App Shell - Live API` (dati reali backend)
+	- `App Shell - Mock Admin`
+	- `App Shell - Mock User`
+3. La preview `Live API` usa `AppConfig.apiBaseURL` e prova a riusare la sessione reale salvata (token Keychain).
+4. Se non c'e sessione, puoi fare login direttamente in Canvas (con backend reale).
 
 ## Nota
 
-Le preview usano `https://example.com/api` come base URL fittizia e dati mock locali, cosi il canvas non dipende dal backend per il rendering iniziale.
+Le preview `Mock` usano `https://example.com/api` come base URL fittizia e dati mock locali, cosi il canvas non dipende dal backend per il rendering iniziale.
 
-In modalita Preview, il login reale e disabilitato (`Anteprima attiva: login disabilitato`) per evitare chiamate HTTP accidentali dal canvas.
+Quando la rete preview e disabilitata (es. preview `Mock` o `HOWIATE_PREVIEW_LIVE_DATA=0`), il login reale mostra `Anteprima attiva: login disabilitato`.
+
+Con rete preview disabilitata, i caricamenti automatici rete (home/ranking/impostazioni/i tuoi voti) sono sospesi, cosi puoi navigare senza errori API su `example.com`.
+
+Per forzare la sospensione rete anche in `Live API`, imposta la variabile ambiente `HOWIATE_PREVIEW_LIVE_DATA=0`.

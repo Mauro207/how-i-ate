@@ -3,6 +3,12 @@ import SwiftUI
 struct RestaurantsView: View {
     @EnvironmentObject private var session: SessionManager
     @StateObject var viewModel: RestaurantsViewModel
+    let disableAutoLoad: Bool
+
+    init(viewModel: RestaurantsViewModel, disableAutoLoad: Bool = false) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+        self.disableAutoLoad = disableAutoLoad
+    }
 
     private var displayName: String {
         session.currentUser?.displayName ?? session.currentUser?.username ?? "Utente"
@@ -53,9 +59,11 @@ struct RestaurantsView: View {
                                         )
                                     } label: {
                                         HStack(spacing: 12) {
-                                            Text("#\(index + 1)")
-                                                .font(.headline)
-                                                .frame(width: 34)
+                                            Text("\(index + 1)")
+                                                .font(index < 3 ? .headline : .subheadline.weight(.bold))
+                                                .foregroundStyle(index < 3 ? .white : .secondary)
+                                                .frame(width: 34, height: 34)
+                                                .background(rankBadgeColor(for: index), in: Circle())
 
                                             VStack(alignment: .leading, spacing: 3) {
                                                 Text(item.restaurantName)
@@ -126,8 +134,14 @@ struct RestaurantsView: View {
                 )
             )
             .navigationTitle("Ciao \(displayName)")
-            .refreshable { await viewModel.load() }
-            .task { await viewModel.load() }
+            .refreshable {
+                guard !disableAutoLoad else { return }
+                await viewModel.load()
+            }
+            .task {
+                guard !disableAutoLoad else { return }
+                await viewModel.load()
+            }
         }
     }
 }
@@ -152,13 +166,25 @@ private struct HomeSectionTitle: View {
 private struct RestaurantRowCard: View {
     let restaurant: Restaurant
 
+    private var cuisineIconName: String {
+        let normalized = (restaurant.cuisine ?? "").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if normalized.contains("gelateria") { return "snowflake" }
+        if normalized.contains("pizzeria") { return "flame" }
+        if normalized.contains("paninoteca") { return "takeoutbag.and.cup.and.straw" }
+        if normalized.contains("sushi") { return "fish" }
+        if normalized.contains("pub") || normalized.contains("bar") || normalized.contains("enoteca") { return "wineglass" }
+        if normalized.contains("pasticceria") { return "birthday.cake" }
+        if normalized.contains("braceria") { return "flame.circle" }
+        return "fork.knife"
+    }
+
     var body: some View {
         HStack(spacing: 12) {
             ZStack {
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
                     .fill(Color.indigo.opacity(0.15))
                     .frame(width: 44, height: 44)
-                Image(systemName: "fork.knife")
+                Image(systemName: cuisineIconName)
                     .foregroundStyle(Color.indigo)
             }
 
@@ -166,13 +192,6 @@ private struct RestaurantRowCard: View {
                 Text(restaurant.name)
                     .font(.subheadline.weight(.semibold))
                     .lineLimit(1)
-
-                if let cuisine = restaurant.cuisine, !cuisine.isEmpty {
-                    Text(cuisine)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                }
 
                 if let address = restaurant.address, !address.isEmpty {
                     Text(address)
@@ -190,6 +209,15 @@ private struct RestaurantRowCard: View {
         }
         .padding(12)
         .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+    }
+}
+
+private func rankBadgeColor(for index: Int) -> Color {
+    switch index {
+    case 0: return Color(red: 0.93, green: 0.76, blue: 0.26)
+    case 1: return Color(red: 0.67, green: 0.70, blue: 0.75)
+    case 2: return Color(red: 0.74, green: 0.48, blue: 0.29)
+    default: return Color(.secondarySystemBackground)
     }
 }
 
