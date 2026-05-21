@@ -15,6 +15,14 @@ Questi file abilitano anteprime SwiftUI immediate nel progetto iOS:
 4. Usa `Editor > Canvas` e premi `Resume`.
 5. Per anteprime veloci, usa le preview già isolate da chiamate rete iniziali (`disableAutoLoad` / `disableInitialLoad`).
 
+## Navigare tutta l'interfaccia dal Canvas
+
+1. Apri `ios/AppRootView.swift`.
+2. Nel canvas usa una delle preview:
+	- `App Shell - Admin`
+	- `App Shell - User`
+3. Queste preview partono gia autenticate, quindi puoi passare tra tutte le tab senza fare login.
+
 ## Nota
 
 Le preview usano `https://example.com/api` come base URL fittizia e dati mock locali, cosi il canvas non dipende dal backend per il rendering iniziale.

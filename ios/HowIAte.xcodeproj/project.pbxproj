@@ -24,6 +24,7 @@
 		6BD2853FED643C482E38F3AB /* RestaurantService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0AE86F9C1EC36EEBCA9D97D /* RestaurantService.swift */; };
 		701AAB7D564A9E6C43F561D9 /* LoginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 180F6AABC9E9CB4C87C1D6D4 /* LoginViewModel.swift */; };
 		753976F1105D68F6433D0FDF /* RestaurantsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76497C7D9CFBBB51CE077F6B /* RestaurantsView.swift */; };
+		791AC37134442323AC09DD97 /* DateDisplayFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 199B3BB72B24EE5DCCEE7FCE /* DateDisplayFormatter.swift */; };
 		863C5FBCE559F29D47AAED01 /* Suggestion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9EEC40D2FE11AE1157E0623 /* Suggestion.swift */; };
 		88F9953F7B4434EE3FDC4D28 /* MyRatingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF1A8AF072ACA4970041DEF4 /* MyRatingsViewModel.swift */; };
 		89745B23468EFD292B5EBBA9 /* CommonResponses.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB4B501D9177696B7FE236E /* CommonResponses.swift */; };
@@ -55,6 +56,7 @@
 		07986C61D98537CABA6FD211 /* RestaurantDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestaurantDetailView.swift; sourceTree = "<group>"; };
 		1669617926E8A2C425AD8544 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		180F6AABC9E9CB4C87C1D6D4 /* LoginViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewModel.swift; sourceTree = "<group>"; };
+		199B3BB72B24EE5DCCEE7FCE /* DateDisplayFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateDisplayFormatter.swift; sourceTree = "<group>"; };
 		1B86EBC7F887BE3E13E1B4F3 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		1BFAFA8F2A3BDD17C7C94275 /* SessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionManager.swift; sourceTree = "<group>"; };
 		2195FC44F7DF0944C609EE61 /* AdminAddPlaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminAddPlaceView.swift; sourceTree = "<group>"; };
@@ -238,6 +240,7 @@
 		C74383F16DBD0467E6C667C5 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				199B3BB72B24EE5DCCEE7FCE /* DateDisplayFormatter.swift */,
 				BC8303C5794CD4FF3EA2AB36 /* RankingCalculator.swift */,
 			);
 			path = Utils;
@@ -356,6 +359,7 @@
 				C34470625EFA37A87C3178EA /* AuthService.swift in Sources */,
 				D1D8E03FAB1CDDCF68878B9F /* AuthTokenProvider.swift in Sources */,
 				89745B23468EFD292B5EBBA9 /* CommonResponses.swift in Sources */,
+				791AC37134442323AC09DD97 /* DateDisplayFormatter.swift in Sources */,
 				DBAABDA35F88B86C139F6BB0 /* HTTPMethod.swift in Sources */,
 				2D79A622FC54E769640C75A1 /* HowIAteApp.swift in Sources */,
 				D8BB906B79F32EE43625C4C1 /* KeychainStore.swift in Sources */,

@@ -111,8 +111,27 @@ private struct MainTabView: View {
 #if DEBUG
 struct AppRootView_Previews: PreviewProvider {
     static var previews: some View {
+        Group {
+            previewRoot(role: "admin")
+                .previewDisplayName("App Shell - Admin")
+
+            previewRoot(role: "user")
+                .previewDisplayName("App Shell - User")
+        }
+    }
+
+    private static func previewRoot(role: String) -> some View {
         let session = SessionManager()
         let client = APIClient(baseURL: URL(string: "https://example.com/api")!)
+
+        session.currentUser = User(
+            id: "preview-user",
+            username: "preview",
+            displayName: "Preview User",
+            email: "preview@example.com",
+            role: role
+        )
+        session.isAuthenticated = true
 
         return AppRootView(client: client)
             .environmentObject(session)
