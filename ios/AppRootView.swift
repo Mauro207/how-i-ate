@@ -4,6 +4,10 @@ struct AppRootView: View {
     @EnvironmentObject private var session: SessionManager
     private let client: APIClient
 
+    private var isRunningInPreviews: Bool {
+        ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+    }
+
     init(client: APIClient) {
         self.client = client
     }
@@ -13,7 +17,12 @@ struct AppRootView: View {
             if session.isAuthenticated {
                 MainTabView(client: client)
             } else {
-                LoginView(viewModel: LoginViewModel(authService: AuthService(client: client, session: session)))
+                LoginView(
+                    viewModel: LoginViewModel(
+                        authService: AuthService(client: client, session: session),
+                        previewMode: isRunningInPreviews
+                    )
+                )
             }
         }
     }

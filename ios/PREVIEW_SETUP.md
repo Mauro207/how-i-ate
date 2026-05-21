@@ -18,3 +18,5 @@ Questi file abilitano anteprime SwiftUI immediate nel progetto iOS:
 ## Nota
 
 Le preview usano `https://example.com/api` come base URL fittizia e dati mock locali, cosi il canvas non dipende dal backend per il rendering iniziale.
+
+In modalita Preview, il login reale e disabilitato (`Anteprima attiva: login disabilitato`) per evitare chiamate HTTP accidentali dal canvas.

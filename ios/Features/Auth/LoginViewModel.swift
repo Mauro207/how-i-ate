@@ -8,9 +8,11 @@ final class LoginViewModel: ObservableObject {
     @Published var errorMessage: String?
 
     private let authService: AuthService
+    private let previewMode: Bool
 
-    init(authService: AuthService) {
+    init(authService: AuthService, previewMode: Bool = false) {
         self.authService = authService
+        self.previewMode = previewMode
     }
 
     var canSubmit: Bool {
@@ -20,6 +22,11 @@ final class LoginViewModel: ObservableObject {
     }
 
     func login() async {
+        if previewMode {
+            errorMessage = "Anteprima attiva: login disabilitato"
+            return
+        }
+
         let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedPassword = password.trimmingCharacters(in: .whitespacesAndNewlines)
 
