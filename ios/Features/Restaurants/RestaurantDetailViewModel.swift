@@ -31,13 +31,13 @@ final class RestaurantDetailViewModel: ObservableObject {
         return review.user?.id == currentUserId
     }
 
-    func load() async {
+    func load(forceRefresh: Bool = false) async {
         isLoading = true
         defer { isLoading = false }
 
         do {
-            async let restaurantCall = restaurantService.getRestaurant(id: restaurantId)
-            async let reviewsCall = reviewService.getRestaurantReviews(restaurantId: restaurantId)
+            async let restaurantCall = restaurantService.getRestaurant(id: restaurantId, forceRefresh: forceRefresh)
+            async let reviewsCall = reviewService.getRestaurantReviews(restaurantId: restaurantId, forceRefresh: forceRefresh)
             restaurant = try await restaurantCall
             reviews = try await reviewsCall
             errorMessage = nil
@@ -66,7 +66,7 @@ final class RestaurantDetailViewModel: ObservableObject {
                     comment: trimmed
                 )
             )
-            reviews = try await reviewService.getRestaurantReviews(restaurantId: restaurantId)
+            reviews = try await reviewService.getRestaurantReviews(restaurantId: restaurantId, forceRefresh: true)
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
@@ -93,7 +93,7 @@ final class RestaurantDetailViewModel: ObservableObject {
                     comment: trimmed
                 )
             )
-            reviews = try await reviewService.getRestaurantReviews(restaurantId: restaurantId)
+            reviews = try await reviewService.getRestaurantReviews(restaurantId: restaurantId, forceRefresh: true)
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription

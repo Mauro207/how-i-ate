@@ -292,7 +292,7 @@ struct RestaurantDetailView: View {
             }
         }
         .task { await viewModel.load() }
-        .refreshable { await viewModel.load() }
+        .refreshable { await viewModel.load(forceRefresh: true) }
         .sheet(isPresented: $showReviewComposer) {
             ReviewComposerView(title: "Nuova recensione", isSubmitting: viewModel.isSubmittingReview) { s, p, m, c in
                 await viewModel.submitReview(service: s, price: p, menu: m, comment: c)
@@ -436,14 +436,7 @@ struct RestaurantDetailView: View {
     }
 
     private func formattedDate(_ isoDate: String) -> String {
-        let parser = ISO8601DateFormatter()
-        if let date = parser.date(from: isoDate) {
-            let formatter = DateFormatter()
-            formatter.locale = Locale(identifier: "it_IT")
-            formatter.dateStyle = .medium
-            return formatter.string(from: date)
-        }
-        return isoDate
+        DateDisplayFormatter.fromISO(isoDate)
     }
 }
 
