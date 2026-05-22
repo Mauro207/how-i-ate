@@ -6,6 +6,7 @@ struct RestaurantDetailView: View {
 
     @State private var showReviewComposer = false
     @State private var showRestaurantEditor = false
+    @State private var restaurantEditorErrorMessage: String?
     @State private var editingReview: Review?
     @State private var deletingReview: Review?
     @State private var expandedReviewIds: Set<String> = []
@@ -46,7 +47,7 @@ struct RestaurantDetailView: View {
     }
 
     private var averageOverallDisplay: String {
-        String(format: "%.2f", averageOverall)
+        formatRating(averageOverall)
     }
 
     var body: some View {
@@ -67,8 +68,8 @@ struct RestaurantDetailView: View {
                                         image
                                             .resizable()
                                             .scaledToFill()
-                                            .frame(height: 210)
-                                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                                            .frame(height: 220)
+                                            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                                     case .failure:
                                         roundedPlaceholder(icon: "photo")
                                     default:
@@ -76,61 +77,67 @@ struct RestaurantDetailView: View {
                                             .overlay(ProgressView())
                                     }
                                 }
+                                .overlay(alignment: .topTrailing) {
+                                    averageRatingBadge
+                                        .padding(12)
+                                }
                                 .listRowInsets(EdgeInsets())
                             }
 
-                            VStack(alignment: .leading, spacing: 10) {
-                                HStack(alignment: .firstTextBaseline) {
+                            VStack(alignment: .leading, spacing: 16) {
+                                VStack(alignment: .leading, spacing: 8) {
                                     Text(restaurant.name)
                                         .font(.title2.weight(.bold))
+                                        .foregroundStyle(.primary)
+                                        .fixedSize(horizontal: false, vertical: true)
 
-                                    Spacer(minLength: 8)
-
-                                    HStack(spacing: 6) {
-                                        Image(systemName: "star.fill")
-                                            .font(.caption)
-                                        Text(averageOverallDisplay)
-                                            .font(.subheadline.weight(.semibold))
+                                    if let description = restaurant.description, !description.isEmpty {
+                                        Text(description)
+                                            .font(.body)
+                                            .foregroundStyle(.secondary)
+                                            .fixedSize(horizontal: false, vertical: true)
                                     }
-                                    .foregroundStyle(Color.indigo)
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 6)
-                                    .background(Color.indigo.opacity(0.12), in: Capsule())
                                 }
 
-                                if let description = restaurant.description, !description.isEmpty {
-                                    Text(description)
-                                        .font(.body)
+                                VStack(alignment: .leading, spacing: 10) {
+                                    if let cuisine = restaurant.cuisine, !cuisine.isEmpty {
+                                        detailLine("fork.knife", cuisine)
+                                    }
+
+                                    if let address = restaurant.address, !address.isEmpty {
+                                        detailLine("mappin.and.ellipse", address)
+                                    }
                                 }
 
-                                if let cuisine = restaurant.cuisine, !cuisine.isEmpty {
-                                    detailLine("fork.knife", cuisine)
-                                }
+                                if hasExternalLinks(restaurant) {
+                                    HStack(spacing: 12) {
+                                        if let maps = restaurant.googleMapsUrl,
+                                           let mapsURL = URL(string: maps) {
+                                            Link(destination: mapsURL) {
+                                                linkChip("Google Maps", "map")
+                                            }
+                                            .frame(maxWidth: .infinity)
+                                        }
 
-                                if let address = restaurant.address, !address.isEmpty {
-                                    detailLine("mappin.and.ellipse", address)
-                                }
-
-                                HStack(spacing: 12) {
-                                    if let maps = restaurant.googleMapsUrl,
-                                       let mapsURL = URL(string: maps) {
-                                        Link(destination: mapsURL) {
-                                            linkChip("Apri mappe", "map")
+                                        if let instagram = restaurant.instagramUrl,
+                                           let instagramURL = URL(string: instagram) {
+                                            Link(destination: instagramURL) {
+                                                linkChip("Instagram", "camera")
+                                            }
+                                            .frame(maxWidth: .infinity)
                                         }
                                     }
-
-                                    if let instagram = restaurant.instagramUrl,
-                                       let instagramURL = URL(string: instagram) {
-                                        Link(destination: instagramURL) {
-                                            linkChip("Instagram", "camera")
-                                        }
-                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.top, 2)
                                 }
                             }
-                            .padding(14)
+                            .padding(16)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Color(uiColor: .secondarySystemGroupedBackground))
-                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                            .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                    .stroke(Color.primary.opacity(0.06), lineWidth: 1)
+                            }
                         } header: {
                             Text("Informazioni luogo")
                         }
@@ -146,7 +153,7 @@ struct RestaurantDetailView: View {
                                     .font(.subheadline.weight(.semibold))
                                     .foregroundStyle(.white)
                                     .padding(.horizontal, 14)
-                                    .padding(.vertical, 2)
+                                    .padding(.vertical, 14)
                                     .frame(maxWidth: .infinity, alignment: .center)
                                     .background(Color.indigo, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                             }
@@ -199,7 +206,7 @@ struct RestaurantDetailView: View {
                                             .foregroundStyle(Color.indigo)
                                             .padding(.horizontal, 10)
                                             .padding(.vertical, 7)
-                                            .background(Color.indigo.opacity(0.12), in: Capsule())
+											.background(Color.indigo.opacity(0.12), in: Capsule())
                                         }
                                         .buttonStyle(.plain)
                                     }
@@ -232,7 +239,7 @@ struct RestaurantDetailView: View {
                                         .font(.footnote.weight(.semibold))
                                     }
                                 }
-                                .background(Color(uiColor: .secondarySystemGroupedBackground))
+
                                 .padding(.vertical, 14)
                                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                     if canModerateReviews && !viewModel.isOwnReview(review) {
@@ -253,7 +260,7 @@ struct RestaurantDetailView: View {
                             }
                         }
                     } header: {
-                        Text("Recensionii")
+                        Text("Recensioni")
                     }
                 }
                 .listStyle(.insetGrouped)
@@ -273,6 +280,7 @@ struct RestaurantDetailView: View {
             if canEditRestaurant {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
+                        restaurantEditorErrorMessage = nil
                         showRestaurantEditor = true
                     } label: {
                         if viewModel.isSavingRestaurant {
@@ -298,11 +306,15 @@ struct RestaurantDetailView: View {
             if let restaurant = viewModel.restaurant {
                 RestaurantEditSheetView(
                     restaurant: restaurant,
-                    isSaving: viewModel.isSavingRestaurant
+                    isSaving: viewModel.isSavingRestaurant,
+                    apiErrorMessage: $restaurantEditorErrorMessage
                 ) { payload in
+                    restaurantEditorErrorMessage = nil
                     let success = await viewModel.updateRestaurant(payload: payload)
                     if success {
                         showRestaurantEditor = false
+                    } else {
+                        restaurantEditorErrorMessage = viewModel.errorMessage
                     }
                 }
                 .presentationDetents([.large])
@@ -348,26 +360,72 @@ struct RestaurantDetailView: View {
 
     @ViewBuilder
     private func roundedPlaceholder(icon: String) -> some View {
-        RoundedRectangle(cornerRadius: 16, style: .continuous)
+        RoundedRectangle(cornerRadius: 18, style: .continuous)
             .fill(Color(.secondarySystemBackground))
-            .frame(height: 210)
+            .frame(height: 220)
             .overlay(Image(systemName: icon).foregroundStyle(.secondary))
     }
 
     @ViewBuilder
+    private var averageRatingBadge: some View {
+        if #available(iOS 26.0, *) {
+            averageRatingBadgeContent
+                .glassEffect(.regular.tint(.indigo.opacity(0.18)), in: .capsule)
+        } else {
+            averageRatingBadgeContent
+                .background(.ultraThinMaterial, in: Capsule())
+                .overlay {
+                    Capsule()
+                        .stroke(Color.white.opacity(0.34), lineWidth: 1)
+                }
+        }
+    }
+
+    private var averageRatingBadgeContent: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "star.fill")
+                .font(.caption.weight(.bold))
+            Text(averageOverallDisplay)
+                .font(.subheadline.weight(.bold))
+        }
+        .foregroundStyle(.white)
+        .shadow(color: .black.opacity(0.18), radius: 6, y: 2)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+    }
+
+    private func hasExternalLinks(_ restaurant: Restaurant) -> Bool {
+        let mapsURL = restaurant.googleMapsUrl.flatMap(URL.init(string:))
+        let instagramURL = restaurant.instagramUrl.flatMap(URL.init(string:))
+        return mapsURL != nil || instagramURL != nil
+    }
+
+    @ViewBuilder
     private func detailLine(_ icon: String, _ text: String) -> some View {
-        Label(text, systemImage: icon)
-            .font(.subheadline)
-            .foregroundStyle(.secondary)
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: icon)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(Color.indigo)
+                .frame(width: 28, height: 28)
+                .background(Color.indigo.opacity(0.10), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+
+            Text(text)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
     }
 
     @ViewBuilder
     private func linkChip(_ title: String, _ icon: String) -> some View {
         Label(title, systemImage: icon)
             .font(.caption.weight(.semibold))
-            .padding(.horizontal, 10)
-            .padding(.vertical, 8)
-            .background(Color.indigo.opacity(0.14), in: Capsule())
+            .foregroundStyle(Color.indigo)
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .background(Color.indigo.opacity(0.10), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 
     @ViewBuilder
@@ -435,9 +493,21 @@ struct RestaurantDetailView: View {
 }
 
 private struct RestaurantEditSheetView: View {
+    @Environment(\.dismiss) private var dismiss
+
     let restaurant: Restaurant
     let isSaving: Bool
     let onSave: (RestaurantMutationPayload) async -> Void
+
+    @Binding var apiErrorMessage: String?
+
+    private var cuisineOptions: [String] {
+        guard !cuisine.isEmpty, !PlaceTypeOptions.all.contains(cuisine) else {
+            return PlaceTypeOptions.all
+        }
+
+        return [cuisine] + PlaceTypeOptions.all
+    }
 
     @State private var name: String
     @State private var description: String
@@ -446,11 +516,18 @@ private struct RestaurantEditSheetView: View {
     @State private var coverImageUrl: String
     @State private var googleMapsUrl: String
     @State private var instagramUrl: String
+    @State private var validationMessage: String?
 
-    init(restaurant: Restaurant, isSaving: Bool, onSave: @escaping (RestaurantMutationPayload) async -> Void) {
+    init(
+        restaurant: Restaurant,
+        isSaving: Bool,
+        apiErrorMessage: Binding<String?>,
+        onSave: @escaping (RestaurantMutationPayload) async -> Void
+    ) {
         self.restaurant = restaurant
         self.isSaving = isSaving
         self.onSave = onSave
+        _apiErrorMessage = apiErrorMessage
         _name = State(initialValue: restaurant.name)
         _description = State(initialValue: restaurant.description ?? "")
         _address = State(initialValue: restaurant.address ?? "")
@@ -463,51 +540,140 @@ private struct RestaurantEditSheetView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Base") {
+                Section("Informazioni sul luogo") {
                     TextField("Nome", text: $name)
                     TextField("Descrizione", text: $description, axis: .vertical)
                     TextField("Indirizzo", text: $address)
-                    TextField("Cucina", text: $cuisine)
-                }
-
-                Section("Link") {
-                    TextField("Cover image URL", text: $coverImageUrl)
-                        .textInputAutocapitalization(.never)
-                    TextField("Google Maps URL", text: $googleMapsUrl)
-                        .textInputAutocapitalization(.never)
-                    TextField("Instagram URL", text: $instagramUrl)
-                        .textInputAutocapitalization(.never)
+                    Picker("Tipo di luogo", selection: $cuisine) {
+                        Text("Seleziona tipo di luogo").tag("")
+                        ForEach(cuisineOptions, id: \.self) { item in
+                            Text(item).tag(item)
+                        }
+                    }
                 }
 
                 Section {
-                    Button {
-                        Task {
-                            await onSave(
-                                RestaurantMutationPayload(
-                                    name: name.trimmed,
-                                    description: description.nilIfEmpty,
-                                    address: address.nilIfEmpty,
-                                    cuisine: cuisine.nilIfEmpty,
-                                    coverImageUrl: coverImageUrl.nilIfEmpty,
-                                    googleMapsUrl: googleMapsUrl.nilIfEmpty,
-                                    instagramUrl: instagramUrl.nilIfEmpty
-                                )
-                            )
+                    TextField("Cover image URL", text: $coverImageUrl)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .keyboardType(.URL)
+                        .onChange(of: coverImageUrl) { _ in clearLinkErrors() }
+                    TextField("Google Maps URL", text: $googleMapsUrl)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .keyboardType(.URL)
+                        .onChange(of: googleMapsUrl) { _ in clearLinkErrors() }
+                    TextField("Instagram URL", text: $instagramUrl)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .keyboardType(.URL)
+                        .onChange(of: instagramUrl) { _ in clearLinkErrors() }
+                } header: {
+                    Text("Link aggiuntivi")
+                } footer: {
+                    Text("Usa link completi, ad esempio https://maps.google.com/... o https://www.instagram.com/...")
+                }
+
+                if let visibleErrorMessage {
+                    Section {
+                        Label {
+                            Text(visibleErrorMessage)
+                        } icon: {
+                            Image(systemName: "exclamationmark.triangle.fill")
                         }
+                        .font(.footnote)
+                        .foregroundStyle(.red)
+                    }
+                }
+            }
+            .navigationTitle("Modifica luogo")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                    }
+                    .accessibilityLabel("Chiudi")
+                    .disabled(isSaving)
+                }
+
+                ToolbarItem(placement: .confirmationAction) {
+                    Button {
+                        Task { await saveRestaurant() }
                     } label: {
                         if isSaving {
                             ProgressView()
-                                .frame(maxWidth: .infinity)
                         } else {
-                            Text("Salva modifiche")
-                                .frame(maxWidth: .infinity)
+                            Text("Salva")
                         }
                     }
                     .disabled(name.trimmed.isEmpty || isSaving)
                 }
             }
-            .navigationTitle("Modifica luogo")
         }
+    }
+
+    private var visibleErrorMessage: String? {
+        validationMessage ?? normalizedAPIErrorMessage
+    }
+
+    private var normalizedAPIErrorMessage: String? {
+        guard let apiErrorMessage else { return nil }
+        let lowercased = apiErrorMessage.lowercased()
+
+        if lowercased.contains("instagram") {
+            return "Il link Instagram non e valido. Controlla che inizi con https://www.instagram.com/."
+        }
+
+        if lowercased.contains("google") || lowercased.contains("maps") || lowercased.contains("googlemaps") {
+            return "Il link Google Maps non e valido. Controlla che sia un URL completo di Google Maps."
+        }
+
+        if lowercased.contains("url") || lowercased.contains("link") {
+            return "Uno dei link inseriti non e valido. Controlla Google Maps, Instagram e copertina."
+        }
+
+        return apiErrorMessage
+    }
+
+    private func saveRestaurant() async {
+        validationMessage = validateURLs()
+        guard validationMessage == nil else { return }
+
+        await onSave(
+            RestaurantMutationPayload(
+                name: name.trimmed,
+                description: description.nilIfEmpty,
+                address: address.nilIfEmpty,
+                cuisine: cuisine.nilIfEmpty,
+                coverImageUrl: coverImageUrl.nilIfEmpty,
+                googleMapsUrl: googleMapsUrl.nilIfEmpty,
+                instagramUrl: instagramUrl.nilIfEmpty
+            )
+        )
+    }
+
+    private func clearLinkErrors() {
+        validationMessage = nil
+        apiErrorMessage = nil
+    }
+
+    private func validateURLs() -> String? {
+        if let validation = RestaurantURLValidator.googleMapsValidationMessage(for: googleMapsUrl) {
+            return validation
+        }
+
+        if let validation = RestaurantURLValidator.instagramValidationMessage(for: instagramUrl) {
+            return validation
+        }
+
+        if let validation = RestaurantURLValidator.validationMessage(for: coverImageUrl, kind: "Copertina") {
+            return validation
+        }
+
+        return nil
     }
 }
 

@@ -38,3 +38,30 @@ struct User: Decodable, Identifiable, Equatable {
         self.createdAt = createdAt
     }
 }
+
+struct UserSearchResult: Decodable, Identifiable, Equatable {
+    let id: String
+    let username: String
+    let displayName: String?
+    let role: String
+    let createdAt: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case underscoreId = "_id"
+        case username
+        case displayName
+        case role
+        case createdAt
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decodeIfPresent(String.self, forKey: .id)
+            ?? container.decode(String.self, forKey: .underscoreId)
+        username = try container.decode(String.self, forKey: .username)
+        displayName = try container.decodeIfPresent(String.self, forKey: .displayName)
+        role = try container.decodeIfPresent(String.self, forKey: .role) ?? "user"
+        createdAt = try container.decodeIfPresent(String.self, forKey: .createdAt)
+    }
+}

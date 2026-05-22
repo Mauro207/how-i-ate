@@ -15,6 +15,9 @@ final class RestaurantsViewModel: ObservableObject {
     let rankingService: RankingService
     private let suggestionService: SuggestionService
 
+    private static var cachedRestaurants: [Restaurant] = []
+    private static var cachedTopRankings: [RankingItem] = []
+
     init(
         restaurantService: RestaurantService,
         reviewService: ReviewService,
@@ -25,6 +28,8 @@ final class RestaurantsViewModel: ObservableObject {
         self.reviewService = reviewService
         self.rankingService = rankingService
         self.suggestionService = suggestionService
+        restaurants = Self.cachedRestaurants
+        topRankings = Self.cachedTopRankings
     }
 
     var recentRestaurants: [Restaurant] {
@@ -33,26 +38,47 @@ final class RestaurantsViewModel: ObservableObject {
         }.prefix(4))
     }
 
-    func load() async {
-        isLoading = true
+    var hasCachedContent: Bool {
+        !restaurants.isEmpty || !topRankings.isEmpty
+    }
+
+    func load(forceRefresh: Bool = false) async {
+        if hasCachedContent && !forceRefresh {
+            errorMessage = nil
+            rankingErrorMessage = nil
+            return
+        }
+
+        let shouldShowBlockingLoader = !hasCachedContent
+        if shouldShowBlockingLoader {
+            isLoading = true
+        }
         defer { isLoading = false }
 
-        // In linea con Angular: se i ristoranti non arrivano, la home e in errore.
         do {
-            restaurants = try await restaurantService.getRestaurants()
+            let loadedRestaurants = try await restaurantService.getRestaurants(forceRefresh: forceRefresh)
+            restaurants = loadedRestaurants
+            Self.cachedRestaurants = loadedRestaurants
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
-            restaurants = []
+            if restaurants.isEmpty {
+                restaurants = Self.cachedRestaurants
+            }
         }
 
-        // La classifica non deve bloccare la visibilita degli ultimi ristoranti.
         do {
-            topRankings = Array((try await rankingService.getGlobalRankings()).prefix(5))
+            let loadedRankings = try await rankingService.getGlobalRankings(forceRefresh: forceRefresh)
+                .filter { !$0.restaurantId.isEmpty }
+            let visibleRankings = Array(loadedRankings.prefix(5))
+            topRankings = visibleRankings
+            Self.cachedTopRankings = visibleRankings
             rankingErrorMessage = nil
         } catch {
-            topRankings = []
             rankingErrorMessage = error.localizedDescription
+            if topRankings.isEmpty {
+                topRankings = Self.cachedTopRankings
+            }
         }
     }
 

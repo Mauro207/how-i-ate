@@ -99,13 +99,38 @@ final class APIClient {
     }
 
     private func parseServerMessage(from data: Data) -> String? {
-        guard
-            let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-            let message = json["message"] as? String
-        else {
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
             return nil
         }
-        return message
+
+        if let message = json["message"] as? String, !message.isEmpty {
+            return message
+        }
+
+        if let error = json["error"] as? String, !error.isEmpty {
+            return error
+        }
+
+        if let messages = json["errors"] as? [String] {
+            return messages.joined(separator: "\n")
+        }
+
+        if let errors = json["errors"] as? [String: Any] {
+            let messages = errors.values.compactMap { value -> String? in
+                if let message = value as? String {
+                    return message
+                }
+                if let messages = value as? [String] {
+                    return messages.joined(separator: "\n")
+                }
+                return nil
+            }
+            if !messages.isEmpty {
+                return messages.joined(separator: "\n")
+            }
+        }
+
+        return nil
     }
 
     private func describeDecodingError(_ error: Error) -> String {

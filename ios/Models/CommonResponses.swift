@@ -18,6 +18,11 @@ struct UsersResponse: Decodable {
     let users: [User]
 }
 
+struct UserSearchResponse: Decodable {
+    let count: Int
+    let users: [UserSearchResult]
+}
+
 struct RestaurantsResponse: Decodable {
     let count: Int
     let restaurants: [Restaurant]

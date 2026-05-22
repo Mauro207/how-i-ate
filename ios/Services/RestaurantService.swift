@@ -8,6 +8,37 @@ struct RestaurantMutationPayload: Encodable {
     let coverImageUrl: String?
     let googleMapsUrl: String?
     let instagramUrl: String?
+
+    enum CodingKeys: String, CodingKey {
+        case name
+        case description
+        case address
+        case cuisine
+        case coverImageUrl
+        case googleMapsUrl
+        case instagramUrl
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(name, forKey: .name)
+        try container.encodeNullable(description, forKey: .description)
+        try container.encodeNullable(address, forKey: .address)
+        try container.encodeNullable(cuisine, forKey: .cuisine)
+        try container.encodeNullable(coverImageUrl, forKey: .coverImageUrl)
+        try container.encodeNullable(googleMapsUrl, forKey: .googleMapsUrl)
+        try container.encodeNullable(instagramUrl, forKey: .instagramUrl)
+    }
+}
+
+private extension KeyedEncodingContainer {
+    mutating func encodeNullable(_ value: String?, forKey key: Key) throws {
+        if let value {
+            try encode(value, forKey: key)
+        } else {
+            try encodeNil(forKey: key)
+        }
+    }
 }
 
 struct GooglePlaceSuggestion: Decodable, Identifiable, Equatable {

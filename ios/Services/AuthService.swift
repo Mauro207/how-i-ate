@@ -55,6 +55,16 @@ final class AuthService {
         return response.user
     }
 
+    func searchUsers(query: String) async throws -> [UserSearchResult] {
+        let req = APIRequest(
+            path: "auth/users/search",
+            method: .get,
+            queryItems: [URLQueryItem(name: "q", value: query)]
+        )
+        let response: UserSearchResponse = try await client.send(req)
+        return response.users
+    }
+
     func logout() {
         session.clearSession()
     }

@@ -13,6 +13,8 @@
 		1171C8B370CBF2452E765709 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38AF89A41EB5175F2FEAD4D9 /* LoginView.swift */; };
 		1585DF1AEE03C021A13BDC3C /* RankingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54DF2B69F21C6CB7545C46A3 /* RankingsView.swift */; };
 		2D79A622FC54E769640C75A1 /* HowIAteApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B71A452700AB237F4995CA1A /* HowIAteApp.swift */; };
+		349F975C2FC0F85000F75842 /* PlaceTypeOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349F975B2FC0F85000F75842 /* PlaceTypeOptions.swift */; };
+		349F975E2FC0F94000F75842 /* RestaurantURLValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349F975D2FC0F94000F75842 /* RestaurantURLValidator.swift */; };
 		34B6E751F4C8731019EB4D94 /* APIError.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5D99A3CE4220BD916563FDD /* APIError.swift */; };
 		3E70149351277090B482CBAF /* AppRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D822F7B9CA4EB05FAD42F5CA /* AppRootView.swift */; };
 		424B62B1E6168489A57E3E73 /* AdminSuggestionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BBDAFC8862578EE316E7A04 /* AdminSuggestionsView.swift */; };
@@ -27,6 +29,7 @@
 		791AC37134442323AC09DD97 /* DateDisplayFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 199B3BB72B24EE5DCCEE7FCE /* DateDisplayFormatter.swift */; };
 		863C5FBCE559F29D47AAED01 /* Suggestion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9EEC40D2FE11AE1157E0623 /* Suggestion.swift */; };
 		88F9953F7B4434EE3FDC4D28 /* MyRatingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF1A8AF072ACA4970041DEF4 /* MyRatingsViewModel.swift */; };
+		88F9953F7B4434EE3FDC4D29 /* MyRatingRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF1A8AF072ACA4970041DEF5 /* MyRatingRowView.swift */; };
 		89745B23468EFD292B5EBBA9 /* CommonResponses.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB4B501D9177696B7FE236E /* CommonResponses.swift */; };
 		8B11372AE3AF4AF1987825B7 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF6689CB94771CC20AD3B888 /* AppConfig.swift */; };
 		8EA9944A3849F830DA3833AF /* AdminSuggestionsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FA34975DE00B6C3B7785D8A /* AdminSuggestionsViewModel.swift */; };
@@ -60,6 +63,8 @@
 		1B86EBC7F887BE3E13E1B4F3 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		1BFAFA8F2A3BDD17C7C94275 /* SessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionManager.swift; sourceTree = "<group>"; };
 		2195FC44F7DF0944C609EE61 /* AdminAddPlaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminAddPlaceView.swift; sourceTree = "<group>"; };
+		349F975B2FC0F85000F75842 /* PlaceTypeOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceTypeOptions.swift; sourceTree = "<group>"; };
+		349F975D2FC0F94000F75842 /* RestaurantURLValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestaurantURLValidator.swift; sourceTree = "<group>"; };
 		35C438B0481B9C08E14BD228 /* APIRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIRequest.swift; sourceTree = "<group>"; };
 		38AF89A41EB5175F2FEAD4D9 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		3A47A47F7CD4960098F9FE68 /* MyRatingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyRatingsView.swift; sourceTree = "<group>"; };
@@ -90,6 +95,7 @@
 		DDF11D6D3C45FD5C37109048 /* Restaurant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Restaurant.swift; sourceTree = "<group>"; };
 		ED0BF3922601F3EB99BA4B56 /* RankingItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RankingItem.swift; sourceTree = "<group>"; };
 		EF1A8AF072ACA4970041DEF4 /* MyRatingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyRatingsViewModel.swift; sourceTree = "<group>"; };
+		EF1A8AF072ACA4970041DEF5 /* MyRatingRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MyRatingRowView.swift; path = Components/MyRatingRowView.swift; sourceTree = "<group>"; };
 		F5D99A3CE4220BD916563FDD /* APIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIError.swift; sourceTree = "<group>"; };
 		F7CA99A1D075A34989F14080 /* ReviewService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewService.swift; sourceTree = "<group>"; };
 		FF6689CB94771CC20AD3B888 /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
@@ -123,6 +129,7 @@
 			isa = PBXGroup;
 			children = (
 				3A47A47F7CD4960098F9FE68 /* MyRatingsView.swift */,
+				EF1A8AF072ACA4970041DEF5 /* MyRatingRowView.swift */,
 				EF1A8AF072ACA4970041DEF4 /* MyRatingsViewModel.swift */,
 				54DF2B69F21C6CB7545C46A3 /* RankingsView.swift */,
 				06387667CA269CD7B031EBE8 /* RankingsViewModel.swift */,
@@ -242,6 +249,7 @@
 			children = (
 				199B3BB72B24EE5DCCEE7FCE /* DateDisplayFormatter.swift */,
 				BC8303C5794CD4FF3EA2AB36 /* RankingCalculator.swift */,
+				349F975D2FC0F94000F75842 /* RestaurantURLValidator.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -255,6 +263,7 @@
 				4BA0FCFAD55EA973A030C68C /* Review.swift */,
 				B9EEC40D2FE11AE1157E0623 /* Suggestion.swift */,
 				1B86EBC7F887BE3E13E1B4F3 /* User.swift */,
+				349F975B2FC0F85000F75842 /* PlaceTypeOptions.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -315,7 +324,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1430;
+				LastUpgradeCheck = 2650;
 				TargetAttributes = {
 					8AD2812F92FD7404DFD32E8A = {
 						ProvisioningStyle = Automatic;
@@ -347,6 +356,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B5E4F33728A2901A65F42484 /* APIClient.swift in Sources */,
+				349F975C2FC0F85000F75842 /* PlaceTypeOptions.swift in Sources */,
 				34B6E751F4C8731019EB4D94 /* APIError.swift in Sources */,
 				0FBEC68312D5646AB4278AB1 /* APIRequest.swift in Sources */,
 				69853C7E5AB3F2B5AB345DFB /* AddSuggestionTabView.swift in Sources */,
@@ -362,9 +372,11 @@
 				DBAABDA35F88B86C139F6BB0 /* HTTPMethod.swift in Sources */,
 				2D79A622FC54E769640C75A1 /* HowIAteApp.swift in Sources */,
 				D8BB906B79F32EE43625C4C1 /* KeychainStore.swift in Sources */,
+				349F975E2FC0F94000F75842 /* RestaurantURLValidator.swift in Sources */,
 				1171C8B370CBF2452E765709 /* LoginView.swift in Sources */,
 				701AAB7D564A9E6C43F561D9 /* LoginViewModel.swift in Sources */,
 				9965E36D14D1BFED3D0BDB20 /* MyRatingsView.swift in Sources */,
+				88F9953F7B4434EE3FDC4D29 /* MyRatingRowView.swift in Sources */,
 				88F9953F7B4434EE3FDC4D28 /* MyRatingsViewModel.swift in Sources */,
 				47E09D9F9D1BA2086EF6BAFB /* RankingCalculator.swift in Sources */,
 				B4A5F3C3AA42AA202AE040BC /* RankingItem.swift in Sources */,
@@ -397,6 +409,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -428,8 +441,10 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = N2UQDBL6HW;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -449,6 +464,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -461,7 +477,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = N2UQDBL6HW;
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -485,7 +500,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = N2UQDBL6HW;
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -507,6 +521,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -538,8 +553,10 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = N2UQDBL6HW;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -552,6 +569,7 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;

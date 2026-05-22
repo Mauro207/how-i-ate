@@ -83,10 +83,12 @@ private struct MainTabView: View {
 
             SearchView(
                 viewModel: SearchViewModel(
-                    restaurantService: RestaurantService(client: client)
+                    restaurantService: RestaurantService(client: client),
+                    authService: AuthService(client: client, session: session)
                 ),
                 restaurantService: RestaurantService(client: client),
-                reviewService: ReviewService(client: client)
+                reviewService: ReviewService(client: client),
+                rankingService: RankingService(client: client)
             )
             .tabItem {
                 Label("Cerca", systemImage: "magnifyingglass")

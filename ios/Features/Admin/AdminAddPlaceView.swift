@@ -27,7 +27,7 @@ struct AdminAddPlaceView: View {
     @State private var pendingSuggestionsCount = 0
     @State private var openSuggestions = false
 
-    private let cuisineOptions = ["Pizzeria", "Ristorante", "Pub", "Paninoteca", "Bar", "Braceria", "Enoteca", "Sushi", "Pasticceria", "Gelateria"]
+    private let cuisineOptions = PlaceTypeOptions.all
 
     init(
         restaurantService: RestaurantService,
@@ -41,143 +41,84 @@ struct AdminAddPlaceView: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                Section {
-                    Button {
-                        openSuggestions = true
-                    } label: {
-                        HStack {
-                            Label("Valuta suggerimenti", systemImage: "tray.full")
-                                .font(.subheadline.weight(.semibold))
-                            Spacer()
-                            if pendingSuggestionsCount > 0 {
-                                Text("\(pendingSuggestionsCount)")
-                                    .font(.caption.weight(.bold))
-                                    .foregroundStyle(.white)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 3)
-                                    .background(.red, in: Capsule())
-                            }
-                        }
-                    }
-                }
+            ScrollView {
+                VStack(spacing: 18) {
+                    suggestionsButton
 
-                Section("Informazioni luogo") {
-                    TextField("Nome luogo", text: $name)
-                        .onSubmit {
-                            Task { await checkForDuplicatesAndSuggestions() }
-                        }
+                    adminGlassCard {
+                        VStack(alignment: .leading, spacing: 18) {
+                            sectionHeader(title: "Informazioni luogo", subtitle: "Crea un nuovo posto da recensire")
 
-                    if checkingDuplicate {
-                        ProgressView("Verifico se il luogo esiste gia...")
-                            .font(.caption)
-                    }
-
-                    if showDuplicateWarning {
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack {
-                                Image(systemName: "info.circle.fill")
-                                    .foregroundStyle(.indigo)
-                                Text("Possibili luoghi gia presenti")
-                                    .font(.subheadline.weight(.semibold))
-                            }
-                            Text("Abbiamo trovato \(similarRestaurants.count) risultato/i simile/i. Verifica prima di creare un duplicato.")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-
-                            ForEach(similarRestaurants.prefix(5)) { restaurant in
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(restaurant.name)
-                                        .font(.footnote.weight(.semibold))
-                                    Text([restaurant.cuisine, restaurant.address]
-                                        .compactMap { $0?.nilIfEmpty }
-                                        .joined(separator: " · "))
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
-                                .padding(.vertical, 2)
-                            }
-                        }
-                        .padding(.vertical, 4)
-                    }
-
-                    if !showDuplicateWarning, loadingGooglePlaces {
-                        ProgressView("Cerco suggerimenti su Google Maps...")
-                            .font(.caption)
-                    }
-
-                    if !showDuplicateWarning, !googleSuggestions.isEmpty {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Suggerimenti Google Maps")
-                                .font(.subheadline.weight(.semibold))
-                            ForEach(googleSuggestions) { suggestion in
-                                Button {
-                                    Task { await selectGoogleSuggestion(suggestion) }
-                                } label: {
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(suggestion.mainText)
-                                            .font(.footnote.weight(.semibold))
-                                        Text(suggestion.secondaryText.isEmpty ? suggestion.description : suggestion.secondaryText)
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
+                            inputGroup(title: "Nome luogo", icon: "fork.knife") {
+                                TextField("Nome luogo", text: $name)
+                                    .submitLabel(.search)
+                                    .onSubmit {
+                                        Task { await checkForDuplicatesAndSuggestions() }
                                     }
-                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+
+                            duplicateAndGoogleState
+
+                            Picker("Tipo di luogo", selection: $cuisine) {
+                                Text("Seleziona tipo di luogo").tag("")
+                                ForEach(cuisineOptions, id: \.self) { item in
+                                    Text(item).tag(item)
                                 }
-                                .buttonStyle(.plain)
+                            }
+                            .font(.subheadline)
+                            .padding(.horizontal, 14)
+                            .frame(height: 54)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(fieldBackgroundShape)
+
+                            inputGroup(title: "Indirizzo", icon: "mappin.and.ellipse") {
+                                TextField("Indirizzo", text: $address)
+                                    .textContentType(.fullStreetAddress)
+                            }
+
+                            inputGroup(title: "Google Maps", icon: "map") {
+                                TextField("Google Maps URL", text: $googleMapsUrl)
+                                    .textInputAutocapitalization(.never)
+                                    .autocorrectionDisabled()
+                                    .keyboardType(.URL)
+                            }
+
+                            inputGroup(title: "Instagram", icon: "camera") {
+                                TextField("Profilo Instagram", text: $instagramUrl)
+                                    .textInputAutocapitalization(.never)
+                                    .autocorrectionDisabled()
+                                    .keyboardType(.URL)
+                            }
+
+                            inputGroup(title: "Copertina", icon: "photo") {
+                                TextField("Immagine copertina URL", text: $coverImageUrl)
+                                    .textInputAutocapitalization(.never)
+                                    .autocorrectionDisabled()
+                                    .keyboardType(.URL)
+                            }
+
+                            inputGroup(title: "Descrizione", icon: "text.alignleft", minHeight: 92) {
+                                TextField("Descrizione", text: $description, axis: .vertical)
+                                    .lineLimit(3 ... 5)
                             }
                         }
-                        .padding(.vertical, 4)
                     }
 
-                    Picker("Tipo di luogo", selection: $cuisine) {
-                        Text("Seleziona tipo di luogo").tag("")
-                        ForEach(cuisineOptions, id: \.self) { item in
-                            Text(item).tag(item)
-                        }
+                    if let successMessage {
+                        statusBanner(successMessage, systemImage: "checkmark.circle.fill", color: .green)
                     }
 
-                    TextField("Indirizzo", text: $address)
-                    TextField("Google Maps URL", text: $googleMapsUrl)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                    TextField("Profilo Instagram", text: $instagramUrl)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                    TextField("Immagine copertina URL", text: $coverImageUrl)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                    TextField("Descrizione", text: $description, axis: .vertical)
+                    if let errorMessage {
+                        statusBanner(errorMessage, systemImage: "exclamationmark.triangle.fill", color: .red)
+                    }
+
+                    createButton
                 }
-
-                if let successMessage {
-                    Section {
-                        Text(successMessage)
-                            .foregroundStyle(.green)
-                    }
-                }
-
-                if let errorMessage {
-                    Section {
-                        Text(errorMessage)
-                            .foregroundStyle(.red)
-                    }
-                }
-
-                Section {
-                    Button {
-                        Task { await submitRestaurant() }
-                    } label: {
-                        if isSubmitting {
-                            ProgressView()
-                                .frame(maxWidth: .infinity)
-                        } else {
-                            Text("Crea luogo")
-                                .frame(maxWidth: .infinity)
-                        }
-                    }
-                    .disabled(isSubmitting)
-                }
+                .padding(.horizontal, 16)
+                .padding(.top, 12)
+                .padding(.bottom, 24)
             }
+            .background(adminBackground)
             .navigationTitle("Aggiungi luogo")
             .task {
                 guard !disableInitialLoad else { return }
@@ -198,6 +139,217 @@ struct AdminAddPlaceView: View {
         }
     }
 
+    private var adminBackground: some View {
+        LinearGradient(
+            colors: [
+                Color(uiColor: .systemGroupedBackground),
+                Color.indigo.opacity(0.12),
+                Color(uiColor: .systemBackground)
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .ignoresSafeArea()
+    }
+
+    private var fieldBackgroundShape: some View {
+        RoundedRectangle(cornerRadius: 16, style: .continuous)
+            .fill(Color(uiColor: .secondarySystemGroupedBackground).opacity(0.72))
+            .overlay {
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(Color.primary.opacity(0.07), lineWidth: 1)
+            }
+    }
+
+    private var suggestionsButton: some View {
+        Button {
+            openSuggestions = true
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "tray.full")
+                    .font(.headline)
+                    .foregroundStyle(Color.indigo)
+                    .frame(width: 40, height: 40)
+                    .background(Color.indigo.opacity(0.12), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+
+                Text("Valuta suggerimenti")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.primary)
+
+                Spacer()
+
+                if pendingSuggestionsCount > 0 {
+                    Text("\(pendingSuggestionsCount)")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(.red, in: Capsule())
+                }
+
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(12)
+            .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.plain)
+        .adminGlassCard()
+    }
+
+    @ViewBuilder
+    private var duplicateAndGoogleState: some View {
+        if checkingDuplicate {
+            inlineStatus("Verifico se il luogo esiste gia...", systemImage: "magnifyingglass", color: .indigo)
+        }
+
+        if showDuplicateWarning {
+            VStack(alignment: .leading, spacing: 10) {
+                inlineStatus("Possibili luoghi gia presenti", systemImage: "info.circle.fill", color: .indigo)
+
+                Text("Abbiamo trovato \(similarRestaurants.count) risultato/i simile/i. Verifica prima di creare un duplicato.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                ForEach(similarRestaurants.prefix(5)) { restaurant in
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(restaurant.name)
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(.primary)
+                        Text([restaurant.cuisine, restaurant.address]
+                            .compactMap { $0?.nilIfEmpty }
+                            .joined(separator: " · "))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(10)
+                    .background(Color.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                }
+            }
+            .padding(.vertical, 2)
+        }
+
+        if !showDuplicateWarning, loadingGooglePlaces {
+            inlineStatus("Cerco suggerimenti su Google Maps...", systemImage: "map", color: .indigo)
+        }
+
+        if !showDuplicateWarning, !googleSuggestions.isEmpty {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Suggerimenti Google Maps")
+                    .font(.subheadline.weight(.semibold))
+
+                ForEach(googleSuggestions) { suggestion in
+                    Button {
+                        Task { await selectGoogleSuggestion(suggestion) }
+                    } label: {
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(suggestion.mainText)
+                                .font(.footnote.weight(.semibold))
+                                .foregroundStyle(.primary)
+                            Text(suggestion.secondaryText.isEmpty ? suggestion.description : suggestion.secondaryText)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(2)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(10)
+                        .background(Color.indigo.opacity(0.08), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.vertical, 2)
+        }
+    }
+
+    private var createButton: some View {
+        Button {
+            Task { await submitRestaurant() }
+        } label: {
+            HStack(spacing: 8) {
+                if isSubmitting {
+                    ProgressView()
+                        .tint(.white)
+                }
+                Text(isSubmitting ? "Creazione in corso..." : "Crea luogo")
+                    .font(.subheadline.weight(.semibold))
+            }
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity)
+            .frame(height: 54)
+            .contentShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .disabled(isSubmitting)
+        .opacity(isSubmitting ? 0.72 : 1)
+        .modifier(AdminPrimaryGlassButtonModifier())
+    }
+
+    private func sectionHeader(title: String, subtitle: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.title3.weight(.bold))
+            Text(subtitle)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func inputGroup<Content: View>(
+        title: String,
+        icon: String,
+        minHeight: CGFloat = 54,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label(title, systemImage: icon)
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(.secondary)
+
+            HStack {
+                content()
+            }
+            .padding(.horizontal, 14)
+            .frame(minHeight: minHeight)
+            .background(fieldBackgroundShape)
+        }
+    }
+
+    private func inlineStatus(_ text: String, systemImage: String, color: Color) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: systemImage)
+            Text(text)
+                .font(.caption.weight(.semibold))
+        }
+        .foregroundStyle(color)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func statusBanner(_ text: String, systemImage: String, color: Color) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: systemImage)
+                .font(.footnote.weight(.semibold))
+            Text(text)
+                .font(.footnote)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .foregroundStyle(color)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(12)
+        .background(color.opacity(0.10), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .adminGlassCard()
+    }
+
+    @ViewBuilder
+    private func adminGlassCard<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        content()
+            .padding(14)
+            .adminGlassCard()
+    }
+
     private func submitRestaurant() async {
         successMessage = nil
         errorMessage = nil
@@ -208,17 +360,17 @@ struct AdminAddPlaceView: View {
             return
         }
 
-        if let validation = validateURLField(googleMapsUrl, kind: "Google Maps") {
+        if let validation = RestaurantURLValidator.googleMapsValidationMessage(for: googleMapsUrl) {
             errorMessage = validation
             return
         }
 
-        if let validation = validateURLField(instagramUrl, kind: "Instagram") {
+        if let validation = RestaurantURLValidator.instagramValidationMessage(for: instagramUrl) {
             errorMessage = validation
             return
         }
 
-        if let validation = validateURLField(coverImageUrl, kind: "Copertina") {
+        if let validation = RestaurantURLValidator.validationMessage(for: coverImageUrl, kind: "Copertina") {
             errorMessage = validation
             return
         }
@@ -315,15 +467,6 @@ struct AdminAddPlaceView: View {
         }
     }
 
-    private func validateURLField(_ value: String, kind: String) -> String? {
-        let trimmed = value.trimmed
-        guard !trimmed.isEmpty else { return nil }
-        guard let url = URL(string: trimmed), let scheme = url.scheme?.lowercased(), scheme == "http" || scheme == "https" else {
-            return "URL \(kind) non valido"
-        }
-        return nil
-    }
-
     private func clearForm() {
         name = ""
         description = ""
@@ -335,6 +478,40 @@ struct AdminAddPlaceView: View {
         similarRestaurants = []
         showDuplicateWarning = false
         googleSuggestions = []
+    }
+}
+
+private struct AdminGlassCardModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content
+                .glassEffect(.regular.tint(.indigo.opacity(0.06)), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        } else {
+            content
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .stroke(Color.primary.opacity(0.07), lineWidth: 1)
+                }
+        }
+    }
+}
+
+private struct AdminPrimaryGlassButtonModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content
+                .glassEffect(.regular.tint(.indigo).interactive(), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        } else {
+            content
+                .background(Color.indigo, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        }
+    }
+}
+
+private extension View {
+    func adminGlassCard() -> some View {
+        modifier(AdminGlassCardModifier())
     }
 }
 
