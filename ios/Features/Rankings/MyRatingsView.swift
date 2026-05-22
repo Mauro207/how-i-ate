@@ -40,26 +40,7 @@ struct MyRatingsView: View {
                                 )
                             )
                         } label: {
-                            HStack(spacing: 12) {
-                                Text("\(index + 1)")
-                                    .font(index < 3 ? .headline : .subheadline.weight(.bold))
-                                    .foregroundStyle(index < 3 ? .white : .secondary)
-                                    .frame(width: 34, height: 34)
-                                    .background(positionColor(for: index), in: Circle())
-
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(item.restaurantName)
-                                        .font(.headline)
-                                        .lineLimit(1)
-
-                                    Text("Voto medio: \(item.averageRating, specifier: "%.2f")")
-                                        .font(.subheadline)
-                                        .foregroundStyle(.secondary)
-                                }
-
-                                Spacer(minLength: 0)
-                            }
-                            .padding(.vertical, 4)
+                            MyRatingRowView(index: index, item: item)
                         }
                     }
                 }
@@ -75,88 +56,4 @@ struct MyRatingsView: View {
             }
         }
     }
-
-    private func positionColor(for index: Int) -> Color {
-        switch index {
-        case 0: return Color(red: 0.93, green: 0.76, blue: 0.26) // gold
-        case 1: return Color(red: 0.67, green: 0.70, blue: 0.75) // silver
-        case 2: return Color(red: 0.74, green: 0.48, blue: 0.29) // bronze
-        default: return Color(.secondarySystemBackground)
-        }
-    }
 }
-
-#if DEBUG
-struct MyRatingsView_Previews: PreviewProvider {
-    static var previews: some View {
-        let client = APIClient(baseURL: URL(string: "https://example.com/api")!)
-        let viewModel = MyRatingsViewModel(service: RankingService(client: client))
-        viewModel.items = [
-            UserRankingItem(
-                restaurantId: "r1",
-                restaurantName: "Trattoria del Porto",
-                cuisine: "Ristorante",
-                address: "Centro",
-                averageRating: 9.25,
-                serviceRating: 9,
-                priceRating: 9.5,
-                menuRating: 9.25,
-                comment: "Ottimo",
-                createdAt: nil,
-                reviewCount: 42
-            ),
-            UserRankingItem(
-                restaurantId: "r2",
-                restaurantName: "Pizzeria Vesuvio",
-                cuisine: "Pizzeria",
-                address: "Nord",
-                averageRating: 8.75,
-                serviceRating: 8.5,
-                priceRating: 9,
-                menuRating: 8.75,
-                comment: "Molto buona",
-                createdAt: nil,
-                reviewCount: 31
-            ),
-            UserRankingItem(
-                restaurantId: "r3",
-                restaurantName: "Sushi Hana",
-                cuisine: "Sushi",
-                address: "Sud",
-                averageRating: 8.5,
-                serviceRating: 8.5,
-                priceRating: 8.5,
-                menuRating: 8.5,
-                comment: "Consigliato",
-                createdAt: nil,
-                reviewCount: 19
-            ),
-            UserRankingItem(
-                restaurantId: "r4",
-                restaurantName: "Bar Centrale",
-                cuisine: "Bar",
-                address: "Piazza",
-                averageRating: 7.9,
-                serviceRating: 8,
-                priceRating: 7.5,
-                menuRating: 8.25,
-                comment: "Ok",
-                createdAt: nil,
-                reviewCount: 11
-            )
-        ]
-
-        let session = SessionManager()
-        session.currentUser = User(id: "u1", username: "preview", displayName: "Preview", email: "", role: "user")
-        session.isAuthenticated = true
-
-        return MyRatingsView(
-            viewModel: viewModel,
-            restaurantService: RestaurantService(client: client),
-            reviewService: ReviewService(client: client),
-            disableAutoLoad: true
-        )
-        .environmentObject(session)
-    }
-}
-#endif

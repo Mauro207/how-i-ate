@@ -379,15 +379,3 @@ private extension Double {
         return (self * divisor).rounded() / divisor
     }
 }
-
-#if DEBUG
-struct AddSuggestionTabView_Previews: PreviewProvider {
-    static var previews: some View {
-        let client = APIClient(baseURL: URL(string: "https://example.com/api")!)
-        return AddSuggestionTabView(
-            service: SuggestionService(client: client),
-            restaurantService: RestaurantService(client: client)
-        )
-    }
-}
-#endif

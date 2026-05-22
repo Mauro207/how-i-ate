@@ -338,19 +338,6 @@ struct AdminAddPlaceView: View {
     }
 }
 
-#if DEBUG
-struct AdminAddPlaceView_Previews: PreviewProvider {
-    static var previews: some View {
-        let client = APIClient(baseURL: URL(string: "https://example.com/api")!)
-        return AdminAddPlaceView(
-            restaurantService: RestaurantService(client: client),
-            suggestionService: SuggestionService(client: client),
-            disableInitialLoad: true
-        )
-    }
-}
-#endif
-
 private extension String {
     var trimmed: String {
         trimmingCharacters(in: .whitespacesAndNewlines)

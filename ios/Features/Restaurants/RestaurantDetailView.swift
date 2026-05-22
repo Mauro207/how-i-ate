@@ -253,7 +253,7 @@ struct RestaurantDetailView: View {
                             }
                         }
                     } header: {
-                        Text("Recensioni")
+                        Text("Recensionii")
                     }
                 }
                 .listStyle(.insetGrouped)
