@@ -336,6 +336,10 @@ struct AddSuggestionTabView: View {
         }
     }
 
+    private func dismissDuplicateWarning() {
+        showDuplicateWarning = false
+    }
+
     private func loadGoogleSuggestions(query: String) async {
         loadingGooglePlaces = true
         defer { loadingGooglePlaces = false }

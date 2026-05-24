@@ -231,6 +231,221 @@ struct SettingsView: View {
     }
 }
 
+private struct UpdatesView: View {
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                Text("Ultimi aggiornamenti")
+                    .font(.title3.weight(.bold))
+
+                VStack(alignment: .leading, spacing: 10) {
+                    updateRow(title: "Design iOS 26", subtitle: "Aggiornate home, ricerca, ranking, impostazioni e dettaglio luogo.")
+                    updateRow(title: "Classifiche", subtitle: "La valutazione media e ora piu visibile negli item ranking.")
+                    updateRow(title: "Gestione luoghi", subtitle: "Migliorata validazione URL e modifica campi opzionali.")
+                }
+            }
+            .padding(16)
+            .settingsGlassCard()
+            .padding(16)
+        }
+        .background(settingsScreenBackground)
+        .navigationTitle("Aggiornamenti")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func updateRow(title: String, subtitle: String) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "sparkles")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(Color.indigo)
+                .frame(width: 28, height: 28)
+                .background(Color.indigo.opacity(0.11), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.subheadline.weight(.semibold))
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+}
+
+private struct UsersManagementView: View {
+    let authService: AuthService
+
+    @State private var users: [User] = []
+    @State private var isLoading = false
+    @State private var errorMessage: String?
+    @State private var successMessage: String?
+    @State private var selectedUser: User?
+    @State private var password = ""
+    @State private var isUpdatingPassword = false
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 16) {
+                if isLoading {
+                    ProgressView("Caricamento utenti...")
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 24)
+                        .settingsGlassCard()
+                } else if let errorMessage {
+                    statusBanner(errorMessage, color: .red, icon: "exclamationmark.triangle.fill")
+                } else {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Utenti")
+                            .font(.title3.weight(.bold))
+
+                        ForEach(users) { user in
+                            Button {
+                                selectedUser = user
+                                password = ""
+                                successMessage = nil
+                            } label: {
+                                userRow(user)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(16)
+                    .settingsGlassCard()
+                }
+
+                if let successMessage {
+                    statusBanner(successMessage, color: .green, icon: "checkmark.circle.fill")
+                }
+            }
+            .padding(16)
+        }
+        .background(settingsScreenBackground)
+        .navigationTitle("Gestisci utenti")
+        .navigationBarTitleDisplayMode(.inline)
+        .task { await loadUsers() }
+        .sheet(item: $selectedUser) { user in
+            NavigationStack {
+                Form {
+                    Section("Utente") {
+                        Text(user.displayName ?? user.username)
+                        Text(user.email)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Section("Nuova password") {
+                        SecureField("Password", text: $password)
+                    }
+
+                    Section {
+                        Button {
+                            Task { await updatePassword(for: user) }
+                        } label: {
+                            if isUpdatingPassword {
+                                ProgressView()
+                                    .frame(maxWidth: .infinity)
+                            } else {
+                                Text("Aggiorna password")
+                                    .frame(maxWidth: .infinity)
+                            }
+                        }
+                        .disabled(password.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isUpdatingPassword)
+                    }
+                }
+                .navigationTitle("Password")
+                .navigationBarTitleDisplayMode(.inline)
+            }
+            .presentationDetents([.medium])
+        }
+    }
+
+    private func userRow(_ user: User) -> some View {
+        HStack(spacing: 12) {
+            Text(initials(for: user))
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(.white)
+                .frame(width: 40, height: 40)
+                .background(Color.indigo, in: Circle())
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(user.displayName ?? user.username)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.primary)
+                Text(user.email)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+
+            Spacer(minLength: 0)
+
+            Text(user.role)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(Color.indigo)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color.indigo.opacity(0.10), in: Capsule())
+        }
+        .padding(12)
+        .background(Color(uiColor: .secondarySystemGroupedBackground).opacity(0.72), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    private func statusBanner(_ text: String, color: Color, icon: String) -> some View {
+        Label(text, systemImage: icon)
+            .font(.footnote)
+            .foregroundStyle(color)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(12)
+            .settingsGlassCard()
+    }
+
+    private func loadUsers() async {
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            users = try await authService.getAllUsers()
+            errorMessage = nil
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func updatePassword(for user: User) async {
+        let trimmedPassword = password.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedPassword.isEmpty else { return }
+
+        isUpdatingPassword = true
+        defer { isUpdatingPassword = false }
+
+        do {
+            successMessage = try await authService.updateUserPassword(userId: user.id, password: trimmedPassword)
+            selectedUser = nil
+            password = ""
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func initials(for user: User) -> String {
+        let source = user.displayName?.isEmpty == false ? user.displayName ?? user.username : user.username
+        let value = String(source.prefix(2)).uppercased()
+        return value.isEmpty ? "U" : value
+    }
+}
+
+private var settingsScreenBackground: some View {
+    LinearGradient(
+        colors: [
+            Color(uiColor: .systemGroupedBackground),
+            Color.indigo.opacity(0.10),
+            Color(uiColor: .systemBackground)
+        ],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+    .ignoresSafeArea()
+}
+
 private struct SettingsGlassCardModifier: ViewModifier {
     func body(content: Content) -> some View {
         if #available(iOS 26.0, *) {
