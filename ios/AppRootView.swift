@@ -107,6 +107,7 @@ private struct MainTabView: View {
             if isAdminOrSuperAdmin {
                 AdminAddPlaceView(
                     restaurantService: RestaurantService(client: client),
+                    reviewService: ReviewService(client: client),
                     suggestionService: SuggestionService(client: client),
                     disableInitialLoad: shouldDisablePreviewNetworking
                 )
@@ -116,7 +117,8 @@ private struct MainTabView: View {
             } else {
                 AddSuggestionTabView(
                     service: SuggestionService(client: client),
-                    restaurantService: RestaurantService(client: client)
+                    restaurantService: RestaurantService(client: client),
+                    reviewService: ReviewService(client: client)
                 )
                     .tabItem {
                         Label("Suggerisci", systemImage: "plus.circle.fill")
@@ -125,6 +127,7 @@ private struct MainTabView: View {
 
             SettingsView(
                 authService: authService,
+                suggestionService: SuggestionService(client: client),
                 disableAutoLoad: shouldDisablePreviewNetworking
             )
             .tabItem {

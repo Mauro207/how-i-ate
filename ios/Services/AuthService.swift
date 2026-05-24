@@ -65,6 +65,23 @@ final class AuthService {
         return response.users
     }
 
+    func getAllUsers() async throws -> [User] {
+        let req = APIRequest(path: "auth/users", method: .get)
+        let response: UsersResponse = try await client.send(req)
+        return response.users
+    }
+
+    func updateUserPassword(userId: String, password: String) async throws -> String {
+        struct UpdateUserPasswordPayload: Encodable {
+            let password: String
+        }
+
+        let body = try client.encodeBody(UpdateUserPasswordPayload(password: password))
+        let req = APIRequest(path: "auth/users/\(userId)/password", method: .put, body: body)
+        let response: MessageResponse = try await client.send(req)
+        return response.message
+    }
+
     func logout() {
         session.clearSession()
     }

@@ -6,7 +6,8 @@ private enum AddSuggestionPreviewFactory {
         let client = APIClient(baseURL: URL(string: "https://example.com/api")!)
         return AddSuggestionTabView(
             service: SuggestionService(client: client),
-            restaurantService: RestaurantService(client: client)
+            restaurantService: RestaurantService(client: client),
+            reviewService: ReviewService(client: client)
         )
     }
 }

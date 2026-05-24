@@ -6,6 +6,7 @@ private enum AdminAddPlacePreviewFactory {
         let client = APIClient(baseURL: URL(string: "https://example.com/api")!)
         return AdminAddPlaceView(
             restaurantService: RestaurantService(client: client),
+            reviewService: ReviewService(client: client),
             suggestionService: SuggestionService(client: client),
             disableInitialLoad: true
         )

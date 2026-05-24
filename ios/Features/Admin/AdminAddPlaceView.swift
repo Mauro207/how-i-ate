@@ -1,7 +1,9 @@
 import SwiftUI
 
 struct AdminAddPlaceView: View {
+    @EnvironmentObject private var session: SessionManager
     let restaurantService: RestaurantService
+    let reviewService: ReviewService
     let suggestionService: SuggestionService
     let disableInitialLoad: Bool
 
@@ -24,6 +26,8 @@ struct AdminAddPlaceView: View {
     @State private var googleSuggestions: [GooglePlaceSuggestion] = []
     @State private var loadingGooglePlaces = false
 
+    @FocusState private var isNameFieldFocused: Bool
+
     @State private var pendingSuggestionsCount = 0
     @State private var openSuggestions = false
 
@@ -31,10 +35,12 @@ struct AdminAddPlaceView: View {
 
     init(
         restaurantService: RestaurantService,
+        reviewService: ReviewService,
         suggestionService: SuggestionService,
         disableInitialLoad: Bool = false
     ) {
         self.restaurantService = restaurantService
+        self.reviewService = reviewService
         self.suggestionService = suggestionService
         self.disableInitialLoad = disableInitialLoad
     }
@@ -51,6 +57,7 @@ struct AdminAddPlaceView: View {
 
                             inputGroup(title: "Nome luogo", icon: "fork.knife") {
                                 TextField("Nome luogo", text: $name)
+                                    .focused($isNameFieldFocused)
                                     .submitLabel(.search)
                                     .onSubmit {
                                         Task { await checkForDuplicatesAndSuggestions() }
@@ -131,6 +138,10 @@ struct AdminAddPlaceView: View {
                     googleSuggestions = []
                 }
             }
+            .onChange(of: isNameFieldFocused) { focused in
+                guard !focused else { return }
+                Task { await checkForDuplicatesAndSuggestions() }
+            }
             .navigationDestination(isPresented: $openSuggestions) {
                 AdminSuggestionsView(
                     viewModel: AdminSuggestionsViewModel(service: suggestionService)
@@ -206,26 +217,67 @@ struct AdminAddPlaceView: View {
 
         if showDuplicateWarning {
             VStack(alignment: .leading, spacing: 10) {
-                inlineStatus("Possibili luoghi gia presenti", systemImage: "info.circle.fill", color: .indigo)
+                HStack(alignment: .top, spacing: 10) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "info.circle.fill")
+                        Text("Possibili luoghi gia presenti")
+                            .font(.caption.weight(.semibold))
+                    }
+                    .foregroundStyle(.indigo)
+
+                    Spacer(minLength: 0)
+
+                    Button {
+                        dismissDuplicateWarning()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(.secondary)
+                            .padding(6)
+                            .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Chiudi avviso duplicati")
+                }
 
                 Text("Abbiamo trovato \(similarRestaurants.count) risultato/i simile/i. Verifica prima di creare un duplicato.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
 
                 ForEach(similarRestaurants.prefix(5)) { restaurant in
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(restaurant.name)
-                            .font(.footnote.weight(.semibold))
-                            .foregroundStyle(.primary)
-                        Text([restaurant.cuisine, restaurant.address]
-                            .compactMap { $0?.nilIfEmpty }
-                            .joined(separator: " · "))
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                    NavigationLink {
+                        RestaurantDetailView(
+                            viewModel: RestaurantDetailViewModel(
+                                restaurantId: restaurant.id,
+                                restaurantService: restaurantService,
+                                reviewService: reviewService,
+                                currentUserId: session.currentUser?.id
+                            )
+                        )
+                    } label: {
+                        HStack(spacing: 10) {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(restaurant.name)
+                                    .font(.footnote.weight(.semibold))
+                                    .foregroundStyle(.primary)
+                                Text([restaurant.cuisine, restaurant.address]
+                                    .compactMap { $0?.nilIfEmpty }
+                                    .joined(separator: " · "))
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+
+                            Spacer(minLength: 0)
+
+                            Image(systemName: "chevron.right")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(.tertiary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(10)
+                        .background(Color.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(10)
-                    .background(Color.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .buttonStyle(.plain)
                 }
             }
             .padding(.vertical, 2)
@@ -425,6 +477,10 @@ struct AdminAddPlaceView: View {
             showDuplicateWarning = false
             googleSuggestions = []
         }
+    }
+
+    private func dismissDuplicateWarning() {
+        showDuplicateWarning = false
     }
 
     private func loadGoogleSuggestions(query: String) async {

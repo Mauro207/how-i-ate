@@ -1,8 +1,10 @@
 import SwiftUI
 
 struct AddSuggestionTabView: View {
+    @EnvironmentObject private var session: SessionManager
     let service: SuggestionService
     let restaurantService: RestaurantService
+    let reviewService: ReviewService
 
     private let defaultRating = 5.0
     private let minRating = 0.25
@@ -31,6 +33,8 @@ struct AddSuggestionTabView: View {
 
     @State private var loadingGooglePlaces = false
     @State private var googleSuggestions: [GooglePlaceSuggestion] = []
+
+    @FocusState private var isNameFieldFocused: Bool
 
     private let cuisineOptions = ["Pizzeria", "Ristorante", "Pub", "Paninoteca", "Bar", "Braceria", "Enoteca", "Sushi"]
 
@@ -72,6 +76,7 @@ struct AddSuggestionTabView: View {
                 if !success {
                     Section("Informazioni luogo") {
                         TextField("Nome luogo", text: $name)
+                            .focused($isNameFieldFocused)
                             .onSubmit {
                                 Task { await checkForDuplicatesAndSuggestions() }
                             }
@@ -83,11 +88,27 @@ struct AddSuggestionTabView: View {
 
                         if showDuplicateWarning {
                             VStack(alignment: .leading, spacing: 8) {
-                                HStack {
-                                    Image(systemName: "exclamationmark.triangle.fill")
-                                        .foregroundStyle(.orange)
-                                    Text("Forse e gia presente")
-                                        .font(.subheadline.weight(.semibold))
+                                HStack(alignment: .top, spacing: 8) {
+                                    HStack(spacing: 6) {
+                                        Image(systemName: "exclamationmark.triangle.fill")
+                                            .foregroundStyle(.orange)
+                                        Text("Forse e gia presente")
+                                            .font(.subheadline.weight(.semibold))
+                                    }
+
+                                    Spacer(minLength: 0)
+
+                                    Button {
+                                        dismissDuplicateWarning()
+                                    } label: {
+                                        Image(systemName: "xmark")
+                                            .font(.caption.weight(.bold))
+                                            .foregroundStyle(.secondary)
+                                            .padding(5)
+                                            .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+                                    }
+                                    .buttonStyle(.plain)
+                                    .accessibilityLabel("Chiudi avviso duplicati")
                                 }
 
                                 Text("Abbiamo trovato \(similarRestaurants.count) luogo/i simile/i gia presente/i.")
@@ -95,16 +116,38 @@ struct AddSuggestionTabView: View {
                                     .foregroundStyle(.secondary)
 
                                 ForEach(similarRestaurants.prefix(5)) { restaurant in
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(restaurant.name)
-                                            .font(.footnote.weight(.semibold))
-                                        Text([restaurant.cuisine, restaurant.address]
-                                            .compactMap { $0?.nilIfEmpty }
-                                            .joined(separator: " · "))
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
+                                    NavigationLink {
+                                        RestaurantDetailView(
+                                            viewModel: RestaurantDetailViewModel(
+                                                restaurantId: restaurant.id,
+                                                restaurantService: restaurantService,
+                                                reviewService: reviewService,
+                                                currentUserId: session.currentUser?.id
+                                            )
+                                        )
+                                    } label: {
+                                        HStack(spacing: 10) {
+                                            VStack(alignment: .leading, spacing: 2) {
+                                                Text(restaurant.name)
+                                                    .font(.footnote.weight(.semibold))
+                                                    .foregroundStyle(.primary)
+                                                Text([restaurant.cuisine, restaurant.address]
+                                                    .compactMap { $0?.nilIfEmpty }
+                                                    .joined(separator: " · "))
+                                                    .font(.caption)
+                                                    .foregroundStyle(.secondary)
+                                            }
+
+                                            Spacer(minLength: 0)
+
+                                            Image(systemName: "chevron.right")
+                                                .font(.caption.weight(.semibold))
+                                                .foregroundStyle(.tertiary)
+                                        }
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .padding(.vertical, 4)
                                     }
-                                    .padding(.vertical, 2)
+                                    .buttonStyle(.plain)
                                 }
                             }
                             .padding(.vertical, 4)
@@ -202,6 +245,10 @@ struct AddSuggestionTabView: View {
                     showDuplicateWarning = false
                     googleSuggestions = []
                 }
+            }
+            .onChange(of: isNameFieldFocused) { focused in
+                guard !focused else { return }
+                Task { await checkForDuplicatesAndSuggestions() }
             }
         }
     }

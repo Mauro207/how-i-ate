@@ -155,7 +155,7 @@ struct RestaurantDetailView: View {
                                     .padding(.horizontal, 14)
                                     .padding(.vertical, 14)
                                     .frame(maxWidth: .infinity, alignment: .center)
-                                    .background(Color.indigo, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                    .reviewPrimaryButtonBackground()
                             }
                             .buttonStyle(.plain)
                             .listRowBackground(Color.clear)
@@ -163,84 +163,18 @@ struct RestaurantDetailView: View {
 
                         if viewModel.reviews.isEmpty {
                             Text("Nessuna recensione presente. Lasciala per primo.")
+                                .font(.subheadline)
                                 .foregroundStyle(.secondary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(14)
+                                .reviewGlassCard()
+                                .listRowInsets(EdgeInsets(top: 6, leading: 0, bottom: 6, trailing: 0))
+                                .listRowBackground(Color.clear)
                         } else {
                             ForEach(viewModel.reviews) { review in
-                                VStack(alignment: .leading, spacing: 12) {
-                                    HStack(alignment: .top) {
-                                        VStack(alignment: .leading, spacing: 4) {
-                                            Text(review.user?.displayName ?? review.user?.username ?? "Utente")
-                                                .font(.subheadline.bold())
-                                                .foregroundStyle(Color.indigo)
-
-                                            if let createdAt = review.createdAt, !createdAt.isEmpty {
-                                                Text(formattedDate(createdAt))
-                                                    .font(.caption)
-                                                    .foregroundStyle(.secondary)
-                                            }
-
-                                            if let createdAt = review.createdAt,
-                                               let updatedAt = review.updatedAt,
-                                               !createdAt.isEmpty,
-                                               !updatedAt.isEmpty,
-                                               createdAt != updatedAt {
-                                                Text("Modificata il \(formattedDate(updatedAt))")
-                                                    .font(.caption2)
-                                                    .foregroundStyle(.secondary)
-                                            }
-                                        }
-
-                                        Spacer(minLength: 8)
-
-                                        Button {
-                                            toggleReviewAccordion(review.id)
-                                        } label: {
-                                            HStack(spacing: 6) {
-                                                Image(systemName: "star.fill")
-                                                    .font(.caption)
-                                                Text(formatRating(reviewAverage(review)))
-                                                    .font(.footnote.weight(.semibold))
-                                                Image(systemName: expandedReviewIds.contains(review.id) ? "chevron.up" : "chevron.down")
-                                                    .font(.caption2)
-                                            }
-                                            .foregroundStyle(Color.indigo)
-                                            .padding(.horizontal, 10)
-                                            .padding(.vertical, 7)
-											.background(Color.indigo.opacity(0.12), in: Capsule())
-                                        }
-                                        .buttonStyle(.plain)
-                                    }
-
-                                    if expandedReviewIds.contains(review.id) {
-                                        HStack(spacing: 10) {
-                                            breakdownPill(title: "Servizio", value: review.serviceRating, color: .blue)
-                                            breakdownPill(title: "Prezzo", value: review.priceRating, color: .green)
-                                            breakdownPill(title: "Menu", value: review.menuRating, color: .purple)
-                                        }
-                                        .transition(.opacity.combined(with: .move(edge: .top)))
-                                    }
-
-                                    Text(review.comment)
-                                        .font(.body)
-
-                                    if viewModel.isOwnReview(review) {
-                                        HStack(spacing: 12) {
-                                            Button("Modifica") {
-                                                editingReview = review
-                                            }
-                                            .buttonStyle(.bordered)
-                                            .tint(.indigo)
-
-                                            Button("Elimina", role: .destructive) {
-                                                deletingReview = review
-                                            }
-                                            .buttonStyle(.bordered)
-                                        }
-                                        .font(.footnote.weight(.semibold))
-                                    }
-                                }
-
-                                .padding(.vertical, 14)
+                                reviewCard(review)
+                                    .listRowInsets(EdgeInsets(top: 6, leading: 0, bottom: 6, trailing: 0))
+                                    .listRowBackground(Color.clear)
                                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                     if canModerateReviews && !viewModel.isOwnReview(review) {
                                         Button {
@@ -356,6 +290,92 @@ struct RestaurantDetailView: View {
                 deletingReview = nil
             }
         }
+    }
+
+    private func reviewCard(_ review: Review) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 5) {
+                    Text(review.user?.displayName ?? review.user?.username ?? "Utente")
+                        .font(.subheadline.weight(.bold))
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+
+                    if let createdAt = review.createdAt, !createdAt.isEmpty {
+                        Text(formattedDate(createdAt))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    if let createdAt = review.createdAt,
+                       let updatedAt = review.updatedAt,
+                       !createdAt.isEmpty,
+                       !updatedAt.isEmpty,
+                       createdAt != updatedAt {
+                        Text("Modificata il \(formattedDate(updatedAt))")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                Spacer(minLength: 8)
+
+                Button {
+                    toggleReviewAccordion(review.id)
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "star.fill")
+                            .font(.caption.weight(.semibold))
+                        Text(formatRating(reviewAverage(review)))
+                            .font(.footnote.weight(.semibold))
+                        Image(systemName: expandedReviewIds.contains(review.id) ? "chevron.up" : "chevron.down")
+                            .font(.caption2.weight(.semibold))
+                    }
+                    .foregroundStyle(Color.indigo)
+                    .padding(.horizontal, 11)
+                    .padding(.vertical, 8)
+                    .background(Color.indigo.opacity(0.11), in: Capsule())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Mostra dettagli valutazione")
+            }
+
+            if expandedReviewIds.contains(review.id) {
+                HStack(spacing: 10) {
+                    breakdownPill(title: "Servizio", value: review.serviceRating, color: .blue)
+                    breakdownPill(title: "Prezzo", value: review.priceRating, color: .green)
+                    breakdownPill(title: "Menu", value: review.menuRating, color: .purple)
+                }
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+
+            Text(review.comment)
+                .font(.body)
+                .foregroundStyle(.primary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            if viewModel.isOwnReview(review) {
+                HStack(spacing: 10) {
+                    Button {
+                        editingReview = review
+                    } label: {
+                        Label("Modifica", systemImage: "pencil")
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(.indigo)
+
+                    Button(role: .destructive) {
+                        deletingReview = review
+                    } label: {
+                        Label("Elimina", systemImage: "trash")
+                    }
+                    .buttonStyle(.bordered)
+                }
+                .font(.footnote.weight(.semibold))
+            }
+        }
+        .padding(14)
+        .reviewGlassCard()
     }
 
     @ViewBuilder
@@ -678,6 +698,8 @@ private struct RestaurantEditSheetView: View {
 }
 
 private struct ReviewComposerView: View {
+    @Environment(\.dismiss) private var dismiss
+
     let title: String
     let initialService: Double
     let initialPrice: Double
@@ -715,48 +737,194 @@ private struct ReviewComposerView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section("Valutazioni") {
-                    Slider(value: $service, in: 0 ... 10, step: 0.5) {
-                        Text("Servizio")
+            ScrollView {
+                VStack(spacing: 18) {
+                    VStack(alignment: .leading, spacing: 16) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Valutazioni")
+                                .font(.title3.weight(.bold))
+                            Text("Dai un voto da 0 a 10 per ogni categoria.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        ratingSlider(title: "Servizio", value: $service, color: .blue)
+                        ratingSlider(title: "Prezzo", value: $price, color: .green)
+                        ratingSlider(title: "Menu", value: $menu, color: .purple)
                     }
-                    Text("Servizio: \(service, specifier: "%.1f")")
+                    .padding(16)
+                    .reviewComposerGlassCard()
 
-                    Slider(value: $price, in: 0 ... 10, step: 0.5) {
-                        Text("Prezzo")
+                    VStack(alignment: .leading, spacing: 10) {
+                        Label("Commento", systemImage: "text.bubble")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(.secondary)
+
+                        TextEditor(text: $comment)
+                            .frame(minHeight: 130)
+                            .scrollContentBackground(.hidden)
+                            .padding(12)
+                            .background(Color(uiColor: .secondarySystemGroupedBackground).opacity(0.72), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                    .stroke(Color.primary.opacity(0.07), lineWidth: 1)
+                            }
                     }
-                    Text("Prezzo: \(price, specifier: "%.1f")")
+                    .padding(16)
+                    .reviewComposerGlassCard()
 
-                    Slider(value: $menu, in: 0 ... 10, step: 0.5) {
-                        Text("Menu")
-                    }
-                    Text("Menu: \(menu, specifier: "%.1f")")
-                }
-
-                Section("Commento") {
-                    TextEditor(text: $comment)
-                        .frame(minHeight: 120)
-                }
-
-                Section {
                     Button {
                         Task {
                             await onSubmit(service, price, menu, comment)
                         }
                     } label: {
-                        if isSubmitting {
-                            ProgressView()
-                                .frame(maxWidth: .infinity)
-                        } else {
-                            Text("Invia recensione")
-                                .frame(maxWidth: .infinity)
+                        HStack(spacing: 8) {
+                            if isSubmitting {
+                                ProgressView()
+                                    .tint(.white)
+                            }
+                            Text(isSubmitting ? "Invio in corso..." : "Invia recensione")
+                                .font(.subheadline.weight(.semibold))
                         }
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 54)
+                        .contentShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(isSubmitting)
+                    .opacity(isSubmitting ? 0.72 : 1)
+                    .reviewComposerPrimaryButtonBackground()
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 16)
+                .padding(.bottom, 24)
+            }
+            .background(
+                LinearGradient(
+                    colors: [
+                        Color(uiColor: .systemGroupedBackground),
+                        Color.indigo.opacity(0.10),
+                        Color(uiColor: .systemBackground)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+            )
+            .navigationTitle(title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
                     }
                     .disabled(isSubmitting)
+                    .accessibilityLabel("Chiudi")
                 }
             }
-            .navigationTitle(title)
         }
+    }
+
+    private func ratingSlider(title: String, value: Binding<Double>, color: Color) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(title)
+                    .font(.subheadline.weight(.semibold))
+                Spacer()
+                Text(formatSliderValue(value.wrappedValue))
+                    .font(.footnote.weight(.bold))
+                    .foregroundStyle(color)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(color.opacity(0.12), in: Capsule())
+            }
+
+            Slider(value: value, in: 0 ... 10, step: 0.5) {
+                Text(title)
+            }
+            .tint(color)
+        }
+    }
+
+    private func formatSliderValue(_ value: Double) -> String {
+        String(format: "%.1f", value)
+    }
+}
+
+private struct ReviewGlassCardModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content
+                .glassEffect(.regular.tint(.indigo.opacity(0.06)), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        } else {
+            content
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .stroke(Color.primary.opacity(0.07), lineWidth: 1)
+                }
+        }
+    }
+}
+
+private struct ReviewPrimaryButtonBackgroundModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content
+                .glassEffect(.regular.tint(.indigo).interactive(), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        } else {
+            content
+                .background(Color.indigo, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        }
+    }
+}
+
+private struct ReviewComposerGlassCardModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content
+                .glassEffect(.regular.tint(.indigo.opacity(0.06)), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        } else {
+            content
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .stroke(Color.primary.opacity(0.07), lineWidth: 1)
+                }
+        }
+    }
+}
+
+private struct ReviewComposerPrimaryButtonBackgroundModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content
+                .glassEffect(.regular.tint(.indigo).interactive(), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        } else {
+            content
+                .background(Color.indigo, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        }
+    }
+}
+
+private extension View {
+    func reviewGlassCard() -> some View {
+        modifier(ReviewGlassCardModifier())
+    }
+
+    func reviewPrimaryButtonBackground() -> some View {
+        modifier(ReviewPrimaryButtonBackgroundModifier())
+    }
+
+    func reviewComposerGlassCard() -> some View {
+        modifier(ReviewComposerGlassCardModifier())
+    }
+
+    func reviewComposerPrimaryButtonBackground() -> some View {
+        modifier(ReviewComposerPrimaryButtonBackgroundModifier())
     }
 }
 
