@@ -44,6 +44,22 @@ struct AppRootView: View {
 private struct MainTabView: View {
     @EnvironmentObject private var session: SessionManager
     let client: APIClient
+    private let restaurantService: RestaurantService
+    private let reviewService: ReviewService
+    private let rankingService: RankingService
+    private let suggestionService: SuggestionService
+
+    init(client: APIClient) {
+        self.client = client
+        let sharedRankingService = RankingService(client: client)
+        let sharedRestaurantService = RestaurantService(client: client, rankingService: sharedRankingService)
+        rankingService = sharedRankingService
+        restaurantService = sharedRestaurantService
+        reviewService = ReviewService(client: client, rankingService: sharedRankingService)
+        suggestionService = SuggestionService(client: client) {
+            sharedRestaurantService.invalidateRestaurantCaches()
+        }
+    }
 
     private var isRunningInPreviews: Bool {
         ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
@@ -70,10 +86,10 @@ private struct MainTabView: View {
         TabView {
             RestaurantsView(
                 viewModel: RestaurantsViewModel(
-                    restaurantService: RestaurantService(client: client),
-                    reviewService: ReviewService(client: client),
-                    rankingService: RankingService(client: client),
-                    suggestionService: SuggestionService(client: client)
+                    restaurantService: restaurantService,
+                    reviewService: reviewService,
+                    rankingService: rankingService,
+                    suggestionService: suggestionService
                 ),
                 disableAutoLoad: shouldDisablePreviewNetworking
             )
@@ -83,21 +99,21 @@ private struct MainTabView: View {
 
             SearchView(
                 viewModel: SearchViewModel(
-                    restaurantService: RestaurantService(client: client),
+                    restaurantService: restaurantService,
                     authService: AuthService(client: client, session: session)
                 ),
-                restaurantService: RestaurantService(client: client),
-                reviewService: ReviewService(client: client),
-                rankingService: RankingService(client: client)
+                restaurantService: restaurantService,
+                reviewService: reviewService,
+                rankingService: rankingService
             )
             .tabItem {
                 Label("Cerca", systemImage: "magnifyingglass")
             }
 
             MyRatingsView(
-                viewModel: MyRatingsViewModel(service: RankingService(client: client)),
-                restaurantService: RestaurantService(client: client),
-                reviewService: ReviewService(client: client),
+                viewModel: MyRatingsViewModel(service: rankingService),
+                restaurantService: restaurantService,
+                reviewService: reviewService,
                 disableAutoLoad: shouldDisablePreviewNetworking
             )
             .tabItem {
@@ -106,9 +122,9 @@ private struct MainTabView: View {
 
             if isAdminOrSuperAdmin {
                 AdminAddPlaceView(
-                    restaurantService: RestaurantService(client: client),
-                    reviewService: ReviewService(client: client),
-                    suggestionService: SuggestionService(client: client),
+                    restaurantService: restaurantService,
+                    reviewService: reviewService,
+                    suggestionService: suggestionService,
                     disableInitialLoad: shouldDisablePreviewNetworking
                 )
                 .tabItem {
@@ -116,9 +132,9 @@ private struct MainTabView: View {
                 }
             } else {
                 AddSuggestionTabView(
-                    service: SuggestionService(client: client),
-                    restaurantService: RestaurantService(client: client),
-                    reviewService: ReviewService(client: client)
+                    service: suggestionService,
+                    restaurantService: restaurantService,
+                    reviewService: reviewService
                 )
                     .tabItem {
                         Label("Suggerisci", systemImage: "plus.circle.fill")
@@ -127,7 +143,7 @@ private struct MainTabView: View {
 
             SettingsView(
                 authService: authService,
-                suggestionService: SuggestionService(client: client),
+                suggestionService: suggestionService,
                 disableAutoLoad: shouldDisablePreviewNetworking
             )
             .tabItem {

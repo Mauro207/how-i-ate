@@ -62,44 +62,70 @@ private struct GooglePlacesAutocompleteResponse: Decodable {
 }
 
 final class RestaurantService {
-    private let client: APIClient
-    private var restaurantsCache: [Restaurant]?
-    private var restaurantByIdCache: [String: Restaurant] = [:]
-    private var searchCache: [String: [Restaurant]] = [:]
+    private struct CacheEntry<Value> {
+        let value: Value
+        let timestamp: Date
+    }
 
-    init(client: APIClient) {
+    private let client: APIClient
+    private let rankingService: RankingService?
+    private let listCacheTTL: TimeInterval = 120
+    private let searchCacheTTL: TimeInterval = 90
+    private let googleCacheTTL: TimeInterval = 300
+    private var restaurantsCache: CacheEntry<[Restaurant]>?
+    private var restaurantByIdCache: [String: CacheEntry<Restaurant>] = [:]
+    private var searchCache: [String: CacheEntry<[Restaurant]>] = [:]
+    private var googleSuggestionsCache: [String: CacheEntry<[GooglePlaceSuggestion]>] = [:]
+    private var googleDetailsCache: [String: CacheEntry<GooglePlaceDetails>] = [:]
+
+    init(client: APIClient, rankingService: RankingService? = nil) {
         self.client = client
+        self.rankingService = rankingService
+    }
+
+    func cachedRestaurants() -> [Restaurant]? {
+        guard let restaurantsCache, isFresh(restaurantsCache.timestamp, ttl: listCacheTTL) else { return nil }
+        return restaurantsCache.value
+    }
+
+    func cachedRestaurant(id: String) -> Restaurant? {
+        guard let cache = restaurantByIdCache[id], isFresh(cache.timestamp, ttl: listCacheTTL) else { return nil }
+        return cache.value
     }
 
     func getRestaurants(forceRefresh: Bool = false) async throws -> [Restaurant] {
-        if !forceRefresh, let restaurantsCache {
-            return restaurantsCache
+        if !forceRefresh, let cached = cachedRestaurants() {
+            return cached
         }
 
         let req = APIRequest(path: "restaurants", method: .get)
         let response: RestaurantsResponse = try await client.send(req)
-        restaurantsCache = response.restaurants
+        restaurantsCache = CacheEntry(value: response.restaurants, timestamp: Date())
         for restaurant in response.restaurants {
-            restaurantByIdCache[restaurant.id] = restaurant
+            restaurantByIdCache[restaurant.id] = CacheEntry(value: restaurant, timestamp: Date())
         }
         return response.restaurants
     }
 
     func getRestaurant(id: String, forceRefresh: Bool = false) async throws -> Restaurant {
-        if !forceRefresh, let cached = restaurantByIdCache[id] {
+        if !forceRefresh, let cached = cachedRestaurant(id: id) {
             return cached
         }
 
         let req = APIRequest(path: "restaurants/\(id)", method: .get)
         let response: RestaurantResponse = try await client.send(req)
-        restaurantByIdCache[id] = response.restaurant
+        restaurantByIdCache[id] = CacheEntry(value: response.restaurant, timestamp: Date())
         return response.restaurant
     }
 
     func searchRestaurants(query: String, forceRefresh: Bool = false) async throws -> [Restaurant] {
-        let cacheKey = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        if !forceRefresh, let cached = searchCache[cacheKey] {
-            return cached
+        let cacheKey = normalizedCacheKey(query)
+        guard !cacheKey.isEmpty else { return [] }
+
+        if !forceRefresh,
+           let cached = searchCache[cacheKey],
+           isFresh(cached.timestamp, ttl: searchCacheTTL) {
+            return cached.value
         }
 
         let req = APIRequest(
@@ -108,27 +134,48 @@ final class RestaurantService {
             queryItems: [URLQueryItem(name: "q", value: query)]
         )
         let response: RestaurantsResponse = try await client.send(req)
-        searchCache[cacheKey] = response.restaurants
+        searchCache[cacheKey] = CacheEntry(value: response.restaurants, timestamp: Date())
+        for restaurant in response.restaurants {
+            restaurantByIdCache[restaurant.id] = CacheEntry(value: restaurant, timestamp: Date())
+        }
         return response.restaurants
     }
 
-    func getGooglePlaceSuggestions(query: String) async throws -> [GooglePlaceSuggestion] {
+    func getGooglePlaceSuggestions(query: String, forceRefresh: Bool = false) async throws -> [GooglePlaceSuggestion] {
+        let cacheKey = normalizedCacheKey(query)
+        guard !cacheKey.isEmpty else { return [] }
+
+        if !forceRefresh,
+           let cached = googleSuggestionsCache[cacheKey],
+           isFresh(cached.timestamp, ttl: googleCacheTTL) {
+            return cached.value
+        }
+
         let req = APIRequest(
             path: "restaurants/places/autocomplete",
             method: .get,
             queryItems: [URLQueryItem(name: "q", value: query)]
         )
         let response: GooglePlacesAutocompleteResponse = try await client.send(req)
+        googleSuggestionsCache[cacheKey] = CacheEntry(value: response.suggestions, timestamp: Date())
         return response.suggestions
     }
 
-    func getGooglePlaceDetails(placeId: String) async throws -> GooglePlaceDetails {
+    func getGooglePlaceDetails(placeId: String, forceRefresh: Bool = false) async throws -> GooglePlaceDetails {
+        if !forceRefresh,
+           let cached = googleDetailsCache[placeId],
+           isFresh(cached.timestamp, ttl: googleCacheTTL) {
+            return cached.value
+        }
+
         let req = APIRequest(
             path: "restaurants/places/details",
             method: .get,
             queryItems: [URLQueryItem(name: "placeId", value: placeId)]
         )
-        return try await client.send(req)
+        let details: GooglePlaceDetails = try await client.send(req)
+        googleDetailsCache[placeId] = CacheEntry(value: details, timestamp: Date())
+        return details
     }
 
     func createRestaurant(payload: RestaurantMutationPayload) async throws -> Restaurant {
@@ -136,7 +183,7 @@ final class RestaurantService {
         let req = APIRequest(path: "restaurants", method: .post, body: body)
         let response: RestaurantMutationResponse = try await client.send(req)
         invalidateRestaurantCaches()
-        restaurantByIdCache[response.restaurant.id] = response.restaurant
+        restaurantByIdCache[response.restaurant.id] = CacheEntry(value: response.restaurant, timestamp: Date())
         return response.restaurant
     }
 
@@ -145,7 +192,7 @@ final class RestaurantService {
         let req = APIRequest(path: "restaurants/\(id)", method: .put, body: body)
         let response: RestaurantMutationResponse = try await client.send(req)
         invalidateRestaurantCaches()
-        restaurantByIdCache[id] = response.restaurant
+        restaurantByIdCache[id] = CacheEntry(value: response.restaurant, timestamp: Date())
         return response.restaurant
     }
 
@@ -156,8 +203,17 @@ final class RestaurantService {
         restaurantByIdCache.removeValue(forKey: id)
     }
 
-    private func invalidateRestaurantCaches() {
+    func invalidateRestaurantCaches() {
         restaurantsCache = nil
         searchCache.removeAll()
+        rankingService?.invalidateRankings()
+    }
+
+    private func normalizedCacheKey(_ value: String) -> String {
+        value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    }
+
+    private func isFresh(_ timestamp: Date, ttl: TimeInterval) -> Bool {
+        Date().timeIntervalSince(timestamp) < ttl
     }
 }

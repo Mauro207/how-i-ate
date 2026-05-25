@@ -282,6 +282,11 @@ private struct UsersManagementView: View {
     @State private var selectedUser: User?
     @State private var password = ""
     @State private var isUpdatingPassword = false
+    @State private var showCreateUserSheet = false
+    @State private var newUsername = ""
+    @State private var newEmail = ""
+    @State private var newPassword = ""
+    @State private var isCreatingUser = false
 
     var body: some View {
         ScrollView {
@@ -295,8 +300,30 @@ private struct UsersManagementView: View {
                     statusBanner(errorMessage, color: .red, icon: "exclamationmark.triangle.fill")
                 } else {
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Utenti")
-                            .font(.title3.weight(.bold))
+                        HStack(spacing: 12) {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("Utenti")
+                                    .font(.title3.weight(.bold))
+                                Text("\(users.count) utenti registrati")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+
+                            Spacer(minLength: 0)
+
+                            Button {
+                                resetCreateUserForm()
+                                showCreateUserSheet = true
+                            } label: {
+                                Label("Nuovo", systemImage: "plus")
+                                    .font(.caption.weight(.semibold))
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 9)
+                                    .background(Color.indigo.opacity(0.12), in: Capsule())
+                            }
+                            .buttonStyle(.plain)
+                            .foregroundStyle(Color.indigo)
+                        }
 
                         ForEach(users) { user in
                             Button {
@@ -356,6 +383,54 @@ private struct UsersManagementView: View {
             }
             .presentationDetents([.medium])
         }
+        .sheet(isPresented: $showCreateUserSheet) {
+            NavigationStack {
+                Form {
+                    Section("Dati utente") {
+                        TextField("Username", text: $newUsername)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                        TextField("Email", text: $newEmail)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                            .keyboardType(.emailAddress)
+                        SecureField("Password", text: $newPassword)
+                    }
+
+                    Section {
+                        Button {
+                            Task { await createUser() }
+                        } label: {
+                            if isCreatingUser {
+                                ProgressView()
+                                    .frame(maxWidth: .infinity)
+                            } else {
+                                Text("Crea utente")
+                                    .frame(maxWidth: .infinity)
+                            }
+                        }
+                        .disabled(!canCreateUser || isCreatingUser)
+                    }
+                }
+                .navigationTitle("Nuovo utente")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Annulla") {
+                            showCreateUserSheet = false
+                        }
+                        .disabled(isCreatingUser)
+                    }
+                }
+            }
+            .presentationDetents([.large])
+        }
+    }
+
+    private var canCreateUser: Bool {
+        !newUsername.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && !newEmail.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && !newPassword.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     private func userRow(_ user: User) -> some View {
@@ -398,12 +473,19 @@ private struct UsersManagementView: View {
             .settingsGlassCard()
     }
 
-    private func loadUsers() async {
-        isLoading = true
+    private func loadUsers(forceRefresh: Bool = false) async {
+        if !forceRefresh, users.isEmpty, let cached = authService.cachedAllUsers() {
+            users = cached
+        }
+
+        let shouldShowBlockingLoader = users.isEmpty
+        if shouldShowBlockingLoader {
+            isLoading = true
+        }
         defer { isLoading = false }
 
         do {
-            users = try await authService.getAllUsers()
+            users = try await authService.getAllUsers(forceRefresh: forceRefresh)
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
@@ -424,6 +506,40 @@ private struct UsersManagementView: View {
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    private func createUser() async {
+        let username = newUsername.trimmingCharacters(in: .whitespacesAndNewlines)
+        let email = newEmail.trimmingCharacters(in: .whitespacesAndNewlines)
+        let password = newPassword.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !username.isEmpty, !email.isEmpty, !password.isEmpty else { return }
+
+        isCreatingUser = true
+        defer { isCreatingUser = false }
+
+        do {
+            let user = try await authService.createUser(
+                username: username,
+                email: email,
+                password: password
+            )
+            users.insert(user, at: 0)
+            successMessage = "Utente creato con successo"
+            errorMessage = nil
+            showCreateUserSheet = false
+            resetCreateUserForm()
+            await loadUsers(forceRefresh: true)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func resetCreateUserForm() {
+        newUsername = ""
+        newEmail = ""
+        newPassword = ""
+        errorMessage = nil
+        successMessage = nil
     }
 
     private func initials(for user: User) -> String {

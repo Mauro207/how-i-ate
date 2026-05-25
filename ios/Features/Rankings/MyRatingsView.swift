@@ -90,7 +90,7 @@ struct MyRatingsView: View {
         }
         .refreshable {
             guard !disableAutoLoad else { return }
-            await viewModel.load(userId: resolvedUserId)
+            await viewModel.load(userId: resolvedUserId, forceRefresh: true)
         }
     }
 

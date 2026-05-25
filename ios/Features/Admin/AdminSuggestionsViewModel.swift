@@ -10,14 +10,22 @@ final class AdminSuggestionsViewModel: ObservableObject {
 
     init(service: SuggestionService) {
         self.service = service
+        suggestions = service.cachedSuggestions() ?? []
     }
 
-    func load() async {
-        isLoading = true
+    func load(forceRefresh: Bool = false) async {
+        if !forceRefresh, suggestions.isEmpty, let cached = service.cachedSuggestions() {
+            suggestions = cached
+        }
+
+        let shouldShowBlockingLoader = suggestions.isEmpty
+        if shouldShowBlockingLoader {
+            isLoading = true
+        }
         defer { isLoading = false }
 
         do {
-            suggestions = try await service.getSuggestions()
+            suggestions = try await service.getSuggestions(forceRefresh: forceRefresh)
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription

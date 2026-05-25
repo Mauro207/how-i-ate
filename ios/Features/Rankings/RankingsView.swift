@@ -19,7 +19,7 @@ struct RankingsView: View {
             .background(rankingsBackground)
             .navigationTitle("Rankings")
             .task { await viewModel.loadGlobal() }
-            .refreshable { await viewModel.loadGlobal() }
+            .refreshable { await viewModel.loadGlobal(forceRefresh: true) }
         }
     }
 

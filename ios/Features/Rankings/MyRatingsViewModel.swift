@@ -10,6 +10,7 @@ final class MyRatingsViewModel: ObservableObject {
     @Published var includedCuisines: Set<String> = []
 
     private let service: RankingService
+    private var loadedUserId: String?
 
     var availableCuisines: [String] {
         let cuisines = allItems.compactMap { item -> String? in
@@ -46,19 +47,39 @@ final class MyRatingsViewModel: ObservableObject {
         includedCuisines.contains(cuisine)
     }
 
-    func load(userId: String?) async {
+    func load(userId: String?, forceRefresh: Bool = false) async {
         guard let userId, !userId.isEmpty else {
             allItems = []
             items = []
+            loadedUserId = nil
             errorMessage = "Utente non disponibile"
             return
         }
 
-        isLoading = true
+        if loadedUserId != userId {
+            includedCuisines = []
+            showFilters = false
+            if let cached = service.cachedUserRankings(userId: userId) {
+                allItems = cached
+                applyFilters()
+            } else {
+                allItems = []
+                items = []
+            }
+            loadedUserId = userId
+        } else if !forceRefresh, allItems.isEmpty, let cached = service.cachedUserRankings(userId: userId) {
+            allItems = cached
+            applyFilters()
+        }
+
+        let shouldShowBlockingLoader = allItems.isEmpty
+        if shouldShowBlockingLoader {
+            isLoading = true
+        }
         defer { isLoading = false }
 
         do {
-            allItems = try await service.getUserRankings(userId: userId)
+            allItems = try await service.getUserRankings(userId: userId, forceRefresh: forceRefresh)
             applyFilters()
             errorMessage = nil
         } catch {

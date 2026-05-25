@@ -10,6 +10,7 @@ struct RestaurantDetailView: View {
     @State private var editingReview: Review?
     @State private var deletingReview: Review?
     @State private var expandedReviewIds: Set<String> = []
+    @State private var reviewSuccessMessage: String?
 
     private var canEditRestaurant: Bool {
         let role = session.currentUser?.role ?? ""
@@ -145,8 +146,16 @@ struct RestaurantDetailView: View {
                     }
 
                     Section {
+                        if let reviewSuccessMessage {
+                            reviewSuccessBanner(reviewSuccessMessage)
+                                .listRowInsets(EdgeInsets(top: 6, leading: 0, bottom: 6, trailing: 0))
+                                .listRowBackground(Color.clear)
+                                .transition(.opacity.combined(with: .move(edge: .top)))
+                        }
+
                         if !hasUserReviewed {
                             Button {
+                                reviewSuccessMessage = nil
                                 showReviewComposer = true
                             } label: {
                                 Label("Lascia una recensione", systemImage: "plus.bubble")
@@ -175,7 +184,8 @@ struct RestaurantDetailView: View {
                                 reviewCard(review)
                                     .listRowInsets(EdgeInsets(top: 6, leading: 0, bottom: 6, trailing: 0))
                                     .listRowBackground(Color.clear)
-                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                    .listRowSeparator(.hidden)
+									.swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                     if canModerateReviews && !viewModel.isOwnReview(review) {
                                         Button {
                                             editingReview = review
@@ -231,8 +241,11 @@ struct RestaurantDetailView: View {
         .refreshable { await viewModel.load(forceRefresh: true) }
         .sheet(isPresented: $showReviewComposer) {
             ReviewComposerView(title: "Nuova recensione", isSubmitting: viewModel.isSubmittingReview) { s, p, m, c in
-                await viewModel.submitReview(service: s, price: p, menu: m, comment: c)
-                showReviewComposer = viewModel.errorMessage != nil
+                let success = await viewModel.submitReview(service: s, price: p, menu: m, comment: c)
+                showReviewComposer = !success
+                if success {
+                    showReviewSuccess("Recensione pubblicata")
+                }
             }
             .presentationDetents([.medium, .large])
         }
@@ -263,9 +276,10 @@ struct RestaurantDetailView: View {
                 initialComment: review.comment,
                 isSubmitting: viewModel.isSubmittingReview
             ) { s, p, m, c in
-                await viewModel.updateReview(reviewId: review.id, service: s, price: p, menu: m, comment: c)
-                if viewModel.errorMessage == nil {
+                let success = await viewModel.updateReview(reviewId: review.id, service: s, price: p, menu: m, comment: c)
+                if success {
                     editingReview = nil
+                    showReviewSuccess("Recensione aggiornata")
                 }
             }
             .presentationDetents([.medium, .large])
@@ -356,22 +370,17 @@ struct RestaurantDetailView: View {
 
             if viewModel.isOwnReview(review) {
                 HStack(spacing: 10) {
-                    Button {
+                    reviewActionButton("Modifica", systemImage: "pencil", color: .indigo) {
+                        reviewSuccessMessage = nil
                         editingReview = review
-                    } label: {
-                        Label("Modifica", systemImage: "pencil")
                     }
-                    .buttonStyle(.bordered)
-                    .tint(.indigo)
 
-                    Button(role: .destructive) {
+                    reviewActionButton("Elimina", systemImage: "trash", color: .red) {
+                        reviewSuccessMessage = nil
                         deletingReview = review
-                    } label: {
-                        Label("Elimina", systemImage: "trash")
                     }
-                    .buttonStyle(.bordered)
                 }
-                .font(.footnote.weight(.semibold))
+                .padding(.top, 2)
             }
         }
         .padding(14)
@@ -478,6 +487,78 @@ struct RestaurantDetailView: View {
         .background(color.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 
+    private func reviewActionButton(_ title: String, systemImage: String, color: Color, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Label(title, systemImage: systemImage)
+                .font(.subheadline.weight(.semibold))
+                .frame(maxWidth: .infinity)
+                .frame(height: 46)
+                .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(color)
+        .background(color.opacity(0.11), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(color.opacity(0.16), lineWidth: 1)
+        }
+    }
+
+    private func reviewSuccessBanner(_ message: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.headline)
+                .foregroundStyle(.green)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(message)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.primary)
+                Text("Le modifiche sono state salvate correttamente.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer(minLength: 0)
+
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    reviewSuccessMessage = nil
+                }
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(.secondary)
+                    .frame(width: 30, height: 30)
+                    .background(Color.primary.opacity(0.06), in: Circle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Chiudi conferma")
+        }
+        .padding(14)
+        .background(Color.green.opacity(0.11), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(Color.green.opacity(0.18), lineWidth: 1)
+        }
+    }
+
+    private func showReviewSuccess(_ message: String) {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            reviewSuccessMessage = message
+        }
+
+        Task {
+            try? await Task.sleep(nanoseconds: 3_500_000_000)
+            await MainActor.run {
+                guard reviewSuccessMessage == message else { return }
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    reviewSuccessMessage = nil
+                }
+            }
+        }
+    }
+
     private func reviewAverage(_ review: Review) -> Double {
         (review.serviceRating + review.priceRating + review.menuRating) / 3
     }
@@ -508,7 +589,7 @@ struct RestaurantDetailView: View {
     }
 
     private func formattedDate(_ isoDate: String) -> String {
-        DateDisplayFormatter.fromISO(isoDate)
+        DateDisplayFormatter.reviewDate(fromISO: isoDate)
     }
 }
 

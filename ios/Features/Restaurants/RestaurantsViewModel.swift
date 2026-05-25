@@ -15,9 +15,6 @@ final class RestaurantsViewModel: ObservableObject {
     let rankingService: RankingService
     private let suggestionService: SuggestionService
 
-    private static var cachedRestaurants: [Restaurant] = []
-    private static var cachedTopRankings: [RankingItem] = []
-
     init(
         restaurantService: RestaurantService,
         reviewService: ReviewService,
@@ -28,8 +25,8 @@ final class RestaurantsViewModel: ObservableObject {
         self.reviewService = reviewService
         self.rankingService = rankingService
         self.suggestionService = suggestionService
-        restaurants = Self.cachedRestaurants
-        topRankings = Self.cachedTopRankings
+        restaurants = restaurantService.cachedRestaurants() ?? []
+        topRankings = Array((rankingService.cachedGlobalRankings() ?? []).filter { !$0.restaurantId.isEmpty }.prefix(5))
     }
 
     var recentRestaurants: [Restaurant] {
@@ -43,10 +40,13 @@ final class RestaurantsViewModel: ObservableObject {
     }
 
     func load(forceRefresh: Bool = false) async {
-        if hasCachedContent && !forceRefresh {
-            errorMessage = nil
-            rankingErrorMessage = nil
-            return
+        if !forceRefresh {
+            if restaurants.isEmpty, let cachedRestaurants = restaurantService.cachedRestaurants() {
+                restaurants = cachedRestaurants
+            }
+            if topRankings.isEmpty, let cachedRankings = rankingService.cachedGlobalRankings() {
+                topRankings = Array(cachedRankings.filter { !$0.restaurantId.isEmpty }.prefix(5))
+            }
         }
 
         let shouldShowBlockingLoader = !hasCachedContent
@@ -58,27 +58,18 @@ final class RestaurantsViewModel: ObservableObject {
         do {
             let loadedRestaurants = try await restaurantService.getRestaurants(forceRefresh: forceRefresh)
             restaurants = loadedRestaurants
-            Self.cachedRestaurants = loadedRestaurants
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
-            if restaurants.isEmpty {
-                restaurants = Self.cachedRestaurants
-            }
         }
 
         do {
             let loadedRankings = try await rankingService.getGlobalRankings(forceRefresh: forceRefresh)
                 .filter { !$0.restaurantId.isEmpty }
-            let visibleRankings = Array(loadedRankings.prefix(5))
-            topRankings = visibleRankings
-            Self.cachedTopRankings = visibleRankings
+            topRankings = Array(loadedRankings.prefix(5))
             rankingErrorMessage = nil
         } catch {
             rankingErrorMessage = error.localizedDescription
-            if topRankings.isEmpty {
-                topRankings = Self.cachedTopRankings
-            }
         }
     }
 

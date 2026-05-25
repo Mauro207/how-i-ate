@@ -9,6 +9,14 @@ enum DateDisplayFormatter {
         return formatter
     }()
 
+    private static let dateOnlyFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "it_IT")
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.dateFormat = "dd/MM/yyyy"
+        return formatter
+    }()
+
     private static let isoParserWithFractional: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
@@ -22,9 +30,30 @@ enum DateDisplayFormatter {
     }()
 
     static func fromISO(_ value: String) -> String {
-        if let date = isoParserWithFractional.date(from: value) ?? isoParser.date(from: value) {
+        if let date = parseISO(value) {
             return outputFormatter.string(from: date)
         }
         return value
+    }
+
+    static func reviewDate(fromISO value: String) -> String {
+        guard let date = parseISO(value) else { return value }
+
+        let calendar = Calendar.current
+        if calendar.isDateInToday(date) {
+            return "Oggi"
+        }
+        if calendar.isDateInYesterday(date) {
+            return "Ieri"
+        }
+        if let twoDaysAgo = calendar.date(byAdding: .day, value: -2, to: Date()), calendar.isDate(date, inSameDayAs: twoDaysAgo) {
+            return "L'altro ieri"
+        }
+
+        return dateOnlyFormatter.string(from: date)
+    }
+
+    private static func parseISO(_ value: String) -> Date? {
+        isoParserWithFractional.date(from: value) ?? isoParser.date(from: value)
     }
 }

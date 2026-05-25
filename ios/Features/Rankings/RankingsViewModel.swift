@@ -10,14 +10,22 @@ final class RankingsViewModel: ObservableObject {
 
     init(service: RankingService) {
         self.service = service
+        rankings = service.cachedGlobalRankings() ?? []
     }
 
-    func loadGlobal() async {
-        isLoading = true
+    func loadGlobal(forceRefresh: Bool = false) async {
+        if !forceRefresh, rankings.isEmpty, let cached = service.cachedGlobalRankings() {
+            rankings = cached
+        }
+
+        let shouldShowBlockingLoader = rankings.isEmpty
+        if shouldShowBlockingLoader {
+            isLoading = true
+        }
         defer { isLoading = false }
 
         do {
-            rankings = try await service.getGlobalRankings()
+            rankings = try await service.getGlobalRankings(forceRefresh: forceRefresh)
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription

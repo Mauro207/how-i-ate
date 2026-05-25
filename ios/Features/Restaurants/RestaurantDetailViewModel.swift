@@ -24,6 +24,8 @@ final class RestaurantDetailViewModel: ObservableObject {
         self.restaurantService = restaurantService
         self.reviewService = reviewService
         self.currentUserId = currentUserId
+        restaurant = restaurantService.cachedRestaurant(id: restaurantId)
+        reviews = reviewService.cachedRestaurantReviews(restaurantId: restaurantId) ?? []
     }
 
     func isOwnReview(_ review: Review) -> Bool {
@@ -32,7 +34,17 @@ final class RestaurantDetailViewModel: ObservableObject {
     }
 
     func load(forceRefresh: Bool = false) async {
-        isLoading = true
+        if !forceRefresh {
+            restaurant = restaurant ?? restaurantService.cachedRestaurant(id: restaurantId)
+            if reviews.isEmpty, let cachedReviews = reviewService.cachedRestaurantReviews(restaurantId: restaurantId) {
+                reviews = cachedReviews
+            }
+        }
+
+        let shouldShowBlockingLoader = restaurant == nil && reviews.isEmpty
+        if shouldShowBlockingLoader {
+            isLoading = true
+        }
         defer { isLoading = false }
 
         do {
@@ -46,11 +58,11 @@ final class RestaurantDetailViewModel: ObservableObject {
         }
     }
 
-    func submitReview(service: Double, price: Double, menu: Double, comment: String) async {
+    func submitReview(service: Double, price: Double, menu: Double, comment: String) async -> Bool {
         let trimmed = comment.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmed.count >= 5 else {
             errorMessage = "Il commento deve avere almeno 5 caratteri"
-            return
+            return false
         }
 
         isSubmittingReview = true
@@ -68,16 +80,18 @@ final class RestaurantDetailViewModel: ObservableObject {
             )
             reviews = try await reviewService.getRestaurantReviews(restaurantId: restaurantId, forceRefresh: true)
             errorMessage = nil
+            return true
         } catch {
             errorMessage = error.localizedDescription
+            return false
         }
     }
 
-    func updateReview(reviewId: String, service: Double, price: Double, menu: Double, comment: String) async {
+    func updateReview(reviewId: String, service: Double, price: Double, menu: Double, comment: String) async -> Bool {
         let trimmed = comment.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmed.count >= 5 else {
             errorMessage = "Il commento deve avere almeno 5 caratteri"
-            return
+            return false
         }
 
         isSubmittingReview = true
@@ -95,8 +109,10 @@ final class RestaurantDetailViewModel: ObservableObject {
             )
             reviews = try await reviewService.getRestaurantReviews(restaurantId: restaurantId, forceRefresh: true)
             errorMessage = nil
+            return true
         } catch {
             errorMessage = error.localizedDescription
+            return false
         }
     }
 

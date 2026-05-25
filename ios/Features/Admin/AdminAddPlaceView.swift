@@ -25,6 +25,8 @@ struct AdminAddPlaceView: View {
 
     @State private var googleSuggestions: [GooglePlaceSuggestion] = []
     @State private var loadingGooglePlaces = false
+    @State private var searchGeneration = 0
+    @State private var lastSearchedQuery = ""
 
     @FocusState private var isNameFieldFocused: Bool
 
@@ -133,9 +135,10 @@ struct AdminAddPlaceView: View {
             }
             .onChange(of: name) { newValue in
                 if newValue.trimmingCharacters(in: .whitespacesAndNewlines).count < 2 {
-                    similarRestaurants = []
-                    showDuplicateWarning = false
-                    googleSuggestions = []
+                    searchGeneration += 1
+                    lastSearchedQuery = ""
+                    clearSearchResults()
+                    clearPlaceDetails()
                 }
             }
             .onChange(of: isNameFieldFocused) { focused in
@@ -453,29 +456,45 @@ struct AdminAddPlaceView: View {
     private func checkForDuplicatesAndSuggestions() async {
         let query = name.trimmed
         guard query.count >= 2 else {
-            similarRestaurants = []
-            showDuplicateWarning = false
-            googleSuggestions = []
+            searchGeneration += 1
+            lastSearchedQuery = ""
+            clearSearchResults()
+            clearPlaceDetails()
             return
         }
 
+        searchGeneration += 1
+        let generation = searchGeneration
+        let isNewQuery = query != lastSearchedQuery
+        lastSearchedQuery = query
+
+        clearSearchResults()
+        if isNewQuery {
+            clearPlaceDetails()
+        }
+
         checkingDuplicate = true
-        defer { checkingDuplicate = false }
+        defer {
+            if generation == searchGeneration {
+                checkingDuplicate = false
+            }
+        }
 
         do {
             let matches = try await restaurantService.searchRestaurants(query: query)
+            guard generation == searchGeneration, query == name.trimmed else { return }
+
             similarRestaurants = matches
             showDuplicateWarning = !matches.isEmpty
 
             if matches.isEmpty {
-                await loadGoogleSuggestions(query: query)
+                await loadGoogleSuggestions(query: query, generation: generation)
             } else {
                 googleSuggestions = []
             }
         } catch {
-            similarRestaurants = []
-            showDuplicateWarning = false
-            googleSuggestions = []
+            guard generation == searchGeneration else { return }
+            clearSearchResults()
         }
     }
 
@@ -483,33 +502,54 @@ struct AdminAddPlaceView: View {
         showDuplicateWarning = false
     }
 
-    private func loadGoogleSuggestions(query: String) async {
+    private func loadGoogleSuggestions(query: String, generation: Int) async {
         loadingGooglePlaces = true
-        defer { loadingGooglePlaces = false }
+        defer {
+            if generation == searchGeneration {
+                loadingGooglePlaces = false
+            }
+        }
 
         do {
-            googleSuggestions = try await restaurantService.getGooglePlaceSuggestions(query: query)
+            let suggestions = try await restaurantService.getGooglePlaceSuggestions(query: query)
+            guard generation == searchGeneration, query == name.trimmed else { return }
+            googleSuggestions = suggestions
         } catch {
+            guard generation == searchGeneration else { return }
             // On iOS, if backend rejects this endpoint we silently hide suggestions.
             googleSuggestions = []
         }
     }
 
     private func selectGoogleSuggestion(_ suggestion: GooglePlaceSuggestion) async {
+        searchGeneration += 1
+        let generation = searchGeneration
+
         loadingGooglePlaces = true
-        defer { loadingGooglePlaces = false }
+        defer {
+            if generation == searchGeneration {
+                loadingGooglePlaces = false
+            }
+        }
 
         do {
             let place = try await restaurantService.getGooglePlaceDetails(placeId: suggestion.placeId)
-            name = place.name.trimmed.isEmpty ? suggestion.mainText : place.name.trimmed
+            guard generation == searchGeneration else { return }
+
+            let selectedName = place.name.trimmed.isEmpty ? suggestion.mainText : place.name.trimmed
+            name = selectedName
+            lastSearchedQuery = selectedName.trimmed
+            clearPlaceDetails()
+
             if !place.city.trimmed.isEmpty {
                 address = place.city.trimmed
             }
             if !place.mapsUrl.trimmed.isEmpty {
                 googleMapsUrl = place.mapsUrl.trimmed
             }
-            googleSuggestions = []
+            clearSearchResults()
         } catch {
+            guard generation == searchGeneration else { return }
             errorMessage = "Impossibile recuperare i dettagli del luogo da Google Maps."
         }
     }
@@ -521,6 +561,23 @@ struct AdminAddPlaceView: View {
         } catch {
             pendingSuggestionsCount = 0
         }
+    }
+
+    private func clearSearchResults() {
+        similarRestaurants = []
+        showDuplicateWarning = false
+        googleSuggestions = []
+        checkingDuplicate = false
+        loadingGooglePlaces = false
+    }
+
+    private func clearPlaceDetails() {
+        description = ""
+        address = ""
+        cuisine = ""
+        coverImageUrl = ""
+        googleMapsUrl = ""
+        instagramUrl = ""
     }
 
     private func clearForm() {

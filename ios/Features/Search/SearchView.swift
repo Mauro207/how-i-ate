@@ -23,6 +23,9 @@ struct SearchView: View {
             .onSubmit(of: .search) {
                 Task { await viewModel.search() }
             }
+            .task {
+                await viewModel.loadDefaultSections()
+            }
             .onChange(of: viewModel.query) { newValue in
                 if newValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                     viewModel.results = []
@@ -34,12 +37,12 @@ struct SearchView: View {
 
     @ViewBuilder
     private var content: some View {
-        if viewModel.isLoading {
+        if viewModel.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            defaultSections
+        } else if viewModel.isLoading {
             loadingCard
         } else if let error = viewModel.errorMessage {
             stateCard(title: "Errore", systemImage: "exclamationmark.triangle", message: error)
-        } else if viewModel.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            stateCard(title: "Cerca", systemImage: "magnifyingglass", message: "Inserisci luogo o utente")
         } else if viewModel.results.isEmpty {
             stateCard(title: "Nessun risultato", systemImage: "fork.knife.circle", message: "Prova con un termine diverso")
         } else {
@@ -67,6 +70,131 @@ struct SearchView: View {
             .searchGlassCard()
         }
     }
+
+    @ViewBuilder
+    private var defaultSections: some View {
+        if viewModel.isLoadingDefaultSections {
+            loadingCard
+        } else {
+            VStack(spacing: 16) {
+                VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Luoghi suggeriti")
+                            .font(.title3.weight(.bold))
+                        Text("5 suggerimenti casuali per iniziare")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                    if viewModel.randomRestaurants.isEmpty {
+                        Text("Nessun luogo disponibile")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.vertical, 8)
+                    } else {
+                        VStack(spacing: 10) {
+                            ForEach(viewModel.randomRestaurants) { restaurant in
+                                NavigationLink {
+                                    RestaurantDetailView(
+                                        viewModel: RestaurantDetailViewModel(
+                                            restaurantId: restaurant.id,
+                                            restaurantService: restaurantService,
+                                            reviewService: reviewService,
+                                            currentUserId: session.currentUser?.id
+                                        )
+                                    )
+                                } label: {
+                                    SuggestedRestaurantCard(restaurant: restaurant)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+                }
+                .searchGlassCard()
+
+                VStack(alignment: .center, spacing: 8) {
+                    Text("Numero di luoghi inseriti")
+                        .font(.title3.weight(.bold))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    Text("\(viewModel.totalRestaurants)")
+                        .font(.system(size: 44, weight: .heavy, design: .rounded))
+                        .foregroundStyle(Color.indigo)
+
+                    Text("luoghi presenti in piattaforma")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 6)
+                .searchGlassCard()
+            }
+        }
+    }
+
+
+private struct SuggestedRestaurantCard: View {
+    let restaurant: Restaurant
+
+    private var cuisineIconName: String {
+        let normalized = (restaurant.cuisine ?? "").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if normalized.contains("gelateria") { return "snowflake" }
+        if normalized.contains("pizzeria") { return "flame" }
+        if normalized.contains("paninoteca") { return "takeoutbag.and.cup.and.straw" }
+        if normalized.contains("sushi") { return "fish" }
+        if normalized.contains("pub") || normalized.contains("bar") || normalized.contains("enoteca") { return "wineglass" }
+        if normalized.contains("pasticceria") { return "birthday.cake" }
+        if normalized.contains("braceria") { return "flame.circle" }
+        return "fork.knife"
+    }
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: cuisineIconName)
+                .font(.body.weight(.semibold))
+                .foregroundStyle(Color.indigo)
+                .frame(width: 44, height: 44)
+                .background(Color.indigo.opacity(0.12), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 5) {
+                Text(restaurant.name)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+
+                if let cuisine = restaurant.cuisine, !cuisine.isEmpty {
+                    Text(cuisine)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+
+                if let address = restaurant.address, !address.isEmpty {
+                    Label(address, systemImage: "mappin.and.ellipse")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
+
+            Spacer(minLength: 0)
+
+            Image(systemName: "chevron.right")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.tertiary)
+                .padding(.top, 4)
+        }
+        .padding(12)
+        .background(Color(uiColor: .secondarySystemGroupedBackground).opacity(0.72), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(Color.primary.opacity(0.06), lineWidth: 1)
+        }
+    }
+}
 
     private var searchBackground: some View {
         LinearGradient(
