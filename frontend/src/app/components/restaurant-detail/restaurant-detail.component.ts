@@ -286,13 +286,14 @@ export class RestaurantDetailComponent implements OnInit {
       return `L'altro ieri, ${time}`;
     }
 
-    return date.toLocaleString('it-IT', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    const pad2 = (n: number) => n.toString().padStart(2, '0');
+    const dd = pad2(date.getDate());
+    const mm = pad2(date.getMonth() + 1);
+    const yy = pad2(date.getFullYear() % 100);
+    const hh = pad2(date.getHours());
+    const min = pad2(date.getMinutes());
+
+    return `${dd}/${mm}/${yy}, ${hh}:${min}`;
   }
 
   private httpErrorMessage(err: any, context: string): string {
