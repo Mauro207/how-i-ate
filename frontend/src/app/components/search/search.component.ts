@@ -105,11 +105,11 @@ export class SearchComponent implements OnInit {
 
     const username = item.subtitle?.startsWith('@') ? item.subtitle.slice(1) : undefined;
     if (username) {
-      this.router.navigate(['/user-rankings', item.id, username]);
+      this.router.navigate(['/profile', item.id, username]);
       return;
     }
 
-    this.router.navigate(['/user-rankings', item.id]);
+    this.router.navigate(['/profile', item.id]);
   }
 
   openRestaurant(id: string): void {

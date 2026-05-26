@@ -1,6 +1,10 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 const User = require('../models/User');
+const Review = require('../models/Review');
+const Suggestion = require('../models/Suggestion');
+const Restaurant = require('../models/Restaurant');
 const { authenticate, authorize } = require('../middleware/auth');
 const { authLimiter, writeLimiter } = require('../middleware/rateLimiter');
 
@@ -617,6 +621,44 @@ router.get('/users/latest', authenticate, async (req, res) => {
     return res.json({ count: users.length, users });
   } catch (error) {
     return res.status(500).json({ message: 'Error fetching latest users', error: error.message });
+  }
+});
+
+// Public profile data for authenticated users
+router.get('/users/:id/profile', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid user ID' });
+    }
+
+    const [user, reviewCount, pendingSuggestionCount, approvedSuggestionCount] = await Promise.all([
+      User.findById(id).select('_id username displayName role createdAt'),
+      Review.countDocuments({ user: id }),
+      Suggestion.countDocuments({ suggestedBy: id }),
+      Restaurant.countDocuments({ suggestedBy: id })
+    ]);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    return res.json({
+      user: {
+        id: user._id,
+        username: user.username,
+        displayName: user.displayName,
+        role: user.role,
+        createdAt: user.createdAt
+      },
+      stats: {
+        reviewCount,
+        suggestedPlaceCount: pendingSuggestionCount + approvedSuggestionCount
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({ message: 'Error fetching user profile', error: error.message });
   }
 });
 

@@ -1,0 +1,76 @@
+<div class="min-h-screen bg-gradient-to-b from-[#f3eeff] to-[#faf5ff] dark:from-[#1e1a2b] dark:to-[#1C1B1F]">
+  <app-navigation></app-navigation>
+
+  <div class="px-4 pt-6 mx-auto pb-28 max-w-5xl sm:px-6 lg:px-8">
+    @if (loading()) {
+      <div class="flex items-center justify-center py-16">
+        <svg class="w-12 h-12 text-[#6750a4] dark:text-[#d0bcff] animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        </svg>
+      </div>
+    } @else if (error()) {
+      <div class="px-4 py-3 text-red-700 border border-red-200 rounded-xl bg-red-50 dark:bg-red-500/20 dark:text-red-300 dark:border-red-500/40">
+        <p>{{ error() }}</p>
+      </div>
+    } @else if (profile()) {
+      <section class="mb-6">
+        <p class="mb-1 text-xs font-semibold tracking-widest uppercase text-[#6750a4] dark:text-[#d0bcff]">Profilo</p>
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div class="min-w-0">
+            <div class="flex items-center gap-4">
+              <div class="flex items-center justify-center w-16 h-16 text-2xl font-bold text-white bg-[#6750a4] rounded-2xl shadow-sm dark:bg-[#d0bcff] dark:text-[#1C1B1F]">
+                {{ displayName().charAt(0).toUpperCase() }}
+              </div>
+              <div class="min-w-0">
+                <h1 class="text-3xl font-bold text-gray-900 truncate dark:text-white">{{ displayName() }}</h1>
+                <p class="mt-1 text-gray-600 truncate dark:text-gray-300">@{{ username() }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <button
+        type="button"
+        (click)="openRankings()"
+        class="inline-flex items-center justify-center w-full gap-2 px-4 py-3 mb-5 text-sm font-semibold text-white transition bg-[#6750a4] rounded-xl shadow-sm sm:w-auto hover:bg-[#5b4594] dark:bg-[#d0bcff] dark:text-[#1C1B1F] dark:hover:bg-[#c3adff]"
+      >
+        <svg viewBox="0 0 24 24" class="w-5 h-5 fill-current" aria-hidden="true">
+          <path d="M3 21V9h5v12H3Zm6.5 0V3h5v18h-5ZM16 21v-8h5v8h-5Z"></path>
+        </svg>
+        Vai alla classifica
+      </button>
+
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <article class="p-5 bg-white border border-gray-100 shadow-sm rounded-2xl dark:bg-[#2b2930] dark:border-white/5">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-300">Recensioni lasciate</p>
+              <p class="mt-3 text-4xl font-extrabold text-gray-900 dark:text-white">{{ profile()!.stats.reviewCount }}</p>
+            </div>
+            <span class="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-[#f3eeff] text-[#6750a4] dark:bg-[#6750a4]/20 dark:text-[#d0bcff]">
+              <svg viewBox="0 0 24 24" class="w-6 h-6 fill-current" aria-hidden="true">
+                <path d="M21 2H3a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4.6l3.7 3.1a1 1 0 0 0 1.4 0L16.4 20H21a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Zm-3 12H6a1 1 0 1 1 0-2h12a1 1 0 1 1 0 2Zm0-4H6a1 1 0 1 1 0-2h12a1 1 0 1 1 0 2Z"></path>
+              </svg>
+            </span>
+          </div>
+        </article>
+
+        <article class="p-5 bg-white border border-gray-100 shadow-sm rounded-2xl dark:bg-[#2b2930] dark:border-white/5">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-300">Luoghi suggeriti</p>
+              <p class="mt-3 text-4xl font-extrabold text-gray-900 dark:text-white">{{ profile()!.stats.suggestedPlaceCount ?? 'n/d' }}</p>
+            </div>
+            <span class="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-[#f3eeff] text-[#6750a4] dark:bg-[#6750a4]/20 dark:text-[#d0bcff]">
+              <svg viewBox="0 0 24 24" class="w-6 h-6 fill-current" aria-hidden="true">
+                <path d="M12 2a8 8 0 0 0-8 8c0 5.4 7.1 11.5 7.4 11.8a1 1 0 0 0 1.2 0C12.9 21.5 20 15.4 20 10a8 8 0 0 0-8-8Zm0 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z"></path>
+              </svg>
+            </span>
+          </div>
+        </article>
+      </div>
+    }
+  </div>
+</div>

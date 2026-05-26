@@ -135,7 +135,8 @@ router.put('/:id/approve', authenticate, writeLimiter, authorize('admin', 'super
       cuisine: suggestion.cuisine,
       googleMapsUrl: suggestion.googleMapsUrl,
       instagramUrl: suggestion.instagramUrl,
-      createdBy: req.user.userId
+      createdBy: req.user.userId,
+      suggestedBy: suggestion.suggestedBy
     });
 
     await restaurant.save();

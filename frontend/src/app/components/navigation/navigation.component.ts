@@ -151,7 +151,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
 
     const userId = user.id;
     const username = user.username || 'Utente';
-    this.router.navigate(['/user-rankings', userId, username]);
+    this.router.navigate(['/profile', userId, username]);
   }
 
   onSearchInputChange(event: Event): void {
@@ -183,14 +183,14 @@ export class NavigationComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Vai alla classifica personale dell'utente (passa anche username per header frontend)
+    // Vai al profilo dell'utente (passa anche username per header frontend)
     const username = item.subtitle?.startsWith('@') ? item.subtitle.slice(1) : undefined;
     if (username) {
-      this.router.navigate(['/user-rankings', item.id, username]);
+      this.router.navigate(['/profile', item.id, username]);
       return;
     }
 
-    this.router.navigate(['/user-rankings', item.id]);
+    this.router.navigate(['/profile', item.id]);
   }
 
   isSuperAdmin(): boolean {

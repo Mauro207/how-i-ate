@@ -319,7 +319,7 @@ export class RestaurantDetailComponent implements OnInit {
   }
 
   viewUserRankings(userId: string, username: string): void {
-    this.router.navigate(['/user-rankings', userId, username]);
+    this.router.navigate(['/profile', userId, username]);
   }
 
   canEditReview(review: Review): boolean {

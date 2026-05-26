@@ -28,6 +28,20 @@ export interface UserSearchResult {
   createdAt?: string;
 }
 
+export interface UserProfile {
+  user: {
+    id: string;
+    username: string;
+    displayName?: string;
+    role: 'user' | 'admin' | 'superadmin';
+    createdAt?: string;
+  };
+  stats: {
+    reviewCount: number;
+    suggestedPlaceCount: number | null;
+  };
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -108,6 +122,10 @@ export class AuthService {
       `${environment.apiUrl}/auth/users/latest`,
       { params }
     );
+  }
+
+  getUserProfile(userId: string): Observable<UserProfile> {
+    return this.http.get<UserProfile>(`${environment.apiUrl}/auth/users/${userId}/profile`);
   }
 
   logout(): void {

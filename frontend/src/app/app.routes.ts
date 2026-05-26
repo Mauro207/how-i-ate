@@ -6,6 +6,7 @@ import { RestaurantDetailComponent } from './components/restaurant-detail/restau
 import { NavigationComponent } from './components/navigation/navigation.component';
 import { SettingsComponent } from './components/settings/settings.component';
 import { UserRankingsComponent } from './components/user-rankings/user-rankings.component';
+import { UserProfileComponent } from './components/user-profile/user-profile.component';
 import { UsersComponent } from './components/users/users.component';
 import { RankingsComponent } from './components/rankings/rankings.component';
 import { SuggestPlaceComponent } from './components/suggest-place/suggest-place.component';
@@ -30,6 +31,9 @@ export const routes: Routes = [
   { path: 'search', component: SearchComponent, canActivate: [authGuard] },
   { path: 'settings', component: SettingsComponent, canActivate: [authGuard] },
   { path: 'updates', component: UpdatesComponent, canActivate: [authGuard] },
+
+  { path: 'profile/:userId', component: UserProfileComponent, canActivate: [authGuard] },
+  { path: 'profile/:userId/:username', component: UserProfileComponent, canActivate: [authGuard] },
 
   // Nuova rotta canonical (solo userId)
   { path: 'user-rankings/:userId', component: UserRankingsComponent, canActivate: [authGuard] },
