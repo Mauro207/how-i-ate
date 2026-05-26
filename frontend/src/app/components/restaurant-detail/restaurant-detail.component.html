@@ -464,9 +464,9 @@
                       {{ review.user.username }}
                     </h4>
                     <p class="text-sm text-gray-500 dark:text-gray-400">
-                      {{ review.createdAt | date: 'dd MMMM yyyy, HH:mm' }}<br>
+                      {{ formatReviewDate(review.createdAt) }}<br>
                       @if (review.updatedAt !== review.createdAt) {
-                        <span class="text-xs italic">(Mod. il {{ review.updatedAt | date: 'dd MMMM yyyy, HH:mm' }})</span>
+                        <span class="text-xs italic">(Mod. {{ formatReviewDate(review.updatedAt) }})</span>
                       }
                     </p>
                   </div>

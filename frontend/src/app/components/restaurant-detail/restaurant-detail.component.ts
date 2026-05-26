@@ -264,6 +264,37 @@ export class RestaurantDetailComponent implements OnInit {
     return rounded.toFixed(1);
   }
 
+  formatReviewDate(value: string | Date): string {
+    const date = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return '';
+    }
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const targetDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const dayDiff = Math.round((today.getTime() - targetDay.getTime()) / 86400000);
+    const time = date.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+
+    if (dayDiff === 0) {
+      return `Oggi, ${time}`;
+    }
+    if (dayDiff === 1) {
+      return `Ieri, ${time}`;
+    }
+    if (dayDiff === 2) {
+      return `L'altro ieri, ${time}`;
+    }
+
+    return date.toLocaleString('it-IT', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
   private httpErrorMessage(err: any, context: string): string {
     if (err.status === 0) {
       return `${context}: impossibile raggiungere il server. Verifica la connessione e riprova.`;
