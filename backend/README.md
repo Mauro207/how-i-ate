@@ -84,6 +84,44 @@ Subscribe request body:
 
 Notification senders now fan out to both web push (VAPID) and native APNs when configured.
 
+Provider diagnostic endpoint:
+
+```http
+GET /api/notifications/providers
+```
+
+Example response:
+
+```json
+{
+  "webPush": {
+    "configured": true
+  },
+  "apns": {
+    "configured": true,
+    "production": false,
+    "hasBundleId": true
+  }
+}
+```
+
+### APNs deployment checklist (Vercel)
+
+1. Open Vercel project settings: **Settings > Environment Variables**.
+2. Add these variables in `Development`, `Preview`, and `Production` as needed:
+   - `APNS_TEAM_ID`
+   - `APNS_KEY_ID`
+   - `APNS_PRIVATE_KEY`
+   - `APNS_BUNDLE_ID`
+   - `APNS_PRODUCTION` (`false` for sandbox/debug builds, `true` for TestFlight/App Store)
+3. Paste `APNS_PRIVATE_KEY` as full `.p8` content (real new lines or escaped `\\n` are both supported).
+4. Redeploy the project after saving env vars.
+5. Verify provider status:
+   - `GET /api/notifications/providers` must return `apns.configured: true`.
+6. Validate end-to-end with an authenticated user:
+   - `POST /api/notifications/native/subscribe`
+   - `POST /api/notifications/test`
+
 ## Running the Server
 
 ### Development

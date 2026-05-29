@@ -10,6 +10,23 @@ const { sendPushToAll, sendPushToUser } = require('../services/pushNotifications
 const router = express.Router();
 const ROME_TIMEZONE = 'Europe/Rome';
 
+// GET /api/notifications/providers — public, returns push provider availability flags
+router.get('/providers', (req, res) => {
+  const { pushConfigured } = getPushConfig();
+  const { apnsConfigured, production, bundleId } = getAPNSConfig();
+
+  res.json({
+    webPush: {
+      configured: pushConfigured
+    },
+    apns: {
+      configured: apnsConfigured,
+      production,
+      hasBundleId: Boolean(bundleId)
+    }
+  });
+});
+
 // GET /api/notifications/vapid-public-key — public, returns VAPID public key for frontend subscription
 router.get('/vapid-public-key', (req, res) => {
   const { pushConfigured, vapidPublicKey } = getPushConfig();
