@@ -35,6 +35,11 @@ Configure the following environment variables:
 - `MONGODB_URI` or `DATABASE_URL` - MongoDB connection string
 - `VAPID_PUBLIC_KEY` and `VAPID_PRIVATE_KEY` - Web Push keys used by Chrome, Safari and other Push API browsers
 - `VAPID_SUBJECT` - Contact subject for VAPID, for example `mailto:admin@example.com`
+- `APNS_TEAM_ID` - Apple Developer Team ID for APNs token auth
+- `APNS_KEY_ID` - Key ID of the APNs `.p8` key
+- `APNS_PRIVATE_KEY` - Contents of APNs `.p8` key (supports `\\n` escaped new lines)
+- `APNS_BUNDLE_ID` - iOS app bundle identifier used as APNs topic (for example `com.howiate.app`)
+- `APNS_PRODUCTION` - `true` for production APNs, `false` for sandbox (default)
 - `CRON_SECRET` - Optional shared secret for scheduled notification endpoints
 
 ## Scheduled Notifications
@@ -52,6 +57,32 @@ If `CRON_SECRET` is set, call the endpoint with one of:
 - `Authorization: Bearer <CRON_SECRET>`
 - `x-cron-secret: <CRON_SECRET>`
 - `?secret=<CRON_SECRET>`
+
+## Native iOS Push (APNs)
+
+The backend supports native iOS push registration for authenticated users:
+
+```http
+POST /api/notifications/native/subscribe
+DELETE /api/notifications/native/unsubscribe
+```
+
+Subscribe request body:
+
+```json
+{
+  "deviceToken": "<apns-device-token-hex>",
+  "provider": "apns",
+  "client": {
+    "platform": "ios",
+    "appVersion": "1.0",
+    "buildNumber": "1",
+    "bundleId": "com.howiate.app"
+  }
+}
+```
+
+Notification senders now fan out to both web push (VAPID) and native APNs when configured.
 
 ## Running the Server
 

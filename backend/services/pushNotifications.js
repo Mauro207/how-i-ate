@@ -1,5 +1,10 @@
 const PushSubscription = require('../models/PushSubscription');
 const { webpush, getPushConfig } = require('../config/push');
+const {
+  sendNativeToAll,
+  sendNativeToUser,
+  sendNativeToUsers
+} = require('./nativePushNotifications');
 
 const INVALID_SUBSCRIPTION_STATUS_CODES = new Set([400, 404, 410]);
 
@@ -60,19 +65,65 @@ const sendPushToSubscriptions = async (subscriptions, payload) => {
 
 const sendPushToAll = async (payload) => {
   const subscriptions = await PushSubscription.find();
-  const summary = await sendPushToSubscriptions(subscriptions, payload);
+  const [webSummary, nativeSummary] = await Promise.all([
+    sendPushToSubscriptions(subscriptions, payload),
+    sendNativeToAll(payload)
+  ]);
+
+  const summary = {
+    sent: webSummary.sent + nativeSummary.sent,
+    failed: webSummary.failed + nativeSummary.failed,
+    removed: webSummary.removed + nativeSummary.removed,
+    total: webSummary.total + nativeSummary.total,
+    configured: webSummary.configured || nativeSummary.configured,
+    channels: {
+      web: webSummary,
+      native: nativeSummary
+    }
+  };
+
   console.log(`[push] Notifiche inviate: ${summary.sent}/${summary.total} (rimosse: ${summary.removed})`);
   return summary;
 };
 
 const sendPushToUser = async (userId, payload) => {
   const subscriptions = await PushSubscription.find({ user: userId });
-  return sendPushToSubscriptions(subscriptions, payload);
+  const [webSummary, nativeSummary] = await Promise.all([
+    sendPushToSubscriptions(subscriptions, payload),
+    sendNativeToUser(userId, payload)
+  ]);
+
+  return {
+    sent: webSummary.sent + nativeSummary.sent,
+    failed: webSummary.failed + nativeSummary.failed,
+    removed: webSummary.removed + nativeSummary.removed,
+    total: webSummary.total + nativeSummary.total,
+    configured: webSummary.configured || nativeSummary.configured,
+    channels: {
+      web: webSummary,
+      native: nativeSummary
+    }
+  };
 };
 
 const sendPushToUsers = async (userIds, payload) => {
   const subscriptions = await PushSubscription.find({ user: { $in: userIds } });
-  return sendPushToSubscriptions(subscriptions, payload);
+  const [webSummary, nativeSummary] = await Promise.all([
+    sendPushToSubscriptions(subscriptions, payload),
+    sendNativeToUsers(userIds, payload)
+  ]);
+
+  return {
+    sent: webSummary.sent + nativeSummary.sent,
+    failed: webSummary.failed + nativeSummary.failed,
+    removed: webSummary.removed + nativeSummary.removed,
+    total: webSummary.total + nativeSummary.total,
+    configured: webSummary.configured || nativeSummary.configured,
+    channels: {
+      web: webSummary,
+      native: nativeSummary
+    }
+  };
 };
 
 module.exports = {

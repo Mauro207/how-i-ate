@@ -1,8 +1,10 @@
 const express = require('express');
 const PushSubscription = require('../models/PushSubscription');
+const NativePushDevice = require('../models/NativePushDevice');
 const NotificationRun = require('../models/NotificationRun');
 const { authenticate } = require('../middleware/auth');
 const { getPushConfig } = require('../config/push');
+const { getAPNSConfig } = require('../config/apns');
 const { sendPushToAll, sendPushToUser } = require('../services/pushNotifications');
 
 const router = express.Router();
@@ -52,20 +54,62 @@ router.post('/subscribe', authenticate, async (req, res) => {
   }
 });
 
+// POST /api/notifications/native/subscribe — save APNs device token for authenticated user
+router.post('/native/subscribe', authenticate, async (req, res) => {
+  try {
+    const { apnsConfigured } = getAPNSConfig();
+    if (!apnsConfigured) {
+      return res.status(503).json({ message: 'APNs non configurato sul backend' });
+    }
+
+    const { deviceToken, provider, client } = req.body;
+    const normalizedProvider = (provider || 'apns').toString().toLowerCase();
+    const normalizedToken = (deviceToken || '').toString().trim().toLowerCase();
+
+    if (normalizedProvider !== 'apns') {
+      return res.status(400).json({ message: 'Provider non supportato. Usa apns.' });
+    }
+
+    if (!/^[0-9a-f]{32,}$/.test(normalizedToken)) {
+      return res.status(400).json({ message: 'Token dispositivo non valido' });
+    }
+
+    await NativePushDevice.findOneAndUpdate(
+      { deviceToken: normalizedToken },
+      {
+        user: req.user.userId,
+        provider: 'apns',
+        deviceToken: normalizedToken,
+        client: {
+          platform: client?.platform || 'ios',
+          appVersion: client?.appVersion || 'unknown',
+          buildNumber: client?.buildNumber || 'unknown',
+          bundleId: client?.bundleId || 'unknown'
+        },
+        lastSeenAt: new Date()
+      },
+      { upsert: true, new: true }
+    );
+
+    res.status(201).json({ message: 'Dispositivo APNs registrato' });
+  } catch (error) {
+    res.status(500).json({ message: 'Errore durante la registrazione APNs', error: error.message });
+  }
+});
+
 // POST /api/notifications/test — send a test push notification only to the current user
 router.post('/test', authenticate, async (req, res) => {
   try {
-    const { pushConfigured } = getPushConfig();
-    if (!pushConfigured) {
-      return res.status(503).json({ message: 'Push notifications not configured' });
-    }
-
     const summary = await sendPushToUser(req.user.userId, {
       title: 'How I Ate — Notifica di prova',
       body: 'Le notifiche funzionano correttamente!',
       url: '/',
       tag: 'test-notification'
     });
+
+    if (!summary.configured) {
+      return res.status(503).json({ message: 'Nessun provider push configurato (Web Push o APNs)' });
+    }
 
     if (!summary.total) {
       return res.status(404).json({ message: 'Nessuna sottoscrizione attiva trovata per questo utente' });
@@ -195,6 +239,29 @@ router.delete('/unsubscribe', authenticate, async (req, res) => {
     res.json({ message: 'Sottoscrizione rimossa' });
   } catch (error) {
     res.status(500).json({ message: 'Errore durante la rimozione della sottoscrizione', error: error.message });
+  }
+});
+
+// DELETE /api/notifications/native/unsubscribe — remove APNs device token for authenticated user
+router.delete('/native/unsubscribe', authenticate, async (req, res) => {
+  try {
+    const { apnsConfigured } = getAPNSConfig();
+    if (!apnsConfigured) {
+      return res.status(503).json({ message: 'APNs non configurato sul backend' });
+    }
+
+    const { deviceToken } = req.body || {};
+    const normalizedToken = typeof deviceToken === 'string' ? deviceToken.trim().toLowerCase() : '';
+
+    if (normalizedToken) {
+      await NativePushDevice.deleteOne({ user: req.user.userId, provider: 'apns', deviceToken: normalizedToken });
+    } else {
+      await NativePushDevice.deleteMany({ user: req.user.userId, provider: 'apns' });
+    }
+
+    res.json({ message: 'Dispositivo APNs rimosso' });
+  } catch (error) {
+    res.status(500).json({ message: 'Errore durante la rimozione dispositivo APNs', error: error.message });
   }
 });
 
