@@ -40,16 +40,23 @@ export class NotificationService {
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') throw new Error('Permesso notifiche negato.');
 
-    const registration = await navigator.serviceWorker.register(this.SW_PATH);
-    await navigator.serviceWorker.ready;
+    const registration = await this.getServiceWorkerRegistration();
 
     const publicKey = await this.getVapidPublicKey();
-    const subscription = await registration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: this.urlBase64ToUint8Array(publicKey)
-    });
+    const applicationServerKey = this.urlBase64ToUint8Array(publicKey);
+    let subscription = await registration.pushManager.getSubscription();
 
-    await this.http.post(`${this.apiUrl}/subscribe`, { subscription }).toPromise();
+    if (!subscription) {
+      subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey
+      });
+    }
+
+    await this.http.post(`${this.apiUrl}/subscribe`, {
+      subscription: subscription.toJSON(),
+      client: this.getClientInfo()
+    }).toPromise();
 
     localStorage.setItem(this.LOCAL_KEY, 'true');
     this.notificationsEnabled.set(true);
@@ -87,6 +94,13 @@ export class NotificationService {
     const active = !!subscription && Notification.permission === 'granted';
     this.notificationsEnabled.set(active);
     localStorage.setItem(this.LOCAL_KEY, String(active));
+
+    if (active) {
+      await this.http.post(`${this.apiUrl}/subscribe`, {
+        subscription: subscription.toJSON(),
+        client: this.getClientInfo()
+      }).toPromise().catch(() => undefined);
+    }
   }
 
   /** Invia una notifica di prova solo all'utente corrente */
@@ -100,6 +114,30 @@ export class NotificationService {
     return res.publicKey;
   }
 
+  private async getServiceWorkerRegistration(): Promise<ServiceWorkerRegistration> {
+    const existingRegistration = await navigator.serviceWorker.getRegistration(this.SW_PATH);
+    const registration = existingRegistration || await navigator.serviceWorker.register(this.SW_PATH, { scope: '/' });
+    return navigator.serviceWorker.ready.then(() => registration);
+  }
+
+  private getClientInfo(): { browser: string; platform: string; standalone: boolean } {
+    const ua = navigator.userAgent;
+    const standalone = window.matchMedia('(display-mode: standalone)').matches ||
+      (navigator as Navigator & { standalone?: boolean }).standalone === true;
+
+    let browser = 'unknown';
+    if (/CriOS|Chrome|Chromium/i.test(ua) && !/Edg|OPR/i.test(ua)) browser = 'chrome';
+    else if (/Safari/i.test(ua) && !/Chrome|Chromium|CriOS|Edg|OPR|FxiOS|Firefox/i.test(ua)) browser = 'safari';
+    else if (/Firefox|FxiOS/i.test(ua)) browser = 'firefox';
+    else if (/Edg/i.test(ua)) browser = 'edge';
+
+    return {
+      browser,
+      platform: navigator.platform || 'unknown',
+      standalone
+    };
+  }
+
   /** Converte la chiave VAPID (base64url) in Uint8Array richiesto dalla Push API */
   private urlBase64ToUint8Array(base64String: string): ArrayBuffer {
     const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
@@ -109,6 +147,9 @@ export class NotificationService {
     for (let i = 0; i < rawData.length; i++) {
       outputArray[i] = rawData.charCodeAt(i);
     }
-    return outputArray.buffer;
+    return outputArray.buffer.slice(
+      outputArray.byteOffset,
+      outputArray.byteOffset + outputArray.byteLength
+    ) as ArrayBuffer;
   }
 }

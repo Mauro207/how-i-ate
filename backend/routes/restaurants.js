@@ -3,8 +3,7 @@ const Restaurant = require('../models/Restaurant');
 const Review = require('../models/Review');
 const { authenticate, authorize } = require('../middleware/auth');
 const { writeLimiter } = require('../middleware/rateLimiter');
-const PushSubscription = require('../models/PushSubscription');
-const { webpush, getPushConfig } = require('../config/push');
+const { sendPushToAll } = require('../services/pushNotifications');
 
 const router = express.Router();
 
@@ -513,45 +512,11 @@ router.post('/', writeLimiter, authenticate, authorize('admin', 'superadmin'), a
     await restaurant.populate('createdBy', 'username email displayName');
 
     // Send push notifications to all subscribers (non-blocking)
-    const { pushConfigured } = getPushConfig();
-    if (pushConfigured) {
-      PushSubscription.find().then(async subscriptions => {
-        if (!subscriptions.length) return;
-
-        const payload = JSON.stringify({
-          title: 'Nuovo luogo aggiunto!',
-          body: `Ora puoi recensire "${name}"!`,
-          url: `/restaurants/${restaurant._id}`
-        });
-
-        console.log(`[push] Invio notifica per "${name}" a ${subscriptions.length} subscriber(s)`);
-
-        const results = await Promise.allSettled(
-          subscriptions.map(sub =>
-            webpush.sendNotification(sub.subscription, payload).catch(async err => {
-              // Rimuovi subscription non valide o con chiavi VAPID non corrispondenti
-              const shouldRemove =
-                err.statusCode === 410 ||
-                err.statusCode === 404 ||
-                err.statusCode === 400 ||
-                (err.message && err.message.includes('unexpected response'));
-
-              if (shouldRemove) {
-                console.log(`[push] Subscription non valida rimossa (${err.statusCode ?? 'unknown'}): ${sub.subscription.endpoint}`);
-                await PushSubscription.deleteOne({ _id: sub._id });
-              } else {
-                console.error(`[push] Errore invio notifica a ${sub.subscription.endpoint}:`, err.statusCode, err.message);
-              }
-            })
-          )
-        );
-
-        const sent = results.filter(r => r.status === 'fulfilled').length;
-        console.log(`[push] Notifiche inviate: ${sent}/${subscriptions.length}`);
-      }).catch(err => console.error('[push] Errore recupero subscriptions:', err.message));
-    } else {
-      console.log('[push] VAPID non configurato, notifiche non inviate.');
-    }
+    sendPushToAll({
+      title: 'Nuovo luogo aggiunto!',
+      body: `Ora puoi recensire "${name}"!`,
+      url: `/restaurants/${restaurant._id}`
+    }).catch(err => console.error('[push] Errore invio notifica nuovo luogo:', err.message));
 
     res.status(201).json({
       message: 'Restaurant created successfully',

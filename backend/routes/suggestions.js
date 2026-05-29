@@ -3,11 +3,10 @@ const express = require('express');
 const Suggestion = require('../models/Suggestion');
 const Restaurant = require('../models/Restaurant');
 const User = require('../models/User');
-const PushSubscription = require('../models/PushSubscription');
-const { webpush, getPushConfig } = require('../config/push');
 const Review = require('../models/Review');
 const { authenticate, authorize } = require('../middleware/auth');
 const { writeLimiter } = require('../middleware/rateLimiter');
+const { sendPushToAll, sendPushToUsers } = require('../services/pushNotifications');
 
 const router = express.Router();
 
@@ -56,21 +55,14 @@ router.post('/', authenticate, writeLimiter, async (req, res) => {
     await reviewDoc.save();
 
     // INVIO NOTIFICA SOLO AGLI ADMIN/SUPERADMIN
-    const { pushConfigured } = getPushConfig();
-    if (pushConfigured) {
-      const admins = await User.find({ role: { $in: ['admin', 'superadmin'] } }, '_id');
-      const adminIds = admins.map(u => u._id);
-      const adminSubs = await PushSubscription.find({ user: { $in: adminIds } });
-      const notificationPayload = JSON.stringify({
+    const admins = await User.find({ role: { $in: ['admin', 'superadmin'] } }, '_id');
+    const adminIds = admins.map(u => u._id);
+    if (adminIds.length) {
+      await sendPushToUsers(adminIds, {
         title: 'Nuovo suggerimento ricevuto!',
-        body: `È stato inviato un nuovo suggerimento: ${name}`,
+        body: `E stato inviato un nuovo suggerimento: ${name}`,
         url: '/suggestions'
       });
-      for (const sub of adminSubs) {
-        try {
-          await webpush.sendNotification(sub.subscription, notificationPayload);
-        } catch (err) {}
-      }
     }
 
     res.status(201).json({
@@ -147,44 +139,11 @@ router.put('/:id/approve', authenticate, writeLimiter, authorize('admin', 'super
     await restaurant.populate('createdBy', 'username email displayName');
 
     // Invia notifica push a tutti gli iscritti, come nella creazione admin di un nuovo luogo
-    const { pushConfigured } = getPushConfig();
-    if (pushConfigured) {
-      PushSubscription.find().then(async subscriptions => {
-        if (!subscriptions.length) return;
-
-        const payload = JSON.stringify({
-          title: 'Nuovo luogo aggiunto!',
-          body: `Ora puoi recensire "${restaurant.name}"!`,
-          url: `/restaurants/${restaurant._id}`
-        });
-
-        console.log(`[push] Invio notifica approvazione per "${restaurant.name}" a ${subscriptions.length} subscriber(s)`);
-
-        const results = await Promise.allSettled(
-          subscriptions.map(sub =>
-            webpush.sendNotification(sub.subscription, payload).catch(async err => {
-              const shouldRemove =
-                err.statusCode === 410 ||
-                err.statusCode === 404 ||
-                err.statusCode === 400 ||
-                (err.message && err.message.includes('unexpected response'));
-
-              if (shouldRemove) {
-                console.log(`[push] Subscription non valida rimossa (${err.statusCode ?? 'unknown'}): ${sub.subscription.endpoint}`);
-                await PushSubscription.deleteOne({ _id: sub._id });
-              } else {
-                console.error(`[push] Errore invio notifica a ${sub.subscription.endpoint}:`, err.statusCode, err.message);
-              }
-            })
-          )
-        );
-
-        const sent = results.filter(r => r.status === 'fulfilled').length;
-        console.log(`[push] Notifiche inviate: ${sent}/${subscriptions.length}`);
-      }).catch(err => console.error('[push] Errore recupero subscriptions:', err.message));
-    } else {
-      console.log('[push] VAPID non configurato, notifiche non inviate.');
-    }
+    sendPushToAll({
+      title: 'Nuovo luogo aggiunto!',
+      body: `Ora puoi recensire "${restaurant.name}"!`,
+      url: `/restaurants/${restaurant._id}`
+    }).catch(err => console.error('[push] Errore invio notifica approvazione:', err.message));
 
     await Suggestion.findByIdAndDelete(req.params.id);
 

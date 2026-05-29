@@ -1,5 +1,11 @@
 self.addEventListener('push', (event) => {
-  let data = { title: 'How I Ate', body: 'Nuovo aggiornamento disponibile!', url: '/' };
+  let data = {
+    title: 'How I Ate',
+    body: 'Nuovo aggiornamento disponibile!',
+    url: '/',
+    tag: 'how-i-ate',
+    actions: []
+  };
 
   const ua = self.navigator?.userAgent || '';
   const isSafari = /Safari/i.test(ua) && !/Chrome|Chromium|CriOS|Edg|OPR|FxiOS|Firefox/i.test(ua);
@@ -18,25 +24,37 @@ self.addEventListener('push', (event) => {
     }
   }
 
-  event.waitUntil(
-    self.registration.showNotification(formatTitle(data.title), {
+  const notificationOptions = {
       body: data.body,
       icon: '/icons/icon-192x192.png',
       badge: '/icons/icon-192x192.png',
+      tag: data.tag || 'how-i-ate',
+      renotify: false,
+      requireInteraction: Boolean(data.requireInteraction),
       data: { url: data.url || '/' }
-    })
+  };
+
+  if (Array.isArray(data.actions) && data.actions.length) {
+    notificationOptions.actions = data.actions.slice(0, 2);
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(formatTitle(data.title), notificationOptions)
   );
 });
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const targetUrl = event.notification.data?.url || '/';
+  const targetPath = event.action === 'review' ? '/restaurants' : (event.notification.data?.url || '/');
+  const targetUrl = new URL(targetPath, self.location.origin).href;
+
   event.waitUntil(
     clients
       .matchAll({ type: 'window', includeUncontrolled: true })
       .then((clientList) => {
         for (const client of clientList) {
-          if (client.url === targetUrl && 'focus' in client) return client.focus();
+          const clientUrl = new URL(client.url);
+          if (clientUrl.href === targetUrl && 'focus' in client) return client.focus();
         }
         if (clients.openWindow) return clients.openWindow(targetUrl);
       })

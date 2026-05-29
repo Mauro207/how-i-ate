@@ -1,4 +1,10 @@
 {
+  "crons": [
+    {
+      "path": "/api/notifications/weekly-review-reminder",
+      "schedule": "30 20,21 * * 0"
+    }
+  ],
   "rewrites": [
     {
       "source": "/(.*)",

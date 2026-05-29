@@ -12,6 +12,15 @@ const pushSubscriptionSchema = new mongoose.Schema({
       p256dh: { type: String, required: true },
       auth: { type: String, required: true }
     }
+  },
+  client: {
+    browser: { type: String, default: 'unknown' },
+    platform: { type: String, default: 'unknown' },
+    standalone: { type: Boolean, default: false }
+  },
+  lastSeenAt: {
+    type: Date,
+    default: Date.now
   }
 }, { timestamps: true });
 
