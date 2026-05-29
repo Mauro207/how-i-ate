@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/notifications/weekly-review-reminder",
-      "schedule": "30 20,21 * * 0"
+      "schedule": "30 20 * * 0"
     }
   ],
   "rewrites": [

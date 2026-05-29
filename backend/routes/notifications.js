@@ -105,7 +105,10 @@ const getRomeParts = (date = new Date()) => {
 
 const isWeeklyReminderWindow = (date = new Date()) => {
   const rome = getRomeParts(date);
-  return rome.weekday === 'Sun' && rome.hour === 22 && rome.minute >= 20 && rome.minute <= 45;
+  return rome.weekday === 'Sun' &&
+    (rome.hour === 21 || rome.hour === 22) &&
+    rome.minute >= 20 &&
+    rome.minute <= 45;
 };
 
 const authorizeCron = (req) => {
