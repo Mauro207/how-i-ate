@@ -302,49 +302,44 @@ router.post('/:id/feedback-summary', writeLimiter, authenticate, async (req, res
     ].join('\n');
 
     let geminiResult;
-    let lastErrorStatus = 0;
-    let lastErrorText = '';
+    let geminiError;
 
-    // Retry a few times on temporary overload from Gemini (503)
-    for (let attempt = 1; attempt <= 3; attempt += 1) {
-      try {
-        geminiResult = await generateGeminiContent({
-          contents: prompt,
-          config: {
-            maxOutputTokens: 220,
-            thinkingConfig: { thinkingLevel: 'low' }
-          }
-        });
-        break;
-      } catch (error) {
-        lastErrorStatus = error?.status || error?.code || 500;
-        lastErrorText = error?.message || String(error);
-      }
-
-      if (lastErrorStatus !== 503 || attempt === 3) {
-        break;
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, 900 * attempt));
+    try {
+      geminiResult = await generateGeminiContent({
+        contents: prompt,
+        models: [
+          process.env.GEMINI_SUMMARY_MODEL || 'gemini-2.5-flash',
+          'gemini-3.7-flash'
+        ],
+        config: {
+          maxOutputTokens: 220,
+          thinkingConfig: { thinkingLevel: 'low' }
+        }
+      });
+    } catch (error) {
+      geminiError = error;
     }
 
     if (!geminiResult) {
-      if (lastErrorStatus === 429) {
+      const errorStatus = Number(geminiError?.status || geminiError?.code || 500);
+      const errorText = geminiError?.message || String(geminiError || 'Errore Gemini');
+
+      if (errorStatus === 429) {
         return res.status(429).json({
           message: 'Hai raggiunto il limite richieste AI del momento. Riprova tra qualche minuto.'
         });
       }
 
-      if (lastErrorStatus === 503) {
+      if ([408, 503, 504].includes(errorStatus)) {
         return res.status(503).json({
-          message: 'Gemini è temporaneamente molto occupato. Riprova tra poco.',
-          error: process.env.NODE_ENV === 'development' ? lastErrorText : undefined
+          message: 'Gemini non ha risposto in tempo. Riprova tra poco.',
+          error: process.env.NODE_ENV === 'development' ? errorText : undefined
         });
       }
 
       return res.status(502).json({
         message: 'Il servizio AI non è disponibile al momento. Riprova più tardi.',
-        error: process.env.NODE_ENV === 'development' ? lastErrorText : undefined
+        error: process.env.NODE_ENV === 'development' ? errorText : undefined
       });
     }
 

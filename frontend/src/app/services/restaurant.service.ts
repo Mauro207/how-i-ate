@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
+import { map, tap, timeout } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 export interface Restaurant {
@@ -210,7 +210,7 @@ export class RestaurantService {
     return this.http.post<FeedbackSummaryResponse>(
       `${this.apiUrl}/restaurants/${restaurantId}/feedback-summary`,
       {}
-    );
+    ).pipe(timeout(40000));
   }
 
   createReview(restaurantId: string, data: {

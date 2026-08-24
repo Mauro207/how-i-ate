@@ -142,7 +142,9 @@ export class RestaurantDetailComponent implements OnInit {
       error: (err) => {
         this.feedbackSummaryLoading.set(false);
         this.feedbackSummaryError.set(
-          err?.error?.message || 'Riassunto feedback non disponibile al momento.'
+          err?.name === 'TimeoutError'
+            ? 'Gemini sta impiegando troppo tempo. Riprova tra poco.'
+            : err?.error?.message || 'Riassunto feedback non disponibile al momento.'
         );
       }
     });
