@@ -1,16 +1,5 @@
-let GoogleGenerativeAI;
-
 const MODEL_NAME = 'deterministic-intent-parser';
-const GEMINI_MODEL_NAME = 'gemini-2.5-flash-lite-preview-06-17';
-const GEMINI_MODEL_CANDIDATES = [
-  GEMINI_MODEL_NAME,
-  'gemini-2.5-flash-lite',
-  'gemini-2.5-flash',
-  'gemini-1.5-flash'
-];
-
-let geminiModel;
-let selectedGeminiModelName;
+const { generateContent } = require('../services/gemini');
 
 const PLACE_TYPE_PATTERNS = [
   { type: 'ristorante giapponese', patterns: [/\bristorante\s+giapponese\b/i] },
@@ -215,69 +204,6 @@ const buildSearchText = ({ originalMessage, city, placeType }) => {
 
 const canUseGeminiFallback = () => Boolean(process.env.GEMINI_API_KEY);
 
-const getGeminiSdk = () => {
-  if (GoogleGenerativeAI) {
-    return GoogleGenerativeAI;
-  }
-
-  ({ GoogleGenerativeAI } = require('@google/generative-ai'));
-  return GoogleGenerativeAI;
-};
-
-const getGeminiModel = () => {
-  if (geminiModel) {
-    return geminiModel;
-  }
-
-  const GeminiSdk = getGeminiSdk();
-  const client = new GeminiSdk(process.env.GEMINI_API_KEY);
-  geminiModel = client.getGenerativeModel({ model: GEMINI_MODEL_NAME });
-  selectedGeminiModelName = GEMINI_MODEL_NAME;
-  return geminiModel;
-};
-
-const isModelNotFoundError = (error) => {
-  const message = String(error?.message || '');
-  return error?.status === 404 || message.includes('404') || message.includes('is not found');
-};
-
-const generateContentWithFallback = async ({ contents, generationConfig }) => {
-  const primaryModel = getGeminiModel();
-
-  try {
-    return await primaryModel.generateContent({ contents, generationConfig });
-  } catch (error) {
-    if (!isModelNotFoundError(error)) {
-      throw error;
-    }
-  }
-
-  const GeminiSdk = getGeminiSdk();
-  const client = new GeminiSdk(process.env.GEMINI_API_KEY);
-
-  for (const candidate of GEMINI_MODEL_CANDIDATES) {
-    if (candidate === selectedGeminiModelName) {
-      continue;
-    }
-
-    const candidateModel = client.getGenerativeModel({ model: candidate });
-
-    try {
-      const result = await candidateModel.generateContent({ contents, generationConfig });
-      geminiModel = candidateModel;
-      selectedGeminiModelName = candidate;
-      console.log(`[telegram-bot] Gemini fallback model attivo: ${candidate}`);
-      return result;
-    } catch (error) {
-      if (!isModelNotFoundError(error)) {
-        throw error;
-      }
-    }
-  }
-
-  throw new Error('Nessun modello Gemini disponibile tra i candidati configurati');
-};
-
 const parseJsonBlock = (rawText) => {
   if (!rawText) {
     return null;
@@ -321,15 +247,15 @@ const extractIntentWithGemini = async (messageText) => {
     `Messaggio utente: ${messageText}`
   ].join('\n');
 
-  const result = await generateContentWithFallback({
+  const { response } = await generateContent({
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
-    generationConfig: {
-      temperature: 0.1,
-      responseMimeType: 'application/json'
+    config: {
+      responseMimeType: 'application/json',
+      thinkingConfig: { thinkingLevel: 'low' }
     }
   });
 
-  const text = result?.response?.text?.() || '';
+  const text = response?.text || '';
   const parsed = parseJsonBlock(text) || {};
 
   return {

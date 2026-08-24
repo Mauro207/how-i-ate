@@ -17,7 +17,7 @@
   "license": "ISC",
   "description": "Backend server for How I Ate application",
   "dependencies": {
-    "@google/generative-ai": "^0.17.2",
+    "@google/genai": "^2.18.0",
     "apn": "^2.2.0",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",

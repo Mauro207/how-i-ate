@@ -4,6 +4,7 @@ const Review = require('../models/Review');
 const { authenticate, authorize } = require('../middleware/auth');
 const { writeLimiter } = require('../middleware/rateLimiter');
 const { sendPushToAll } = require('../services/pushNotifications');
+const { generateContent: generateGeminiContent } = require('../services/gemini');
 
 const router = express.Router();
 
@@ -300,37 +301,25 @@ router.post('/:id/feedback-summary', writeLimiter, authenticate, async (req, res
       JSON.stringify(compactReviews)
     ].join('\n');
 
-    const requestBody = JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: 0.3,
-        maxOutputTokens: 220
-      }
-    });
-
-    let geminiResponse;
+    let geminiResult;
     let lastErrorStatus = 0;
     let lastErrorText = '';
 
     // Retry a few times on temporary overload from Gemini (503)
     for (let attempt = 1; attempt <= 3; attempt += 1) {
-      geminiResponse = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${geminiApiKey}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: requestBody
-        }
-      );
-
-      if (geminiResponse.ok) {
+      try {
+        geminiResult = await generateGeminiContent({
+          contents: prompt,
+          config: {
+            maxOutputTokens: 220,
+            thinkingConfig: { thinkingLevel: 'low' }
+          }
+        });
         break;
+      } catch (error) {
+        lastErrorStatus = error?.status || error?.code || 500;
+        lastErrorText = error?.message || String(error);
       }
-
-      lastErrorStatus = geminiResponse.status;
-      lastErrorText = await geminiResponse.text();
 
       if (lastErrorStatus !== 503 || attempt === 3) {
         break;
@@ -339,7 +328,7 @@ router.post('/:id/feedback-summary', writeLimiter, authenticate, async (req, res
       await new Promise((resolve) => setTimeout(resolve, 900 * attempt));
     }
 
-    if (!geminiResponse?.ok) {
+    if (!geminiResult) {
       if (lastErrorStatus === 429) {
         return res.status(429).json({
           message: 'Hai raggiunto il limite richieste AI del momento. Riprova tra qualche minuto.'
@@ -359,11 +348,7 @@ router.post('/:id/feedback-summary', writeLimiter, authenticate, async (req, res
       });
     }
 
-    const data = await geminiResponse.json();
-    const rawSummary = data?.candidates?.[0]?.content?.parts
-      ?.map((part) => part?.text || '')
-      .join('\n')
-      .trim();
+    const rawSummary = geminiResult.response?.text?.trim();
 
     const summary = (() => {
       if (!rawSummary) return '';
@@ -386,7 +371,7 @@ router.post('/:id/feedback-summary', writeLimiter, authenticate, async (req, res
     }
 
     res.json({
-      model: 'gemini-2.5-flash-lite',
+      model: geminiResult.model,
       restaurantId: restaurant._id,
       reviewCount: compactReviews.length,
       summary,
