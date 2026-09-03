@@ -576,6 +576,42 @@ router.put('/users/:id/password', writeLimiter, authenticate, authorize('superad
   }
 });
 
+// Delete user account (superadmin only). Reviews intentionally remain in place.
+router.delete('/users/:id', writeLimiter, authenticate, authorize('superadmin'), async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'ID utente non valido' });
+    }
+
+    if (req.user.userId.toString() === id) {
+      return res.status(400).json({ message: 'Non puoi eliminare il tuo account dalla gestione utenti' });
+    }
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: 'Utente non trovato' });
+    }
+
+    if (user.role === 'superadmin') {
+      return res.status(403).json({ message: 'Non è possibile eliminare un account superadmin' });
+    }
+
+    await User.findByIdAndDelete(id);
+
+    return res.json({
+      message: 'Utente eliminato con successo',
+      deletedUserId: id
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: 'Errore durante la cancellazione dell\'utente',
+      error: error.message
+    });
+  }
+});
+
 // Search users (authenticated users)
 const searchUsersHandler = async (req, res) => {
   try {

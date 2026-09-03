@@ -26,6 +26,7 @@ export interface Review {
     username: string;
     displayName?: string;
     email: string;
+    deleted?: boolean;
   };
   serviceRating: number;
   priceRating: number;

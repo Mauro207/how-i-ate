@@ -108,6 +108,10 @@ export class AuthService {
     return this.httpClient.put<{ message: string }>(`${this.apiUrl}/users/${userId}/password`, { password });
   }
 
+  deleteUser(userId: string): Observable<{ message: string; deletedUserId: string }> {
+    return this.httpClient.delete<{ message: string; deletedUserId: string }>(`${this.apiUrl}/users/${userId}`);
+  }
+
   searchUsers(q: string): Observable<{ count: number; users: UserSearchResult[] }> {
     const params = new HttpParams().set('q', q);
     return this.http.get<{ count: number; users: UserSearchResult[] }>(

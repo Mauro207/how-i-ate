@@ -9,6 +9,20 @@ const { sortRankings, toRankingAverage } = require('../utils/ranking');
 
 const router = express.Router();
 
+const withAuthorFallback = (review) => {
+  const serialized = review.toObject ? review.toObject() : review;
+  if (!serialized.user) {
+    serialized.user = {
+      _id: '',
+      username: 'Utente eliminato',
+      displayName: 'Utente eliminato',
+      email: '',
+      deleted: true
+    };
+  }
+  return serialized;
+};
+
 /**
  * @swagger
  * /api/reviews/rankings/global:
@@ -229,7 +243,7 @@ router.get('/restaurant/:restaurantId', authenticate, async (req, res) => {
     
     res.json({
       count: reviews.length,
-      reviews
+      reviews: reviews.map(withAuthorFallback)
     });
   } catch (error) {
     if (error.kind === 'ObjectId') {
@@ -281,7 +295,7 @@ router.get('/:id', authenticate, async (req, res) => {
       return res.status(404).json({ message: 'Review not found' });
     }
     
-    res.json({ review });
+    res.json({ review: withAuthorFallback(review) });
   } catch (error) {
     if (error.kind === 'ObjectId') {
       return res.status(404).json({ message: 'Review not found' });

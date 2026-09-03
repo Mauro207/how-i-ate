@@ -545,12 +545,19 @@
                 <!-- Review Header -->
                 <div class="flex items-start justify-between mb-3">
                   <div>
-                    <h4 
-                      class="font-semibold text-[#6750a4] transition duration-150 cursor-pointer dark:text-[#d0bcff] hover:text-[#4a3880] dark:hover:text-white"
-                      (click)="viewUserRankings(review.user._id, review.user.username)"
-                    >
-                      {{ review.user.username }}
-                    </h4>
+                    @if (review.user.deleted) {
+                      <h4 class="font-semibold text-gray-500 dark:text-gray-400">
+                        {{ review.user.username }}
+                      </h4>
+                    } @else {
+                      <button
+                        type="button"
+                        class="font-semibold text-left text-[#6750a4] transition duration-150 dark:text-[#d0bcff] hover:text-[#4a3880] dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-[#6750a4]/40 rounded"
+                        (click)="viewUserRankings(review.user._id, review.user.username)"
+                      >
+                        {{ review.user.username }}
+                      </button>
+                    }
                     <p class="text-sm text-gray-500 dark:text-gray-400">
                       {{ formatReviewDate(review.createdAt) }}<br>
                       @if (review.updatedAt !== review.createdAt) {
