@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, HostListener, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -31,14 +31,40 @@ export class RestaurantDetailComponent implements OnInit {
   
   // Review form constants
   private readonly DEFAULT_RATING = 5;
-  readonly MIN_RATING = 0.25;
   readonly MAX_RATING = 10;
-  readonly RATING_STEP = 0.25;
+  readonly RATING_VALUES = Array.from({ length: 10 }, (_, index) => index + 1);
+  readonly REVIEW_STEPS = [
+    {
+      label: 'Servizio',
+      hint: 'Come ti sei sentito accolto e seguito?',
+      image: '/assets/review/service-3d.png',
+      imageAlt: 'Emoji 3D di un cameriere sorridente'
+    },
+    {
+      label: 'Prezzo',
+      hint: 'Quanto è giusto il rapporto qualità-prezzo?',
+      image: '/assets/review/value-3d.png',
+      imageAlt: 'Emoji 3D di una moneta sorridente'
+    },
+    {
+      label: 'Menu',
+      hint: 'Quanto ti hanno convinto proposta e qualità?',
+      image: '/assets/review/menu-3d.png',
+      imageAlt: 'Emoji 3D di una ciotola colorata'
+    },
+    {
+      label: 'Commento',
+      hint: 'Racconta cosa ha reso speciale la tua esperienza.',
+      image: '/assets/review/comment-3d.png',
+      imageAlt: 'Emoji 3D di un commento con matita e cuore'
+    }
+  ];
   readonly COMMENT_MIN_LENGTH = 5;
   readonly COMMENT_MAX_LENGTH = 600;
   
   // Review form
   showReviewForm = signal(false);
+  reviewStep = signal(0);
   serviceRating = signal(this.DEFAULT_RATING);
   priceRating = signal(this.DEFAULT_RATING);
   menuRating = signal(this.DEFAULT_RATING);
@@ -151,10 +177,79 @@ export class RestaurantDetailComponent implements OnInit {
   }
 
   toggleReviewForm(): void {
-    this.showReviewForm.set(!this.showReviewForm());
     if (this.showReviewForm()) {
+      this.closeReviewForm();
+      return;
+    }
+
+    this.reviewStep.set(0);
+    this.reviewError.set('');
+    this.showReviewForm.set(true);
+  }
+
+  closeReviewForm(): void {
+    if (this.submittingReview()) return;
+
+    this.showReviewForm.set(false);
+    this.reviewStep.set(0);
+    this.editingReviewId.set(null);
+    this.resetReviewForm();
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.showReviewForm()) {
+      this.closeReviewForm();
+    }
+  }
+
+  nextReviewStep(): void {
+    if (this.reviewStep() < this.REVIEW_STEPS.length - 1) {
+      this.reviewStep.update(step => step + 1);
       this.reviewError.set('');
     }
+  }
+
+  previousReviewStep(): void {
+    if (this.reviewStep() > 0) {
+      this.reviewStep.update(step => step - 1);
+      this.reviewError.set('');
+    }
+  }
+
+  goToReviewStep(step: number): void {
+    if (step >= 0 && step < this.REVIEW_STEPS.length && step < this.reviewStep()) {
+      this.reviewStep.set(step);
+      this.reviewError.set('');
+    }
+  }
+
+  selectCurrentRating(value: number): void {
+    switch (this.reviewStep()) {
+      case 0:
+        this.serviceRating.set(value);
+        break;
+      case 1:
+        this.priceRating.set(value);
+        break;
+      case 2:
+        this.menuRating.set(value);
+        break;
+    }
+  }
+
+  currentRating(): number {
+    if (this.reviewStep() === 0) return this.serviceRating();
+    if (this.reviewStep() === 1) return this.priceRating();
+    return this.menuRating();
+  }
+
+  ratingDescription(value: number): string {
+    if (value <= 2) return 'Da dimenticare';
+    if (value <= 4) return 'Sotto le aspettative';
+    if (value <= 6) return 'Nella media';
+    if (value <= 8) return 'Molto buono';
+    return 'Eccezionale';
   }
 
   toggleReviewAccordion(reviewId: string): void {
@@ -203,14 +298,17 @@ export class RestaurantDetailComponent implements OnInit {
     const trimmed = this.comment().trim();
     if (!trimmed) {
       this.reviewError.set('Per favore aggiungi un commento.');
+      this.reviewStep.set(3);
       return;
     }
     if (trimmed.length < this.COMMENT_MIN_LENGTH) {
       this.reviewError.set(`Il commento deve essere di almeno ${this.COMMENT_MIN_LENGTH} caratteri.`);
+      this.reviewStep.set(3);
       return;
     }
     if (trimmed.length > this.COMMENT_MAX_LENGTH) {
       this.reviewError.set(`Il commento supera il limite di ${this.COMMENT_MAX_LENGTH} caratteri (${trimmed.length}/${this.COMMENT_MAX_LENGTH}).`);
+      this.reviewStep.set(3);
       return;
     }
 
@@ -246,6 +344,7 @@ export class RestaurantDetailComponent implements OnInit {
     this.priceRating.set(this.DEFAULT_RATING);
     this.menuRating.set(this.DEFAULT_RATING);
     this.comment.set('');
+    this.reviewStep.set(0);
     this.reviewError.set('');
   }
 
@@ -340,10 +439,11 @@ export class RestaurantDetailComponent implements OnInit {
       [review._id]: false
     });
     this.editingReviewId.set(review._id);
-    this.serviceRating.set(review.serviceRating);
-    this.priceRating.set(review.priceRating);
-    this.menuRating.set(review.menuRating);
+    this.serviceRating.set(Math.min(this.MAX_RATING, Math.max(1, Math.round(review.serviceRating))));
+    this.priceRating.set(Math.min(this.MAX_RATING, Math.max(1, Math.round(review.priceRating))));
+    this.menuRating.set(Math.min(this.MAX_RATING, Math.max(1, Math.round(review.menuRating))));
     this.comment.set(review.comment);
+    this.reviewStep.set(0);
     this.showReviewForm.set(true);
     this.reviewError.set('');
   }
@@ -352,6 +452,7 @@ export class RestaurantDetailComponent implements OnInit {
     this.editingReviewId.set(null);
     this.resetReviewForm();
     this.showReviewForm.set(false);
+    this.reviewStep.set(0);
   }
 
   getRestaurantAverageRating(): number | null {
@@ -365,14 +466,17 @@ export class RestaurantDetailComponent implements OnInit {
     const trimmed = this.comment().trim();
     if (!trimmed) {
       this.reviewError.set('Aggiornamento della recensione fallita: aggiungi un commento');
+      this.reviewStep.set(3);
       return;
     }
     if (trimmed.length < this.COMMENT_MIN_LENGTH) {
       this.reviewError.set(`Il commento deve essere di almeno ${this.COMMENT_MIN_LENGTH} caratteri.`);
+      this.reviewStep.set(3);
       return;
     }
     if (trimmed.length > this.COMMENT_MAX_LENGTH) {
       this.reviewError.set(`Il commento supera il limite di ${this.COMMENT_MAX_LENGTH} caratteri (${trimmed.length}/${this.COMMENT_MAX_LENGTH}).`);
+      this.reviewStep.set(3);
       return;
     }
 

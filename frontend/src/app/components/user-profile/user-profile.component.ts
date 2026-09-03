@@ -86,6 +86,16 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     this.router.navigate(['/user-rankings', this.userId()]);
   }
 
+  isOwnProfile(): boolean {
+    return this.authService.currentUser()?.id === this.userId();
+  }
+
+  openSettings(): void {
+    if (this.isOwnProfile()) {
+      this.router.navigate(['/settings']);
+    }
+  }
+
   private loadLegacyProfileFallback(userId: string): void {
     this.restaurantService.getUserRankings(userId).subscribe({
       next: response => {

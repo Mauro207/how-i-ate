@@ -41,6 +41,10 @@ Configure the following environment variables:
 - `APNS_BUNDLE_ID` - iOS app bundle identifier used as APNs topic (for example `com.howiate.app`)
 - `APNS_PRODUCTION` - `true` for production APNs, `false` for sandbox (default)
 - `CRON_SECRET` - Optional shared secret for scheduled notification endpoints
+- `GEMINI_API_KEY` - API key created in Google AI Studio, used only by the backend
+- `GEMINI_MODEL` - Optional Gemini model override (default: `gemini-3.7-flash`)
+- `GEMINI_SUMMARY_MODEL` - Optional model for review summaries (default: `gemini-2.5-flash`)
+- `GEMINI_MODEL_TIMEOUT_MS` - Optional timeout for each Gemini model attempt, minimum `10000` (default: `10000`)
 
 ## Scheduled Notifications
 

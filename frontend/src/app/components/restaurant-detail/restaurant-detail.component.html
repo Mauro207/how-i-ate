@@ -288,137 +288,225 @@
           </div>
         }
 
-        <!-- Review Form -->
+        <!-- Review stepper dialog -->
         @if (showReviewForm()) {
-          <div class="p-6 mb-8 border border-gray-100 dark:border-white/5 rounded-2xl bg-gray-50 dark:bg-white/[0.02]">
-            <h3 class="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
-              {{ editingReviewId() ? 'Modifica recensione' : 'Lascia una recensione' }}
-            </h3>
-
-            @if (reviewError()) {
-              <div class="px-4 py-3 mb-4 text-sm text-red-700 border border-red-200 rounded-xl bg-red-50 dark:bg-red-500/20 dark:text-red-300 dark:border-red-500/40">
-                {{ reviewError() }}
-              </div>
-            }
-
-            <form (ngSubmit)="submitReview()">
-              <!-- Service Rating -->
-              <div class="mb-4">
-                <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Servizio: {{ formatRating(serviceRating()) }} / {{ MAX_RATING }}.0
-                </label>
-                <input
-                  type="range"
-                  [min]="MIN_RATING"
-                  [max]="MAX_RATING"
-                  [step]="RATING_STEP"
-                  [(ngModel)]="serviceRating"
-                  name="serviceRating"
-                  title="Valutazione servizio"
-                  class="w-full h-2 bg-gray-200 rounded-xl appearance-none cursor-pointer dark:bg-white/10 accent-[#6750a4]"
-                />
-              </div>
-
-              <!-- Price Rating -->
-              <div class="mb-4">
-                <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Prezzo: {{ formatRating(priceRating()) }} / {{ MAX_RATING }}.0
-                </label>
-                <input
-                  type="range"
-                  [min]="MIN_RATING"
-                  [max]="MAX_RATING"
-                  [step]="RATING_STEP"
-                  [(ngModel)]="priceRating"
-                  name="priceRating"
-                  title="Valutazione prezzo"
-                  class="w-full h-2 bg-gray-200 rounded-xl appearance-none cursor-pointer dark:bg-white/10 accent-[#6750a4]"
-                />
-              </div>
-
-              <!-- Menu Rating -->
-              <div class="mb-4">
-                <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Menu: {{ formatRating(menuRating()) }} / {{ MAX_RATING }}.0
-                </label>
-                <input
-                  type="range"
-                  [min]="MIN_RATING"
-                  [max]="MAX_RATING"
-                  [step]="RATING_STEP"
-                  [(ngModel)]="menuRating"
-                  name="menuRating"
-                  title="Valutazione menu"
-                  class="w-full h-2 bg-gray-200 rounded-xl appearance-none cursor-pointer dark:bg-white/10 accent-[#6750a4]"
-                />
-              </div>
-
-              <!-- Comment -->
-              <div class="mb-4">
-                <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Commento <span class="text-red-500">*</span>
-                </label>
-                <textarea
-                  [(ngModel)]="comment"
-                  name="comment"
-                  rows="4"
-                  required
-                  [minlength]="COMMENT_MIN_LENGTH"
-                  [maxlength]="COMMENT_MAX_LENGTH"
-                  [disabled]="submittingReview()"
-                  class="w-full px-4 py-2.5 transition duration-150 border border-gray-200 dark:border-white/10 rounded-xl bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#6750a4]/40 focus:border-[#6750a4] dark:focus:border-[#d0bcff] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-                  [class.border-red-400]="comment().trim().length > COMMENT_MAX_LENGTH || (comment().trim().length > 0 && comment().trim().length < COMMENT_MIN_LENGTH)"
-                  [class.dark:border-red-500]="comment().trim().length > COMMENT_MAX_LENGTH || (comment().trim().length > 0 && comment().trim().length < COMMENT_MIN_LENGTH)"
-                  placeholder="Condividi la tua esperienza..."
-                ></textarea>
-                <div class="flex items-center justify-between mt-1">
-                  @if (comment().trim().length > 0 && comment().trim().length < COMMENT_MIN_LENGTH) {
-                    <span class="text-xs text-red-500 dark:text-red-400">Minimo {{ COMMENT_MIN_LENGTH }} caratteri</span>
-                  } @else if (comment().trim().length > COMMENT_MAX_LENGTH) {
-                    <span class="text-xs text-red-500 dark:text-red-400">Limite superato di {{ comment().trim().length - COMMENT_MAX_LENGTH }} caratteri</span>
-                  } @else {
-                    <span></span>
-                  }
-                  <span
-                    class="text-xs ml-auto"
-                    [class.text-red-500]="comment().trim().length > COMMENT_MAX_LENGTH"
-                    [class.dark:text-red-400]="comment().trim().length > COMMENT_MAX_LENGTH"
-                    [class.text-amber-500]="comment().trim().length >= COMMENT_MAX_LENGTH * 0.9 && comment().trim().length <= COMMENT_MAX_LENGTH"
-                    [class.text-gray-400]="comment().trim().length < COMMENT_MAX_LENGTH * 0.9"
-                    [class.dark:text-gray-500]="comment().trim().length < COMMENT_MAX_LENGTH * 0.9"
-                  >{{ comment().trim().length }}/{{ COMMENT_MAX_LENGTH }}</span>
+          <div class="review-dialog-backdrop" (click)="closeReviewForm()">
+            <section
+              class="review-dialog"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="review-dialog-title"
+              (click)="$event.stopPropagation()"
+            >
+              <header class="flex items-center justify-between gap-4 px-5 py-4 border-b border-gray-100 sm:px-7 dark:border-white/10">
+                <div class="min-w-0">
+                  <p class="text-xs font-semibold uppercase tracking-[0.15em] text-[#6750a4] dark:text-[#d0bcff]">
+                    La tua esperienza
+                  </p>
+                  <h3 id="review-dialog-title" class="mt-1 text-lg font-semibold text-gray-900 truncate dark:text-white">
+                    {{ editingReviewId() ? 'Modifica recensione' : 'Recensisci' }} {{ restaurant()?.name }}
+                  </h3>
                 </div>
-              </div>
-
-              <!-- Action Buttons -->
-              <div class="flex flex-col gap-4 lg:flex-row">
-                <button
-                  type="submit"
-                  [disabled]="submittingReview()"
-                  class="px-6 py-2 font-semibold text-white transition duration-150 bg-[#6750a4] rounded-xl shadow-sm hover:bg-[#5a4494] focus:outline-none focus:ring-2 focus:ring-[#6750a4]/40 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  @if (submittingReview()) {
-                    <span class="flex items-center">
-                      <svg class="w-4 h-4 mr-2 -ml-1 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Invio in corso...
-                    </span>
-                  } @else {
-                    {{ editingReviewId() ? 'Aggiorna recensione' : 'Invia recensione' }}
-                  }
-                </button>
                 <button
                   type="button"
-                  (click)="editingReviewId() ? cancelEdit() : toggleReviewForm()"
+                  (click)="closeReviewForm()"
                   [disabled]="submittingReview()"
-                  class="px-6 py-2 font-semibold text-gray-700 dark:text-gray-300 transition duration-150 border border-gray-200 dark:border-white/10 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-[#6750a4]/40 disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="flex items-center justify-center w-10 h-10 -mr-2 text-gray-600 transition rounded-full shrink-0 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-[#6750a4]/40 disabled:opacity-50"
+                  aria-label="Chiudi recensione"
                 >
-                  Annulla
+                  <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path stroke-linecap="round" d="M6 6l12 12M18 6L6 18" />
+                  </svg>
                 </button>
-              </div>
-            </form>
+              </header>
+
+              <nav class="px-5 pt-5 sm:px-7" aria-label="Avanzamento recensione">
+                <div class="grid grid-cols-4 gap-2">
+                  @for (step of REVIEW_STEPS; track step.label; let index = $index) {
+                    <button
+                      type="button"
+                      (click)="goToReviewStep(index)"
+                      [disabled]="index > reviewStep()"
+                      class="group min-w-0 text-left focus:outline-none disabled:cursor-default"
+                      [attr.aria-current]="index === reviewStep() ? 'step' : null"
+                      [attr.aria-label]="'Passaggio ' + (index + 1) + ': ' + step.label"
+                    >
+                      <span
+                        class="block h-1.5 mb-2 overflow-hidden rounded-full transition-colors"
+                        [class.bg-[#6750a4]]="index <= reviewStep()"
+                        [class.dark:bg-[#d0bcff]]="index <= reviewStep()"
+                        [class.bg-gray-200]="index > reviewStep()"
+                        [class.dark:bg-white/10]="index > reviewStep()"
+                      ></span>
+                      <span
+                        class="block text-[10px] font-semibold truncate transition-colors sm:text-xs"
+                        [class.text-[#4a3880]]="index <= reviewStep()"
+                        [class.dark:text-[#d0bcff]]="index <= reviewStep()"
+                        [class.text-gray-400]="index > reviewStep()"
+                        [class.dark:text-gray-500]="index > reviewStep()"
+                      >{{ step.label }}</span>
+                    </button>
+                  }
+                </div>
+              </nav>
+
+              <form class="flex flex-col flex-1 min-h-0" (ngSubmit)="submitReview()">
+                <div class="review-dialog-content">
+                  <div class="max-w-2xl mx-auto">
+                    @for (activeStep of [REVIEW_STEPS[reviewStep()]]; track activeStep.label) {
+                    <div class="review-step-view">
+                    <div class="review-step-intro">
+                      <div class="review-step-emoji-wrap">
+                        <img
+                          class="review-step-emoji"
+                          [src]="activeStep.image"
+                          [alt]="activeStep.imageAlt"
+                        />
+                      </div>
+                      <div class="min-w-0">
+                        <p class="text-xs font-semibold uppercase tracking-[0.15em] text-[#6750a4] dark:text-[#d0bcff]">
+                          Passaggio {{ reviewStep() + 1 }} di {{ REVIEW_STEPS.length }}
+                        </p>
+                        <h4 class="mt-2 text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+                          {{ activeStep.label }}
+                        </h4>
+                        <p class="mt-2 text-sm leading-relaxed text-gray-600 sm:text-base dark:text-gray-300">
+                          {{ activeStep.hint }}
+                        </p>
+                      </div>
+                    </div>
+
+                    @if (reviewError()) {
+                      <div class="px-4 py-3 mt-5 text-sm text-red-700 border border-red-200 rounded-xl bg-red-50 dark:bg-red-500/20 dark:text-red-300 dark:border-red-500/40" role="alert">
+                        {{ reviewError() }}
+                      </div>
+                    }
+
+                    @if (reviewStep() < 3) {
+                      <div class="rating-panel">
+                        <div class="flex items-center justify-between gap-4">
+                          <div>
+                            <p class="text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">Il tuo voto</p>
+                            <p class="mt-1 text-sm font-semibold text-[#4a3880] dark:text-[#d0bcff]">
+                              {{ ratingDescription(currentRating()) }}
+                            </p>
+                          </div>
+                          <div class="flex items-end gap-1" aria-live="polite">
+                            <span class="text-5xl font-bold leading-none text-[#6750a4] dark:text-[#d0bcff]">{{ currentRating() }}</span>
+                            <span class="pb-1 text-sm font-medium text-gray-400 dark:text-gray-500">/10</span>
+                          </div>
+                        </div>
+
+                        <div class="grid grid-cols-5 gap-2 mt-6 sm:grid-cols-10" role="radiogroup" [attr.aria-label]="'Voto ' + REVIEW_STEPS[reviewStep()].label">
+                          @for (value of RATING_VALUES; track value) {
+                            <button
+                              type="button"
+                              role="radio"
+                              (click)="selectCurrentRating(value)"
+                              [attr.aria-checked]="currentRating() === value"
+                              [attr.aria-label]="value + ' su 10'"
+                              class="rating-choice"
+                              [class.rating-choice-selected]="currentRating() === value"
+                            >
+                              {{ value }}
+                            </button>
+                          }
+                        </div>
+
+                        <div class="flex justify-between mt-3 text-[11px] font-medium text-gray-400 dark:text-gray-500">
+                          <span>Per niente</span>
+                          <span>Eccellente</span>
+                        </div>
+                      </div>
+                    } @else {
+                      <div class="review-comment-panel">
+                        <label for="review-comment" class="sr-only">Commento</label>
+                        <textarea
+                          id="review-comment"
+                          [(ngModel)]="comment"
+                          name="comment"
+                          rows="7"
+                          required
+                          [minlength]="COMMENT_MIN_LENGTH"
+                          [maxlength]="COMMENT_MAX_LENGTH"
+                          [disabled]="submittingReview()"
+                          class="w-full px-4 py-3.5 transition border border-gray-200 resize-none dark:border-white/10 rounded-xl bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-[#6750a4]/40 focus:border-[#6750a4] dark:focus:border-[#d0bcff] focus:outline-none disabled:opacity-50"
+                          [class.border-red-400]="comment().trim().length > 0 && comment().trim().length < COMMENT_MIN_LENGTH"
+                          placeholder="Com'era l'atmosfera? Cosa consiglieresti di provare?"
+                        ></textarea>
+                        <div class="flex items-center justify-between gap-4 mt-2">
+                          <span class="text-xs text-gray-500 dark:text-gray-400">
+                            @if (comment().trim().length > 0 && comment().trim().length < COMMENT_MIN_LENGTH) {
+                              Minimo {{ COMMENT_MIN_LENGTH }} caratteri
+                            } @else {
+                              Aggiungi dettagli utili agli altri
+                            }
+                          </span>
+                          <span class="text-xs text-gray-400 dark:text-gray-500">{{ comment().trim().length }}/{{ COMMENT_MAX_LENGTH }}</span>
+                        </div>
+                      </div>
+
+                      <div class="mt-7">
+                        <p class="mb-3 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">Riepilogo voti</p>
+                        <div class="grid grid-cols-3 gap-2">
+                        <button type="button" (click)="goToReviewStep(0)" class="review-summary-chip">
+                          <span><small>Servizio</small><strong>{{ serviceRating() }}<em>/10</em></strong></span>
+                        </button>
+                        <button type="button" (click)="goToReviewStep(1)" class="review-summary-chip">
+                          <span><small>Prezzo</small><strong>{{ priceRating() }}<em>/10</em></strong></span>
+                        </button>
+                        <button type="button" (click)="goToReviewStep(2)" class="review-summary-chip">
+                          <span><small>Menu</small><strong>{{ menuRating() }}<em>/10</em></strong></span>
+                        </button>
+                        </div>
+                      </div>
+                    }
+                    </div>
+                    }
+                  </div>
+                </div>
+
+                <footer class="review-dialog-footer">
+                  <button
+                    type="button"
+                    (click)="reviewStep() === 0 ? closeReviewForm() : previousReviewStep()"
+                    [disabled]="submittingReview()"
+                    class="px-5 py-3 text-sm font-semibold text-gray-700 transition border border-gray-200 dark:text-gray-300 dark:border-white/10 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-[#6750a4]/40 disabled:opacity-50"
+                  >
+                    {{ reviewStep() === 0 ? 'Annulla' : 'Indietro' }}
+                  </button>
+
+                  @if (reviewStep() < 3) {
+                    <button
+                      type="button"
+                      (click)="nextReviewStep()"
+                      class="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold text-white transition bg-[#6750a4] rounded-xl shadow-sm hover:bg-[#5a4494] focus:outline-none focus:ring-2 focus:ring-[#6750a4]/40"
+                    >
+                      Continua
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6" />
+                      </svg>
+                    </button>
+                  } @else {
+                    <button
+                      type="submit"
+                      [disabled]="submittingReview() || comment().trim().length < COMMENT_MIN_LENGTH"
+                      class="inline-flex items-center justify-center px-6 py-3 text-sm font-semibold text-white transition bg-[#6750a4] rounded-xl shadow-sm hover:bg-[#5a4494] focus:outline-none focus:ring-2 focus:ring-[#6750a4]/40 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      @if (submittingReview()) {
+                        <svg class="w-4 h-4 mr-2 text-white animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.4 0 0 5.4 0 12h4z"></path>
+                        </svg>
+                        Invio...
+                      } @else {
+                        {{ editingReviewId() ? 'Salva modifiche' : 'Pubblica recensione' }}
+                      }
+                    </button>
+                  }
+                </footer>
+              </form>
+            </section>
           </div>
         }
 
