@@ -397,6 +397,19 @@
                           </div>
                         </div>
 
+                        <div class="review-average-inline" aria-label="Media complessiva dei voti">
+                          <div class="review-average-copy" aria-live="polite" aria-atomic="true">
+                            <span>Media attuale</span>
+                            <strong>{{ formatRating(reviewAverage()) }}<small>/10</small></strong>
+                          </div>
+                          <div class="review-average-track" aria-hidden="true">
+                            <span [style.width.%]="reviewAverage() * 10"></span>
+                          </div>
+                          <span class="review-average-detail">
+                            Servizio {{ serviceRating() }} · Prezzo {{ priceRating() }} · Menu {{ menuRating() }}
+                          </span>
+                        </div>
+
                         <div class="grid grid-cols-5 gap-2 mt-6 sm:grid-cols-10" role="radiogroup" [attr.aria-label]="'Voto ' + REVIEW_STEPS[reviewStep()].label">
                           @for (value of RATING_VALUES; track value) {
                             <button
@@ -447,16 +460,31 @@
                       </div>
 
                       <div class="mt-7">
-                        <p class="mb-3 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">Riepilogo voti</p>
+                        <div class="review-summary-heading">
+                          <div>
+                            <p class="text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">Riepilogo voti</p>
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Tocca un voto per modificarlo</p>
+                          </div>
+                          <span class="review-summary-average">Media <strong>{{ formatRating(reviewAverage()) }}</strong>/10</span>
+                        </div>
                         <div class="grid grid-cols-3 gap-2">
-                        <button type="button" (click)="goToReviewStep(0)" class="review-summary-chip">
+                        <button type="button" (click)="goToReviewStep(0)" class="review-summary-chip" aria-label="Modifica il voto del servizio" title="Modifica Servizio">
                           <span><small>Servizio</small><strong>{{ serviceRating() }}<em>/10</em></strong></span>
+                          <svg class="review-summary-edit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m16.9 3.7 3.4 3.4M5 19l3.7-.7L19.6 7.4a1.5 1.5 0 0 0 0-2.1l-.9-.9a1.5 1.5 0 0 0-2.1 0L5.7 15.3 5 19Z" />
+                          </svg>
                         </button>
-                        <button type="button" (click)="goToReviewStep(1)" class="review-summary-chip">
+                        <button type="button" (click)="goToReviewStep(1)" class="review-summary-chip" aria-label="Modifica il voto del prezzo" title="Modifica Prezzo">
                           <span><small>Prezzo</small><strong>{{ priceRating() }}<em>/10</em></strong></span>
+                          <svg class="review-summary-edit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m16.9 3.7 3.4 3.4M5 19l3.7-.7L19.6 7.4a1.5 1.5 0 0 0 0-2.1l-.9-.9a1.5 1.5 0 0 0-2.1 0L5.7 15.3 5 19Z" />
+                          </svg>
                         </button>
-                        <button type="button" (click)="goToReviewStep(2)" class="review-summary-chip">
+                        <button type="button" (click)="goToReviewStep(2)" class="review-summary-chip" aria-label="Modifica il voto del menu" title="Modifica Menu">
                           <span><small>Menu</small><strong>{{ menuRating() }}<em>/10</em></strong></span>
+                          <svg class="review-summary-edit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m16.9 3.7 3.4 3.4M5 19l3.7-.7L19.6 7.4a1.5 1.5 0 0 0 0-2.1l-.9-.9a1.5 1.5 0 0 0-2.1 0L5.7 15.3 5 19Z" />
+                          </svg>
                         </button>
                         </div>
                       </div>

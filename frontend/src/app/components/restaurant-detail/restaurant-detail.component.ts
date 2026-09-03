@@ -244,6 +244,10 @@ export class RestaurantDetailComponent implements OnInit {
     return this.menuRating();
   }
 
+  reviewAverage(): number {
+    return (this.serviceRating() + this.priceRating() + this.menuRating()) / 3;
+  }
+
   ratingDescription(value: number): string {
     if (value <= 2) return 'Da dimenticare';
     if (value <= 4) return 'Sotto le aspettative';
