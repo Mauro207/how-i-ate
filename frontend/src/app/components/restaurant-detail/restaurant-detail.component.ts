@@ -71,6 +71,7 @@ export class RestaurantDetailComponent implements OnInit {
   comment = signal('');
   submittingReview = signal(false);
   reviewError = signal('');
+  reviewPublished = signal(false);
 
   // Edit review
   editingReviewId = signal<string | null>(null);
@@ -184,6 +185,7 @@ export class RestaurantDetailComponent implements OnInit {
 
     this.reviewStep.set(0);
     this.reviewError.set('');
+    this.reviewPublished.set(false);
     this.showReviewForm.set(true);
   }
 
@@ -332,8 +334,7 @@ export class RestaurantDetailComponent implements OnInit {
     this.restaurantService.createReview(restaurantId, reviewData).subscribe({
       next: () => {
         this.submittingReview.set(false);
-        this.showReviewForm.set(false);
-        this.resetReviewForm();
+        this.reviewPublished.set(true);
         this.loadReviews(restaurantId);
       },
       error: (err) => {
@@ -350,6 +351,7 @@ export class RestaurantDetailComponent implements OnInit {
     this.comment.set('');
     this.reviewStep.set(0);
     this.reviewError.set('');
+    this.reviewPublished.set(false);
   }
 
   calculateAverageRating(review: Review): number {
@@ -448,6 +450,7 @@ export class RestaurantDetailComponent implements OnInit {
     this.menuRating.set(Math.min(this.MAX_RATING, Math.max(1, Math.round(review.menuRating))));
     this.comment.set(review.comment);
     this.reviewStep.set(0);
+    this.reviewPublished.set(false);
     this.showReviewForm.set(true);
     this.reviewError.set('');
   }

@@ -40,18 +40,18 @@
 
   <!-- Restaurant Details -->
   @if (restaurant() && !loading()) {
-    <div class="max-w-4xl px-4 pt-6 mx-auto pb-28">
+    <main class="max-w-5xl px-3 pt-4 mx-auto sm:px-6 sm:pt-6 lg:px-8 pb-28">
       <!-- Restaurant Card -->
       @if (restaurant()!.coverImageUrl && !coverImageLoadFailed()) {
         <div
-          class="relative flex flex-col justify-end mb-8 overflow-hidden bg-center bg-cover shadow-lg dark:shadow-lg rounded-xl min-h-[320px]"
+          class="relative flex flex-col justify-end mb-7 overflow-hidden bg-center bg-cover shadow-lg rounded-2xl min-h-[330px] sm:min-h-[390px]"
           [ngStyle]="{ 'background-image': 'url(' + restaurant()!.coverImageUrl + ')' }"
         >
           <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/65 to-black/20"></div>
 
           @if (getRestaurantAverageRating()) {
-            <div class="absolute z-10 top-6 right-6">
-              <span class="inline-flex items-center px-3 py-1 text-xl font-semibold text-white rounded-full bg-white/20 backdrop-blur-sm">
+            <div class="absolute z-10 top-4 right-4 sm:top-6 sm:right-6">
+              <span class="inline-flex items-center px-3 py-1.5 text-lg font-semibold text-white border rounded-full shadow-md bg-black/50 border-white/20 backdrop-blur-md sm:text-xl">
                 <svg class="w-5 h-5 mr-1 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                 </svg>
@@ -60,7 +60,7 @@
             </div>
           }
 
-          <div class="relative z-10 px-6 py-6">
+          <div class="relative z-10 px-5 py-5 sm:px-7 sm:py-7">
             @if (restaurant()!.cuisine) {
               <div class="mb-3">
                 <span class="inline-block px-4 py-1 text-sm font-semibold text-white rounded-full bg-white/20 backdrop-blur-sm">
@@ -69,7 +69,7 @@
               </div>
             }
 
-            <h1 class="mb-3 text-4xl font-bold text-white">{{ restaurant()!.name }}</h1>
+            <h1 class="mb-3 text-3xl font-bold tracking-tight text-white sm:text-4xl">{{ restaurant()!.name }}</h1>
 
             @if (restaurant()!.address || restaurant()!.googleMapsUrl) {
               <div class="flex flex-wrap items-center gap-3 mb-3 text-white/90">
@@ -123,16 +123,16 @@
             }
 
             @if (restaurant()!.description) {
-              <p class="text-lg text-white/90">{{ restaurant()!.description }}</p>
+              <p class="max-w-3xl text-base leading-relaxed text-white/90 sm:text-lg">{{ restaurant()!.description }}</p>
             }
           </div>
         </div>
       } @else {
-        <div class="mb-8 overflow-hidden bg-white dark:bg-[#2b2930] shadow-sm border border-gray-100 dark:border-white/5 rounded-2xl">
-          <div class="px-6 py-8">
+        <div class="mb-7 overflow-hidden bg-white dark:bg-[#2b2930] shadow-sm border border-gray-100 dark:border-white/5 rounded-2xl">
+          <div class="px-5 py-6 sm:px-7 sm:py-8">
             <div class="flex items-start justify-between mb-4">
               <div class="w-full">
-                <h1 class="mb-2 text-4xl font-bold text-gray-900 dark:text-white">{{ restaurant()!.name }}</h1>
+                <h1 class="mb-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl dark:text-white">{{ restaurant()!.name }}</h1>
                 <div class="flex flex-row items-start justify-between w-full">
                   @if (restaurant()!.cuisine) {
                   <span class="inline-block px-4 py-1 text-sm font-semibold text-[#6750a4] bg-[#f3eeff] rounded-full dark:text-[#d0bcff] dark:bg-[#6750a4]/20">
@@ -211,12 +211,12 @@
       }
 
       @if (reviews().length >= 3) {
-        <div class="mb-6">
+        <section class="review-insights mb-7">
           <button
             type="button"
             (click)="summarizeFeedback()"
             [disabled]="feedbackSummaryLoading()"
-            class="inline-flex items-center gap-2 px-4 py-2 font-semibold text-white transition duration-150 rounded-lg shadow-md bg-gradient-to-r from-sky-500 via-cyan-500 to-blue-600 hover:from-sky-600 hover:via-cyan-600 hover:to-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
+            class="inline-flex items-center justify-center w-full gap-2 px-4 py-3 font-semibold text-[#4a3880] transition duration-150 bg-white border border-[#ddd4f0] rounded-xl shadow-sm sm:w-auto dark:bg-[#2b2930] dark:border-[#6750a4]/40 dark:text-[#d0bcff] hover:bg-[#f3eeff] dark:hover:bg-[#6750a4]/20 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#6750a4]/40"
             title="Riassumi con Gemini"
             aria-label="Riassumi con Gemini"
           >
@@ -247,24 +247,27 @@
           }
 
           @if (feedbackSummary()) {
-            <div class="p-4 mt-3 border border-teal-200 rounded-lg bg-teal-50 dark:bg-teal-900/20 dark:border-teal-700">
-              <h3 class="flex items-center gap-2 mb-3 text-sm font-semibold tracking-wide text-teal-800 uppercase dark:text-teal-200">
+            <div class="p-5 mt-3 bg-white border border-[#e5dff0] rounded-2xl shadow-sm dark:bg-[#2b2930] dark:border-white/10">
+              <h3 class="flex items-center gap-2 mb-3 text-sm font-semibold tracking-wide text-[#4a3880] uppercase dark:text-[#d0bcff]">
                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                 </svg>
                 Riassunto feedback
               </h3>
-              <p class="text-sm leading-relaxed text-teal-900 whitespace-pre-line dark:text-teal-100">{{ feedbackSummary() }}</p>
+              <p class="text-sm leading-relaxed text-gray-700 whitespace-pre-line dark:text-gray-300">{{ feedbackSummary() }}</p>
             </div>
           }
-        </div>
+        </section>
       }
 
-      <div class="flex flex-col justify-between gap-3 mb-2 lg:flex-row lg:items-center">
-        <h2 class="text-lg font-bold text-gray-900 dark:text-white">Recensioni ({{ reviews().length }})</h2>       
+      <div class="flex items-end justify-between gap-4 mb-4 px-1">
+        <div>
+          <h2 class="mt-1 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Recensioni</h2>
+        </div>
+        <span class="inline-flex items-center justify-center min-w-9 h-9 px-2.5 text-sm font-bold text-[#4a3880] bg-[#ede9fb] rounded-full dark:text-[#d0bcff] dark:bg-[#6750a4]/25">{{ reviews().length }}</span>
       </div>
       <!-- Reviews Section -->
-      <div class="px-6 py-8 bg-white dark:bg-[#2b2930] shadow-sm border border-gray-100 dark:border-white/5 rounded-2xl">
+      <section class="min-w-0">
         @if (reviewsError()) {
           <div class="flex flex-col items-start gap-3 px-4 py-3 mb-6 text-sm text-red-700 border border-red-200 rounded-xl bg-red-50 dark:bg-red-500/20 dark:text-red-300 dark:border-red-500/40">
             {{ reviewsError() }}
@@ -277,12 +280,15 @@
           </div>
         }
         @if (!reviewsLoading() && !showReviewForm() && !hasUserReviewed()) {
-          <div class="flex flex-col justify-between gap-3 mb-6 lg:flex-row lg:items-center">
+          <div class="mb-4">
             <button
               type="button"
               (click)="toggleReviewForm()"
-              class="block px-6 py-2 font-semibold text-white transition duration-150 bg-[#6750a4] rounded-xl shadow-sm hover:bg-[#5a4494] focus:outline-none focus:ring-2 focus:ring-[#6750a4]/40"
+              class="inline-flex items-center justify-center w-full gap-2 px-6 py-3 font-semibold text-white transition duration-150 bg-[#6750a4] rounded-xl shadow-sm sm:w-auto hover:bg-[#5a4494] focus:outline-none focus:ring-2 focus:ring-[#6750a4]/40"
             >
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4L16.5 3.5Z" />
+              </svg>
               Lascia una recensione
             </button>
           </div>
@@ -301,10 +307,14 @@
               <header class="flex items-center justify-between gap-4 px-5 py-4 border-b border-gray-100 sm:px-7 dark:border-white/10">
                 <div class="min-w-0">
                   <p class="text-xs font-semibold uppercase tracking-[0.15em] text-[#6750a4] dark:text-[#d0bcff]">
-                    La tua esperienza
+                    {{ reviewPublished() ? 'Tutto fatto' : 'La tua esperienza' }}
                   </p>
                   <h3 id="review-dialog-title" class="mt-1 text-lg font-semibold text-gray-900 truncate dark:text-white">
-                    {{ editingReviewId() ? 'Modifica recensione' : 'Recensisci' }} {{ restaurant()?.name }}
+                    @if (reviewPublished()) {
+                      Recensione pubblicata
+                    } @else {
+                      {{ editingReviewId() ? 'Modifica recensione' : 'Recensisci' }} {{ restaurant()?.name }}
+                    }
                   </h3>
                 </div>
                 <button
@@ -326,10 +336,10 @@
                     <button
                       type="button"
                       (click)="goToReviewStep(index)"
-                      [disabled]="index > reviewStep()"
+                      [disabled]="reviewPublished() || index > reviewStep()"
                       class="group min-w-0 text-left focus:outline-none disabled:cursor-default"
-                      [attr.aria-current]="index === reviewStep() ? 'step' : null"
-                      [attr.aria-label]="'Passaggio ' + (index + 1) + ': ' + step.label"
+                      [attr.aria-current]="!reviewPublished() && index === reviewStep() ? 'step' : null"
+                      [attr.aria-label]="reviewPublished() ? step.label + ': completato' : 'Passaggio ' + (index + 1) + ': ' + step.label"
                     >
                       <span
                         class="block h-1.5 mb-2 overflow-hidden rounded-full transition-colors"
@@ -353,6 +363,30 @@
               <form class="flex flex-col flex-1 min-h-0" (ngSubmit)="submitReview()">
                 <div class="review-dialog-content">
                   <div class="max-w-2xl mx-auto">
+                    @if (reviewPublished()) {
+                      <div class="review-success" role="status" aria-live="polite">
+                        <div class="review-success-icon" aria-hidden="true">
+                          <svg class="w-11 h-11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m6.5 12.5 3.5 3.5 7.5-8" />
+                          </svg>
+                        </div>
+                        <p class="mt-6 text-xs font-bold uppercase tracking-[0.15em] text-[#6750a4] dark:text-[#d0bcff]">Recensione pubblicata</p>
+                        <h4 class="text-gray-900 dark:text-white">Grazie per aver condiviso la tua esperienza!</h4>
+                        <p class="max-w-lg mt-3 text-[15px] leading-relaxed text-gray-500 dark:text-gray-400">
+                          La tua recensione su <strong>{{ restaurant()?.name }}</strong> è ora visibile alla community.
+                        </p>
+
+                        <div class="review-success-summary" aria-label="Riepilogo della recensione pubblicata">
+                          <span>La tua valutazione</span>
+                          <strong>{{ formatRating(reviewAverage()) }}<small>/10</small></strong>
+                          <div class="grid grid-cols-3 gap-2 pt-4 mt-4 border-t border-[#ece9f1] dark:border-white/[0.08]">
+                            <span class="flex flex-col gap-0.5 text-[11px] text-gray-500 dark:text-gray-400">Servizio <b class="text-base text-[#4a3880] dark:text-[#d0bcff]">{{ serviceRating() }}</b></span>
+                            <span class="flex flex-col gap-0.5 text-[11px] text-gray-500 dark:text-gray-400">Prezzo <b class="text-base text-[#4a3880] dark:text-[#d0bcff]">{{ priceRating() }}</b></span>
+                            <span class="flex flex-col gap-0.5 text-[11px] text-gray-500 dark:text-gray-400">Menu <b class="text-base text-[#4a3880] dark:text-[#d0bcff]">{{ menuRating() }}</b></span>
+                          </div>
+                        </div>
+                      </div>
+                    } @else {
                     @for (activeStep of [REVIEW_STEPS[reviewStep()]]; track activeStep.label) {
                     <div class="review-step-view">
                     <div class="review-step-intro">
@@ -491,10 +525,24 @@
                     }
                     </div>
                     }
+                    }
                   </div>
                 </div>
 
                 <footer class="review-dialog-footer">
+                  @if (reviewPublished()) {
+                    <span class="hidden text-sm text-gray-500 sm:block dark:text-gray-400">Grazie per il tuo contributo</span>
+                    <button
+                      type="button"
+                      (click)="closeReviewForm()"
+                      class="inline-flex items-center justify-center gap-2 w-full px-6 py-3 text-sm font-semibold text-white transition bg-[#6750a4] rounded-xl shadow-sm sm:w-auto hover:bg-[#5a4494] focus:outline-none focus:ring-2 focus:ring-[#6750a4]/40"
+                    >
+                      Chiudi
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m8 12 3 3 5-6" />
+                      </svg>
+                    </button>
+                  } @else {
                   <button
                     type="button"
                     (click)="reviewStep() === 0 ? closeReviewForm() : previousReviewStep()"
@@ -532,6 +580,7 @@
                       }
                     </button>
                   }
+                  }
                 </footer>
               </form>
             </section>
@@ -540,9 +589,9 @@
 
         <!-- Reviews List -->
         @if (reviewsLoading()) {
-          <div class="space-y-6 animate-pulse" aria-live="polite" aria-label="Caricamento recensioni">
+          <div class="space-y-3 animate-pulse" aria-live="polite" aria-label="Caricamento recensioni">
             @for (_ of [1, 2, 3]; track $index) {
-                <div class="pb-6 border-b border-gray-100 dark:border-white/5 last:border-b-0 last:pb-0">
+                <div class="p-5 bg-white border border-gray-100 shadow-sm rounded-2xl dark:bg-[#2b2930] dark:border-white/5">
                 <div class="flex items-start justify-between mb-4">
                   <div class="space-y-2">
                     <div class="h-4 bg-gray-200 rounded w-28 dark:bg-gray-700"></div>
@@ -563,16 +612,22 @@
             }
           </div>
         } @else if (reviews().length === 0) {
-          <div class="py-12 text-center text-gray-500 dark:text-gray-400">
-            <p class="text-lg">Nessuna recensione presente. Lasciala per primo!</p>
+          <div class="px-5 py-12 text-center text-gray-500 bg-white border border-gray-100 shadow-sm rounded-2xl dark:bg-[#2b2930] dark:border-white/5 dark:text-gray-400">
+            <div class="flex items-center justify-center w-12 h-12 mx-auto mb-3 text-[#6750a4] bg-[#f3eeff] rounded-full dark:text-[#d0bcff] dark:bg-[#6750a4]/20">
+              <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h8M8 14h5M21 12a9 9 0 1 1-3.2-6.9L21 4v4h-4" /></svg>
+            </div>
+            <p class="font-semibold text-gray-800 dark:text-gray-200">Ancora nessuna recensione</p>
+            <p class="mt-1 text-sm">Condividi per primo la tua esperienza.</p>
           </div>
         } @else {
-          <div class="space-y-6">
+          <div class="space-y-3 sm:space-y-4">
             @for (review of reviews(); track review._id) {
-              <div class="pb-6 border-b border-gray-100 dark:border-white/5 last:border-b-0 last:pb-0">
+              <article class="p-[1.125rem] bg-white border border-[#f0edf4] rounded-2xl shadow-sm transition sm:p-6 sm:hover:-translate-y-px sm:hover:border-[#6750a4]/20 sm:hover:shadow-md dark:bg-[#2b2930] dark:border-white/[0.06]">
                 <!-- Review Header -->
-                <div class="flex items-start justify-between mb-3">
-                  <div>
+                <div class="flex items-start justify-between gap-3 mb-4">
+                  <div class="flex items-center min-w-0 gap-3">
+                    <div class="flex items-center justify-center w-10 h-10 text-sm font-extrabold text-[#4a3880] border border-[#6750a4]/10 rounded-xl shrink-0 bg-gradient-to-br from-[#f3eeff] to-[#ede9fb] dark:text-[#d0bcff] dark:bg-none dark:bg-[#6750a4]/25 dark:border-[#d0bcff]/10" aria-hidden="true">{{ review.user.username.charAt(0).toUpperCase() }}</div>
+                    <div class="min-w-0">
                     @if (review.user.deleted) {
                       <h4 class="font-semibold text-gray-500 dark:text-gray-400">
                         {{ review.user.username }}
@@ -586,19 +641,22 @@
                         {{ review.user.username }}
                       </button>
                     }
-                    <p class="text-sm text-gray-500 dark:text-gray-400">
-                      {{ formatReviewDate(review.createdAt) }}<br>
+                    <p class="mt-0.5 text-xs text-gray-500 truncate dark:text-gray-400">
+                      {{ formatReviewDate(review.createdAt) }}
                       @if (review.updatedAt !== review.createdAt) {
-                        <span class="text-xs italic">(Mod. {{ formatReviewDate(review.updatedAt) }})</span>
+                        <span> · modificata</span>
                       }
                     </p>
                   </div>
+                  </div>
                   <div class="relative flex items-center gap-2">
                     <button 
-                      id="badge-value" 
                       type="button"
                       (click)="toggleReviewAccordion(review._id)"
-                      class="flex items-center px-3 py-1 bg-[#f3eeff] rounded-full dark:bg-[#6750a4]/20"
+                      class="flex items-center min-h-10 px-2.5 py-1.5 text-[#4a3880] transition border border-transparent rounded-full shrink-0 bg-[#f3eeff] hover:bg-[#ede9fb] hover:border-[#6750a4]/15 focus:outline-none focus:ring-2 focus:ring-[#6750a4]/40 dark:text-[#d0bcff] dark:bg-[#6750a4]/20 dark:hover:bg-[#6750a4]/30"
+                      [attr.aria-expanded]="isReviewAccordionOpen(review._id)"
+                      [attr.aria-controls]="'review-ratings-' + review._id"
+                      [attr.aria-label]="(isReviewAccordionOpen(review._id) ? 'Nascondi' : 'Mostra') + ' il dettaglio dei voti. Media ' + formatRating(calculateAverageRating(review)) + ' su 10'"
                     >
                       <svg class="w-5 h-5 mr-1 text-[#6750a4] dark:text-[#d0bcff]" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
@@ -660,56 +718,57 @@
 
                 <!-- Mobile: accordion (mostra/nascondi) -->
                 <div
-                class="grid grid-cols-3 gap-4 mb-3 md:hidden"
-                *ngIf="isReviewAccordionOpen(review._id)"
+                  class="grid grid-cols-3 gap-2 mb-4 md:hidden"
+                  *ngIf="isReviewAccordionOpen(review._id)"
+                  [id]="'review-ratings-' + review._id"
                 >
-                <div class="px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-900">
-                  <p class="mb-1 text-xs text-gray-600 dark:text-gray-400">Servizio</p>
-                  <p class="font-semibold text-blue-900 dark:text-blue-200">
+                <div class="min-w-0 p-3 text-center bg-[#faf9fc] border border-[#ede9f3] rounded-xl dark:bg-white/[0.035] dark:border-white/[0.08]">
+                  <p class="text-[11px] font-semibold text-gray-500 truncate dark:text-gray-400">Servizio</p>
+                  <strong class="block mt-0.5 text-base text-[#4a3880] dark:text-[#d0bcff]">
                     {{ formatRating(review.serviceRating) }}
-                  </p>
+                  </strong>
                 </div>
-                <div class="px-3 py-2 rounded-lg bg-green-50 dark:bg-green-900">
-                  <p class="mb-1 text-xs text-gray-600 dark:text-gray-400">Prezzo</p>
-                  <p class="font-semibold text-green-900 dark:text-green-200">
+                <div class="min-w-0 p-3 text-center bg-[#faf9fc] border border-[#ede9f3] rounded-xl dark:bg-white/[0.035] dark:border-white/[0.08]">
+                  <p class="text-[11px] font-semibold text-gray-500 truncate dark:text-gray-400">Prezzo</p>
+                  <strong class="block mt-0.5 text-base text-[#4a3880] dark:text-[#d0bcff]">
                     {{ formatRating(review.priceRating) }}
-                  </p>
+                  </strong>
                 </div>
-                <div class="px-3 py-2 rounded-lg bg-purple-50 dark:bg-purple-900">
-                  <p class="mb-1 text-xs text-gray-600 dark:text-gray-400">Menu</p>
-                  <p class="font-semibold text-purple-900 dark:text-purple-200">
+                <div class="min-w-0 p-3 text-center bg-[#faf9fc] border border-[#ede9f3] rounded-xl dark:bg-white/[0.035] dark:border-white/[0.08]">
+                  <p class="text-[11px] font-semibold text-gray-500 truncate dark:text-gray-400">Menu</p>
+                  <strong class="block mt-0.5 text-base text-[#4a3880] dark:text-[#d0bcff]">
                     {{ formatRating(review.menuRating) }}
-                  </p>
+                  </strong>
                 </div>
                 </div>
 
                 <!-- Rating Breakdown -->
-                <div class="hidden grid-cols-3 gap-4 mb-3 md:grid">
-                  <div class="px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-900">
-                    <p class="mb-1 text-xs text-gray-600 dark:text-gray-400">Servizio</p>
-                    <p class="font-semibold text-blue-900 dark:text-blue-200">{{ formatRating(review.serviceRating) }}</p>
+                <div class="hidden grid-cols-3 gap-3 mb-4 md:grid">
+                  <div class="min-w-0 p-3 text-center bg-[#faf9fc] border border-[#ede9f3] rounded-xl dark:bg-white/[0.035] dark:border-white/[0.08]">
+                    <p class="text-[11px] font-semibold text-gray-500 truncate dark:text-gray-400">Servizio</p>
+                    <strong class="block mt-0.5 text-base text-[#4a3880] dark:text-[#d0bcff]">{{ formatRating(review.serviceRating) }}</strong>
                   </div>
-                  <div class="px-3 py-2 rounded-lg bg-green-50 dark:bg-green-900">
-                    <p class="mb-1 text-xs text-gray-600 dark:text-gray-400">Prezzo</p>
-                    <p class="font-semibold text-green-900 dark:text-green-200">{{ formatRating(review.priceRating) }}</p>
+                  <div class="min-w-0 p-3 text-center bg-[#faf9fc] border border-[#ede9f3] rounded-xl dark:bg-white/[0.035] dark:border-white/[0.08]">
+                    <p class="text-[11px] font-semibold text-gray-500 truncate dark:text-gray-400">Prezzo</p>
+                    <strong class="block mt-0.5 text-base text-[#4a3880] dark:text-[#d0bcff]">{{ formatRating(review.priceRating) }}</strong>
                   </div>
-                  <div class="px-3 py-2 rounded-lg bg-purple-50 dark:bg-purple-900">
-                    <p class="mb-1 text-xs text-gray-600 dark:text-gray-400">Menu</p>
-                    <p class="font-semibold text-purple-900 dark:text-purple-200">{{ formatRating(review.menuRating) }}</p>
+                  <div class="min-w-0 p-3 text-center bg-[#faf9fc] border border-[#ede9f3] rounded-xl dark:bg-white/[0.035] dark:border-white/[0.08]">
+                    <p class="text-[11px] font-semibold text-gray-500 truncate dark:text-gray-400">Menu</p>
+                    <strong class="block mt-0.5 text-base text-[#4a3880] dark:text-[#d0bcff]">{{ formatRating(review.menuRating) }}</strong>
                   </div>
                 </div>
 
                 <!-- Review Comment -->
-                <p class="mb-4 text-gray-700 dark:text-gray-300">{{ review.comment }}</p>
+                <p class="pl-3.5 text-[15px] leading-relaxed text-gray-700 border-l-2 border-[#ddd4f0] dark:text-gray-300 dark:border-[#d0bcff]/35">{{ review.comment }}</p>
 
                 <!-- Edit/Delete Buttons -->
                 @if ((canEditReview(review) || canDeleteReview(review)) && (!isAdminOrSuperadmin() || isOwnReview(review))) {
-                  <div class="flex flex-row gap-4 mt-4 lg:gap-2">
+                  <div class="flex gap-2 pt-4 mt-4 border-t border-gray-100 dark:border-white/5">
                     @if (canEditReview(review)) {
                       <button
                         (click)="editReview(review)"
                         [disabled]="deletingReviewId() === review._id || submittingReview()"
-                        class="w-4/6 px-4 py-3 font-medium text-[#6750a4] transition duration-150 rounded-xl dark:text-[#d0bcff] lg:w-max lg:text-sm lg:py-2 bg-[#f3eeff] dark:bg-[#6750a4]/20 hover:bg-[#ebe3fd] dark:hover:bg-[#6750a4]/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                        class="flex-1 px-4 py-2.5 text-sm font-semibold text-[#6750a4] transition duration-150 rounded-xl dark:text-[#d0bcff] sm:flex-none bg-[#f3eeff] dark:bg-[#6750a4]/20 hover:bg-[#ebe3fd] dark:hover:bg-[#6750a4]/30 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Modifica
                       </button>
@@ -718,7 +777,7 @@
                       <button
                         (click)="deleteReview(review._id)"
                         [disabled]="deletingReviewId() === review._id || submittingReview()"
-                        class="w-2/6 px-4 py-3 font-medium text-red-600 transition duration-150 rounded-lg dark:text-red-300 lg:w-max lg:text-sm lg:py-2 bg-red-50 dark:bg-red-900 hover:bg-red-100 dark:hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                        class="px-4 py-2.5 text-sm font-semibold text-red-600 transition duration-150 rounded-xl dark:text-red-300 bg-red-50 dark:bg-red-500/15 hover:bg-red-100 dark:hover:bg-red-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         @if (deletingReviewId() === review._id) {
                           <span class="flex items-center">
@@ -772,11 +831,11 @@
                     }
                   </div>
                 }
-              </div>
+              </article>
             }
           </div>
         }
-      </div>
-    </div>
+      </section>
+    </main>
   }
 </div>
