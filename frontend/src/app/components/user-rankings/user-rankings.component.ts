@@ -5,11 +5,12 @@ import { Subscription } from 'rxjs';
 import { RestaurantService, UserRankingItem } from '../../services/restaurant.service';
 import { NavigationComponent } from '../navigation/navigation.component';
 import { getStarArray } from '../../utils/rating.utils';
+import { LoadingIndicatorComponent } from '../loading-indicator/loading-indicator.component';
 
 @Component({
   selector: 'app-user-rankings',
   standalone: true,
-  imports: [CommonModule, NavigationComponent],
+  imports: [CommonModule, NavigationComponent, LoadingIndicatorComponent],
   templateUrl: './user-rankings.component.html',
   styleUrl: './user-rankings.component.css'
 })

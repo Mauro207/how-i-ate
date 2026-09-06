@@ -52,7 +52,7 @@ input:disabled { opacity: .5; cursor: wait; }
 .login-link a { display: inline-block; padding: 4px; border-radius: 6px; color: var(--md-primary); font-weight: 700; }
 .state { padding: 32px 0 14px; text-align: center; }
 .state-icon, .spinner { margin: 0 auto 18px; }
-.spinner { display: block; width: 36px; height: 36px; border: 3px solid var(--md-outline-variant); border-top-color: var(--md-primary); border-radius: 50%; animation: spin .8s linear infinite; }
+.spinner { display: block; width: 36px; height: 36px; border: 3px solid var(--md-outline-variant); border-top-color: var(--md-primary); border-radius: 50%; animation: spin 1s ease-in-out infinite; }
 .secondary-link { width: auto; }
 @keyframes spin { to { transform: rotate(360deg); } }
 

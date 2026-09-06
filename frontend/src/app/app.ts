@@ -3,10 +3,11 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationCancel, NavigationEnd, NavigationError, NavigationStart, Router, RouterOutlet } from '@angular/router';
 import { IosInstallBannerComponent } from './components/ios-install-banner/ios-install-banner.component';
 import { AndroidInstallButtonComponent } from './components/android-install-button/android-install-button.component';
+import { LoadingIndicatorComponent } from './components/loading-indicator/loading-indicator.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, IosInstallBannerComponent, AndroidInstallButtonComponent],
+  imports: [RouterOutlet, IosInstallBannerComponent, AndroidInstallButtonComponent, LoadingIndicatorComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

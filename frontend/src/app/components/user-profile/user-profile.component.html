@@ -3,12 +3,7 @@
 
   <div class="px-4 pt-6 mx-auto pb-28 max-w-5xl sm:px-6 lg:px-8">
     @if (loading()) {
-      <div class="flex items-center justify-center py-16">
-        <svg class="w-12 h-12 text-[#6750a4] dark:text-[#d0bcff] animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-        </svg>
-      </div>
+      <app-loading-indicator variant="page" label="Caricamento del profilo" />
     } @else if (error()) {
       <div class="px-4 py-3 text-red-700 border border-red-200 rounded-xl bg-red-50 dark:bg-red-500/20 dark:text-red-300 dark:border-red-500/40">
         <p>{{ error() }}</p>

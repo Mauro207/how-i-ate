@@ -3,6 +3,34 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Shared motion for legacy inline indicators and content skeletons. */
+.animate-spin {
+	animation-duration: 1.1s;
+	animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animate-pulse {
+	animation-name: md3-content-pulse;
+	animation-duration: 1.6s;
+	animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes md3-content-pulse {
+	0%, 100% { opacity: 0.5; }
+	50% { opacity: 0.86; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.animate-spin {
+		animation-duration: 2.4s;
+	}
+
+	.animate-pulse {
+		animation: none;
+		opacity: 0.72;
+	}
+}
+
 :root {
 	--mobile-bottom-bar-height: 75px;
 	--mobile-bottom-safe-space: calc(var(--mobile-bottom-bar-height) + env(safe-area-inset-bottom, 0px) + 1rem);

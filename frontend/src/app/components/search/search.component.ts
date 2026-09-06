@@ -8,6 +8,7 @@ import { Subject } from 'rxjs';
 import { NavigationComponent } from '../navigation/navigation.component';
 import { RestaurantService, Restaurant, RestaurantSearchResult } from '../../services/restaurant.service';
 import { AuthService, UserSearchResult } from '../../services/auth.service';
+import { LoadingIndicatorComponent } from '../loading-indicator/loading-indicator.component';
 
 type SearchResultItem =
   | { type: 'restaurant'; id: string; title: string; subtitle?: string }
@@ -16,7 +17,7 @@ type SearchResultItem =
 @Component({
   selector: 'app-search',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavigationComponent],
+  imports: [CommonModule, FormsModule, NavigationComponent, LoadingIndicatorComponent],
   templateUrl: './search.component.html',
   styleUrl: './search.component.css'
 })

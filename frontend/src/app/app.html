@@ -1,16 +1,5 @@
 @if (routeLoading()) {
-	<div class="flex items-center justify-center min-h-screen px-6 bg-gray-50 dark:bg-[#1C1B1F]">
-		<div class="w-full max-w-xs p-6 text-center bg-white border border-gray-200 shadow-sm rounded-2xl dark:bg-[#2C2C2C] dark:border-gray-700">
-			<div class="inline-flex items-center justify-center w-12 h-12 mb-4 rounded-full bg-indigo-100 dark:bg-indigo-900/40">
-				<svg class="w-6 h-6 text-indigo-600 dark:text-indigo-300 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-					<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-					<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-				</svg>
-			</div>
-			<p class="text-base font-semibold text-gray-900 dark:text-white">Caricamento in corso</p>
-			<p class="mt-1 text-sm text-gray-500 dark:text-gray-300">How I Ate sta preparando i contenuti</p>
-		</div>
-	</div>
+  <app-loading-indicator variant="overlay" label="Caricamento in corso" detail="How I Ate sta preparando i contenuti" />
 } @else {
 	<app-ios-install-banner />
 	<app-android-install-button />

@@ -6,11 +6,12 @@ import { AuthService, UserProfile } from '../../services/auth.service';
 import { RestaurantService } from '../../services/restaurant.service';
 import { NavigationComponent } from '../navigation/navigation.component';
 import { InviteComponent } from '../invite/invite.component';
+import { LoadingIndicatorComponent } from '../loading-indicator/loading-indicator.component';
 
 @Component({
   selector: 'app-user-profile',
   standalone: true,
-  imports: [CommonModule, NavigationComponent, InviteComponent],
+  imports: [CommonModule, NavigationComponent, InviteComponent, LoadingIndicatorComponent],
   templateUrl: './user-profile.component.html',
   styleUrl: './user-profile.component.css'
 })

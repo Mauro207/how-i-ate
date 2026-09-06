@@ -5,11 +5,12 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { RestaurantService, Restaurant, Review } from '../../services/restaurant.service';
 import { AuthService } from '../../services/auth.service';
 import { NavigationComponent } from '../navigation/navigation.component';
+import { LoadingIndicatorComponent } from '../loading-indicator/loading-indicator.component';
 
 @Component({
   selector: 'app-restaurant-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, NavigationComponent],
+  imports: [CommonModule, FormsModule, RouterLink, NavigationComponent, LoadingIndicatorComponent],
   templateUrl: './restaurant-detail.component.html',
   styleUrl: './restaurant-detail.component.css'
 })

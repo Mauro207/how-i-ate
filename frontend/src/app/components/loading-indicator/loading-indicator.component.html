@@ -1,0 +1,27 @@
+<div
+  class="loading-indicator"
+  [class.loading-indicator--overlay]="variant === 'overlay'"
+  [class.loading-indicator--page]="variant === 'page'"
+  [class.loading-indicator--section]="variant === 'section'"
+  [class.loading-indicator--inline]="variant === 'inline'"
+  [class.loading-indicator--button]="variant === 'button'"
+  role="status"
+  aria-live="polite"
+  aria-atomic="true"
+>
+  <svg class="loading-indicator__spinner" viewBox="0 0 48 48" aria-hidden="true">
+    <circle class="loading-indicator__track" cx="24" cy="24" r="19" pathLength="100" />
+    <circle class="loading-indicator__arc" cx="24" cy="24" r="19" pathLength="100" />
+  </svg>
+
+  @if (variant !== 'button') {
+    <span class="loading-indicator__copy">
+      <span class="loading-indicator__label">{{ label }}</span>
+      @if (detail) {
+        <span class="loading-indicator__detail">{{ detail }}</span>
+      }
+    </span>
+  } @else {
+    <span class="sr-only">{{ label }}</span>
+  }
+</div>
