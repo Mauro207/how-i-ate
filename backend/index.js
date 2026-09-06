@@ -14,6 +14,7 @@ dotenv.config({ path: path.join(__dirname, '.env'), override: true });
 // Initialize express app
 const app = express();
 const PORT = process.env.PORT || 3000;
+let runtimeInitialization = null;
 
 // Registra il webhook Telegram su Vercel (o qualsiasi host con BACKEND_URL configurato)
 const registerTelegramWebhook = async () => {
@@ -52,18 +53,22 @@ const registerTelegramWebhook = async () => {
   }
 };
 
-// Connect to MongoDB
-connectDB()
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-    });
-    registerTelegramWebhook();
-  })
-  .catch((error) => {
-    console.error('Failed to start server:', error.message);
-    process.exit(1);
-  });
+// Initialize shared services once per process. On Vercel this runs lazily on the
+// first API request, avoiding app.listen/process.exit during a serverless cold start.
+const initializeRuntime = () => {
+  if (!runtimeInitialization) {
+    runtimeInitialization = connectDB()
+      .then(async () => {
+        await registerTelegramWebhook();
+      })
+      .catch((error) => {
+        runtimeInitialization = null;
+        throw error;
+      });
+  }
+
+  return runtimeInitialization;
+};
 
 // Middleware
 app.use(cors());
@@ -72,6 +77,24 @@ app.use(express.urlencoded({ extended: true }));
 
 // Apply general rate limiting to all API routes
 app.use('/api/', apiLimiter);
+
+// Liveness endpoint stays independent from MongoDB so deploy/routing problems can
+// be distinguished from database connectivity problems.
+app.get('/api/health', (_req, res) => {
+  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+// Database-backed API routes wait for the shared connection. A configuration or
+// connection problem returns a useful response instead of terminating the function.
+app.use('/api', async (_req, res, next) => {
+  try {
+    await initializeRuntime();
+    next();
+  } catch (error) {
+    console.error('Failed to initialize API runtime:', error.message);
+    res.status(503).json({ message: 'Servizio temporaneamente non disponibile.' });
+  }
+});
 
 // Import routes
 const authRoutes = require('./routes/auth');
@@ -92,10 +115,6 @@ app.get('/api', swaggerUi.setup(swaggerSpec, {
   customCss: '.swagger-ui .topbar { display: none }',
   customSiteTitle: 'How I Ate API Documentation'
 }));
-
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
-});
 
 // API Routes
 app.use('/api/auth', authRoutes);
@@ -124,3 +143,17 @@ app.use((req, res) => {
 });
 
 module.exports = app;
+
+// Local Node entry point. Vercel imports and invokes the exported Express app.
+if (require.main === module) {
+  initializeRuntime()
+    .then(() => {
+      app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+      });
+    })
+    .catch((error) => {
+      console.error('Failed to start server:', error.message);
+      process.exitCode = 1;
+    });
+}
