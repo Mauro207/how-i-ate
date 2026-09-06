@@ -6,6 +6,33 @@
 :root {
 	--mobile-bottom-bar-height: 75px;
 	--mobile-bottom-safe-space: calc(var(--mobile-bottom-bar-height) + env(safe-area-inset-bottom, 0px) + 1rem);
+	--md-primary: #6750a4;
+	--md-on-primary: #ffffff;
+	--md-primary-container: #eaddff;
+	--md-on-primary-container: #21005d;
+	--md-surface: #fffbfe;
+	--md-surface-container: #f3edf7;
+	--md-surface-container-high: #ece6f0;
+	--md-on-surface: #1c1b1f;
+	--md-on-surface-variant: #49454f;
+	--md-outline: #79747e;
+	--md-outline-variant: #cac4d0;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--md-primary: #d0bcff;
+		--md-on-primary: #381e72;
+		--md-primary-container: #4f378b;
+		--md-on-primary-container: #eaddff;
+		--md-surface: #1c1b1f;
+		--md-surface-container: #211f26;
+		--md-surface-container-high: #2b2930;
+		--md-on-surface: #e6e1e5;
+		--md-on-surface-variant: #cac4d0;
+		--md-outline: #938f99;
+		--md-outline-variant: #49454f;
+	}
 }
 
 html,

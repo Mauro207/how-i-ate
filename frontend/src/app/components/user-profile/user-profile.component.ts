@@ -5,11 +5,12 @@ import { Subscription } from 'rxjs';
 import { AuthService, UserProfile } from '../../services/auth.service';
 import { RestaurantService } from '../../services/restaurant.service';
 import { NavigationComponent } from '../navigation/navigation.component';
+import { InviteComponent } from '../invite/invite.component';
 
 @Component({
   selector: 'app-user-profile',
   standalone: true,
-  imports: [CommonModule, NavigationComponent],
+  imports: [CommonModule, NavigationComponent, InviteComponent],
   templateUrl: './user-profile.component.html',
   styleUrl: './user-profile.component.css'
 })

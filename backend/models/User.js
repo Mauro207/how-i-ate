@@ -37,6 +37,22 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     default: null
+  },
+  invitedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null,
+    index: true
+  },
+  invitationToken: {
+    type: String,
+    select: false,
+    unique: true,
+    sparse: true
+  },
+  invitationPromptDismissed: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true

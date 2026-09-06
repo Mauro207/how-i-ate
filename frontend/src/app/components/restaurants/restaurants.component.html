@@ -4,8 +4,9 @@
 
   <!-- Main Content -->
   <div class="px-4 pt-6 mx-auto pb-28 max-w-7xl sm:px-6 lg:px-8">
+    <app-invite [floating]="true"></app-invite>
     <!-- Header Section -->
-    <div class="flex items-center justify-between lg:mb-8">
+    <div class="flex items-center justify-between mb-3 lg:mb-8">
       <div class="lg:hidden">
         <p class="text-lg font-semibold text-gray-900 dark:text-white">
           Ciao <span class="text-2xl">{{ authService.currentUser()?.username || 'Utente' }} <span class="wave-emoji" aria-hidden="true">👋</span></span>
@@ -133,9 +134,6 @@
             </div>
           </div>
 
-          <div>
-            
-          </div>
         </div>
       }
     }

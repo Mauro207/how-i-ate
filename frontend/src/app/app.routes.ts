@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './components/login/login.component';
+import { RegisterComponent } from './components/register/register.component';
 import { RestaurantsComponent } from './components/restaurants/restaurants.component';
 import { RestaurantCreateComponent } from './components/restaurant-create/restaurant-create.component';
 import { RestaurantDetailComponent } from './components/restaurant-detail/restaurant-detail.component';
@@ -22,6 +23,7 @@ import { guestGuard } from './guards/guest.guard';
 export const routes: Routes = [
   { path: '', redirectTo: '/restaurants', pathMatch: 'full' },
   { path: 'login', component: LoginComponent, canActivate: [guestGuard] },
+  { path: 'register', component: RegisterComponent, canActivate: [guestGuard] },
   { path: 'restaurants', component: RestaurantsComponent, canActivate: [authGuard] },
   { path: 'restaurants/create', component: RestaurantCreateComponent, canActivate: [authGuard, adminGuard] },
   { path: 'restaurants/:id/edit', component: RestaurantCreateComponent, canActivate: [authGuard, adminGuard] },

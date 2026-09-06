@@ -1,0 +1,53 @@
+<main class="register-page">
+  <section class="register-card">
+    <a routerLink="/login" class="brand" aria-label="How I Ate, vai al login">How I Ate</a>
+
+    @if (checkingInvitation()) {
+      <div class="state" role="status">
+        <span class="spinner" aria-hidden="true"></span>
+        <h1>Verifica dell’invito</h1>
+        <p>Un attimo, stiamo preparando il tuo posto a tavola.</p>
+      </div>
+    } @else if (invalidInvitation()) {
+      <div class="state">
+        <span class="state-icon" aria-hidden="true">!</span>
+        <h1>Invito non valido</h1>
+        <p>Il link è incompleto o non è più disponibile. Chiedi un nuovo invito alla persona che te lo ha inviato.</p>
+        <a routerLink="/login" class="secondary-link">Torna all’accesso</a>
+      </div>
+    } @else {
+      <div class="invited-by">
+        <span class="avatar" aria-hidden="true">{{ inviterName().charAt(0).toUpperCase() }}</span>
+        <p><strong>{{ inviterName() }}</strong> ti ha invitato su How I Ate</p>
+      </div>
+
+      <header>
+        <span class="eyebrow">BENVENUTO A TAVOLA</span>
+        <h1>Crea il tuo account</h1>
+        <p>Inizia a raccogliere e condividere i posti in cui hai mangiato bene.</p>
+      </header>
+
+      @if (error()) { <div class="error" role="alert">{{ error() }}</div> }
+
+      <form (ngSubmit)="onSubmit()">
+        <label for="name">Nome</label>
+        <input id="name" name="name" type="text" autocomplete="name" maxlength="50" required [(ngModel)]="name" [disabled]="loading()" placeholder="Come ti chiami?">
+
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" autocomplete="email" maxlength="254" required [(ngModel)]="email" [disabled]="loading()" placeholder="nome@email.it">
+
+        <label for="password">Password</label>
+        <div class="password-field">
+          <input id="password" name="password" [type]="showPassword() ? 'text' : 'password'" autocomplete="new-password" minlength="6" maxlength="128" required [(ngModel)]="password" [disabled]="loading()" placeholder="Almeno 6 caratteri">
+          <button type="button" class="show-password" (click)="showPassword.set(!showPassword())" [attr.aria-label]="showPassword() ? 'Nascondi password' : 'Mostra password'">{{ showPassword() ? 'Nascondi' : 'Mostra' }}</button>
+        </div>
+
+        <button type="submit" class="primary-button" [disabled]="loading()">
+          @if (loading()) { Creazione account… } @else { Crea account e accedi }
+        </button>
+      </form>
+
+      <p class="login-link">Hai già un account? <a routerLink="/login">Accedi</a></p>
+    }
+  </section>
+</main>

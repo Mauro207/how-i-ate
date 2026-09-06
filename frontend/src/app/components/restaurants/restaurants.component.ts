@@ -6,11 +6,12 @@ import { AuthService } from '../../services/auth.service';
 import { NavigationComponent } from '../navigation/navigation.component';
 import { RankingWidgetComponent } from '../ranking-widget/ranking-widget.component'; 
 import { Title } from '@angular/platform-browser';
+import { InviteComponent } from '../invite/invite.component';
 
 @Component({
   selector: 'app-restaurants',
   standalone: true,
-  imports: [CommonModule, RouterLink, NavigationComponent, RankingWidgetComponent],
+  imports: [CommonModule, RouterLink, NavigationComponent, RankingWidgetComponent, InviteComponent],
   templateUrl: './restaurants.component.html',
   styleUrl: './restaurants.component.css'
 })

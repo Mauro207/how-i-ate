@@ -1,5 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
+const crypto = require('node:crypto');
+const { findInviter, notifyRegistration, getInvitation, dismissPrompt, previewInvitation } = require('../services/invitations');
 const mongoose = require('mongoose');
 const User = require('../models/User');
 const Review = require('../models/Review');
@@ -9,6 +11,21 @@ const { authenticate, authorize } = require('../middleware/auth');
 const { authLimiter, writeLimiter } = require('../middleware/rateLimiter');
 
 const router = express.Router();
+
+
+// Invite links are reusable and valid while the inviting account exists.
+router.post('/invitation', authenticate, writeLimiter, getInvitation);
+router.patch('/invitation/dismiss', authenticate, writeLimiter, dismissPrompt);
+router.get('/invitation/status', authenticate, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId).select('invitationPromptDismissed');
+    if (!user) return res.status(404).json({ message: 'Utente non trovato.' });
+    return res.json({ dismissed: user.invitationPromptDismissed });
+  } catch {
+    return res.status(500).json({ message: 'Impossibile caricare la preferenza.' });
+  }
+});
+router.get('/invitation/:token', previewInvitation);
 
 // Generate JWT token
 const generateToken = (userId) => {
@@ -33,13 +50,16 @@ const generateToken = (userId) => {
  *           schema:
  *             type: object
  *             required:
- *               - username
+ *               - name
+ *               - invitationToken
  *               - email
  *               - password
  *             properties:
- *               username:
+ *               name:
  *                 type: string
- *                 minLength: 3
+ *                 maxLength: 50
+ *               invitationToken:
+ *                 type: string
  *               email:
  *                 type: string
  *                 format: email
@@ -66,37 +86,41 @@ const generateToken = (userId) => {
 // Register new user - Apply strict rate limiting
 router.post('/register', authLimiter, async (req, res) => {
   try {
-    const { username, email, password } = req.body;
-    
-    // Validate input
-    if (!username || !email || !password) {
-      return res.status(400).json({ 
-        message: 'Username, email, and password are required' 
-      });
+    const { name, email: rawEmail, password, invitationToken } = req.body || {};
+    if (typeof name !== 'string' || !name.trim() || name.trim().length > 50 ||
+        typeof rawEmail !== 'string' || rawEmail.length > 254 || !/^\S+@\S+\.\S+$/.test(rawEmail.trim()) ||
+        typeof password !== 'string' || password.length < 6 || password.length > 128) {
+      return res.status(400).json({ message: 'Inserisci nome (massimo 50 caratteri), email valida e password da 6 a 128 caratteri.' });
     }
-    
-    // Check if user already exists
-    const existingUser = await User.findOne({ 
-      $or: [{ email }, { username }] 
-    });
-    
-    if (existingUser) {
-      return res.status(400).json({ 
-        message: 'User with this email or username already exists' 
-      });
+    const inviter = await findInviter(invitationToken);
+    if (!inviter) {
+      return res.status(400).json({ message: 'Questo invito non ? valido o non ? pi? disponibile.' });
     }
-    
-    // Create new user with 'user' role by default
+    const email = rawEmail.trim().toLowerCase();
+    if (await User.findOne({ email })) {
+      return res.status(400).json({ message: 'Esiste gi? un account con questa email. Accedi al tuo account.' });
+    }
+    const usernameBase = name.trim().normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 32) || 'utente';
     const user = new User({
-      username,
+      username: `${usernameBase}_${crypto.randomBytes(3).toString('hex')}`,
+      displayName: name.trim(),
       email,
       password,
-      role: 'user'
+      role: 'user',
+      invitedBy: inviter._id
     });
-    
-    await user.save();
-    
+    // Validate signing configuration before committing an account.
     const token = generateToken(user._id);
+    await user.save();
+    try {
+      await notifyRegistration(user);
+    } catch (error) {
+      // A push provider failure must not turn a successful registration into an error.
+      console.error('[invitation] Registration notification failed:', error.message);
+    }
+
+
     
     res.status(201).json({
       message: 'User registered successfully',
@@ -529,13 +553,21 @@ router.post('/create-user', writeLimiter, authenticate, authorize('admin', 'supe
 // Get all users (superadmin only)
 router.get('/users', authenticate, authorize('superadmin'), async (req, res) => {
   try {
-    const users = await User.find().select('_id username displayName email role createdAt updatedAt');
+    const users = await User.find()
+      .select('_id username displayName email role invitedBy createdAt updatedAt')
+      .populate('invitedBy', '_id username displayName email');
     const formatted = users.map((u) => ({
       id: u._id,
       username: u.username,
       displayName: u.displayName,
       email: u.email,
       role: u.role,
+      invitedBy: u.invitedBy ? {
+        id: u.invitedBy._id,
+        username: u.invitedBy.username,
+        displayName: u.invitedBy.displayName,
+        email: u.invitedBy.email
+      } : null,
       createdAt: u.createdAt,
       updatedAt: u.updatedAt
     }));

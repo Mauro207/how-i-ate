@@ -1,0 +1,38 @@
+@if (floating) {
+  @if (visible()) {
+    <aside class="invite-prompt" aria-label="Invita un amico">
+      <div class="prompt-content">
+        <span class="invite-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M15 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4ZM7 10V7H5v3H2v2h3v3h2v-3h3v-2Zm8 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4Z"/></svg>
+        </span>
+        <div class="prompt-copy"><strong>A tavola c’è posto per tutti</strong><p>Condividi i tuoi posti preferiti con un amico.</p>
+          <button type="button" class="text-button" (click)="open()">Invita nuovo utente <span aria-hidden="true">→</span></button>
+        </div>
+      </div>
+      <button type="button" class="close-button" aria-label="Non mostrare più questo invito" [disabled]="dismissing()" (click)="dismiss()">×</button>
+      @if (promptError()) { <p role="alert" class="error">{{ promptError() }}</p> }
+    </aside>
+  }
+} @else {
+  <button type="button" class="profile-invite" (click)="open()">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4ZM7 10V7H5v3H2v2h3v3h2v-3h3v-2Zm8 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4Z"/></svg>
+    Invita nuovo utente
+  </button>
+}
+
+<dialog #dialog aria-labelledby="invite-title" (click)="$event.target === dialog && close()">
+  <div class="dialog-content">
+    <button type="button" class="close-button" aria-label="Chiudi invito" (click)="close()">×</button>
+    <span class="eyebrow">INSIEME, A TAVOLA</span>
+    <h2 id="invite-title">Le cose buone si condividono.</h2>
+    <p>Invita un amico su How I Ate. Aprendo il link vedrà il tuo nome e potrà creare il suo account.</p>
+    @if (loading()) { <div class="loading-row" role="status"><span class="spinner"></span>Preparazione del link…</div> }
+    @if (link()) {
+      <label for="invitation-link">Il tuo link di invito</label>
+      <input #linkInput id="invitation-link" type="url" readonly [value]="link()" (click)="linkInput.select()">
+      <button type="button" class="primary-button" (click)="copy(linkInput)">{{ copied() ? 'Link copiato!' : 'Copia link' }}</button>
+      <p class="hint" role="status">{{ copied() ? 'Ora puoi incollarlo e condividerlo con un amico.' : 'Puoi usare lo stesso link per invitare più amici.' }}</p>
+    }
+    @if (error()) { <p role="alert" class="error">{{ error() }}</p> }
+  </div>
+</dialog>

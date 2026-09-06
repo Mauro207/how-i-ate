@@ -78,8 +78,31 @@ export class AuthService {
       );
   }
 
-  register(username: string, email: string, password: string): Observable<any> {
-    return this.httpClient.post(`${this.apiUrl}/register`, { username, email, password });
+  register(name: string, email: string, password: string, invitationToken: string): Observable<LoginResponse> {
+    return this.httpClient.post<LoginResponse>(`${this.apiUrl}/register`, { name, email, password, invitationToken }).pipe(
+      tap(response => {
+        this.tokenStorage.setToken(response.token);
+        this.currentUser.set(response.user);
+        this.isAuthenticated.set(true);
+        this.storeCachedUser(response.user);
+      })
+    );
+  }
+
+  getInvitation(): Observable<{ token: string; dismissed: boolean }> {
+    return this.httpClient.post<{ token: string; dismissed: boolean }>(`${this.apiUrl}/invitation`, {});
+  }
+
+  getInvitationStatus(): Observable<{ dismissed: boolean }> {
+    return this.httpClient.get<{ dismissed: boolean }>(`${this.apiUrl}/invitation/status`);
+  }
+
+  dismissInvitationPrompt(): Observable<{ dismissed: boolean }> {
+    return this.httpClient.patch<{ dismissed: boolean }>(`${this.apiUrl}/invitation/dismiss`, {});
+  }
+
+  previewInvitation(token: string): Observable<{ inviter: { name: string } }> {
+    return this.httpClient.get<{ inviter: { name: string } }>(`${this.apiUrl}/invitation/${encodeURIComponent(token)}`);
   }
 
   createUser(username: string, email: string, password: string): Observable<any> {
